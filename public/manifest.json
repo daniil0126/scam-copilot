@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Scam Copilot",
+    "version": "1.0.0",
+    "description": "wille be filled later",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "sidePanel",
+        "scripting",
+        "tabs"
+    ],
+    "side_panel": {
+        "default_path": "index.html"
+    },
+    "content_scripts": [
+        
+    ],
+    "background": {
+        "service_worker": "service_worker.js"
+    },
+    "action": {}
+}
