@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
-import { Moon, PanelLeft, PanelRight, Sun, type LucideIcon } from "lucide-react"
-import type { SidebarPosition, Theme, UserSettings } from "../../types.js"
-import { MAX_WIDTH, MIN_WIDTH } from "../../lib/settings.js"
+import { Moon, Sun, type LucideIcon } from "lucide-react"
+import type { Theme, UserSettings } from "../../types.js"
 
 type Props = {
     settings: UserSettings
@@ -68,43 +67,11 @@ const THEMES: Option<Theme>[] = [
     { id: "dark", label: "Dark", icon: Moon },
 ]
 
-const POSITIONS: Option<SidebarPosition>[] = [
-    { id: "right", label: "Right", icon: PanelRight },
-    { id: "left", label: "Left", icon: PanelLeft },
-]
-
 export default function SettingsView({ settings, onChange }: Props) {
     return (
         <div className="p-4">
             <Section title="Appearance">
                 <OptionGroup label="Theme" value={settings.theme} options={THEMES} onChange={theme => onChange({ theme })} />
-            </Section>
-
-            <Section title="Sidebar position">
-                <OptionGroup label="Sidebar position" value={settings.position} options={POSITIONS} onChange={position => onChange({ position })} />
-            </Section>
-
-            <Section title="Sidebar width">
-                <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-3">
-                    <div className="mb-2 flex justify-between text-sm">
-                        <label htmlFor="sc-width">Width</label>
-                        <span className="font-semibold text-[var(--primary)]">{settings.width}px</span>
-                    </div>
-                    <input
-                        id="sc-width"
-                        type="range"
-                        min={MIN_WIDTH}
-                        max={MAX_WIDTH}
-                        step={10}
-                        value={settings.width}
-                        aria-valuetext={`${settings.width} pixels`}
-                        onChange={(e) => onChange({ width: Number(e.target.value) })}
-                        className="w-full accent-[var(--primary)]"
-                    />
-                    <div className="mt-1 flex justify-between text-[11px] text-[var(--muted)]">
-                        <span>{MIN_WIDTH}px</span><span>{MAX_WIDTH}px</span>
-                    </div>
-                </div>
             </Section>
 
             <Section title="Collapsed mode">

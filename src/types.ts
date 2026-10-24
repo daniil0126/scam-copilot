@@ -17,12 +17,9 @@ export type TabId = "check" | "history" | "settings"
 
 export type Theme = "light" | "dark"
 
-export type SidebarPosition = "left" | "right"
-
 export type UserSettings = {
     theme: Theme
     notifications: boolean
-    position: SidebarPosition
     width: number
     collapsed: boolean
 }

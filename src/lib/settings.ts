@@ -6,7 +6,6 @@ export const MAX_WIDTH = 560
 export const DEFAULT_SETTINGS: UserSettings = {
     theme: "light",
     notifications: true,
-    position: "right",
     width: 420,
     collapsed: false,
 }
@@ -22,7 +21,6 @@ export function normalizeSettings(raw: Partial<UserSettings> | undefined): UserS
     return {
         theme: raw?.theme === "dark" ? "dark" : "light",
         notifications: typeof raw?.notifications === "boolean" ? raw.notifications : d.notifications,
-        position: raw?.position === "left" ? "left" : "right",
         width: Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(width))),
         collapsed: typeof raw?.collapsed === "boolean" ? raw.collapsed : d.collapsed,
     }
