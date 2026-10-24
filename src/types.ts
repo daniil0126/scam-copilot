@@ -13,7 +13,7 @@ export type Message = {
     message: string
 }
 
-export type TabId = "check" | "history" | "settings"
+export type TabId = "check" | "history" | "chat" | "settings"
 
 export type Theme = "light" | "dark"
 

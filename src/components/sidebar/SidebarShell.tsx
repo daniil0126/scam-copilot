@@ -7,6 +7,7 @@ import SidebarTabs from "./SidebarTabs.js"
 import ResizeHandle from "./ResizeHandle.js"
 import FloatingCollapsedTab from "./FloatingCollapsedTab.js"
 import CheckTab from "../check/CheckTab.js"
+import ChatTab from "../chat/ChatTab.js"
 import HistoryView from "../history/HistoryView.js"
 import SettingsView from "../settings/SettingsView.js"
 
@@ -74,6 +75,8 @@ export default function SidebarShell({ store, fill = false }: Props) {
                 <main role="tabpanel" className="min-h-0 flex-1 overflow-y-auto">
                     {/* Kept mounted so the analysis result survives tab switches. */}
                     <div hidden={tab !== "check"}><CheckTab /></div>
+                    {/* Kept mounted so the conversation survives tab switches. */}
+                    <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab /></div>
                     {tab === "history" && <HistoryView />}
                     {tab === "settings" && <SettingsView settings={settings} onChange={update} />}
                 </main>

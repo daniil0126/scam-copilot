@@ -8,7 +8,8 @@ export default function ChatBox({onSend}: {onSend: (text: string) => void}) {
         const textArea = textAreaRef.current;
         if (textArea) {
             textArea.style.height = "auto";
-            textArea.style.height = `${textArea.scrollHeight}px`;
+            // A hidden tab reports a scrollHeight of 0; keep the natural height in that case.
+            if (textArea.scrollHeight) textArea.style.height = `${textArea.scrollHeight}px`;
         }
     }, [message]);
 
