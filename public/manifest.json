@@ -4,20 +4,19 @@
     "version": "1.0.0",
     "description": "wille be filled later",
     "permissions": [
-        "storage",
-        "activeTab",
-        "sidePanel",
-        "scripting",
-        "tabs"
+        "storage"
     ],
-    "side_panel": {
-        "default_path": "index.html"
-    },
     "content_scripts": [
-        
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content.js"],
+            "run_at": "document_idle"
+        }
     ],
     "background": {
         "service_worker": "service_worker.js"
     },
-    "action": {}
+    "action": {
+        "default_title": "Toggle Scam Copilot"
+    }
 }

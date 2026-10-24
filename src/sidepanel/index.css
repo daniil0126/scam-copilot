@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root {
+:root,
+:host {
     --navy: #17294b;
     --primary: #2563eb;
     --primary-soft: #eaf1ff;
@@ -9,9 +10,16 @@
     --text: #172033;
     --muted: #71809a;
     --border: #e5eaf2;
+    --success: #0f9f79;
+    --success-soft: #e6f6f1;
+    --warning: #b9770e;
+    --warning-soft: #fdf4e0;
+    --danger: #e54855;
+    --danger-soft: #fdecee;
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+:host([data-theme="dark"]) {
     --navy: #0f1c36;
     --primary: #5b8def;
     --primary-soft: #1c2b4a;
@@ -20,10 +28,20 @@
     --text: #e6ebf5;
     --muted: #8d9bb5;
     --border: #25314a;
+    --success: #35c9a0;
+    --success-soft: #12302b;
+    --warning: #f0b84a;
+    --warning-soft: #33290f;
+    --danger: #ff7a85;
+    --danger-soft: #3a1a22;
 }
 
 body {
     margin: 0;
+}
+
+body,
+.sc-root {
     font-family: Inter, system-ui, sans-serif;
 }
 
