@@ -1,6 +1,5 @@
 export type ExtensionMessage =
     | { action: "GET_DOM_STRUCTURE" }
-    | { action: "TOGGLE_SIDEBAR" }
 
 export type DOMResonse = {
     dom: string
