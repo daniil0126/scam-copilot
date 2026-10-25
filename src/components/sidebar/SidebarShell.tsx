@@ -67,7 +67,7 @@ export default function SidebarShell({ store, fill = false }: Props) {
                 aria-label="Scam Copilot"
                 onKeyDown={onKeyDown}
                 style={{ width: fill ? "100vw" : `min(${settings.width}px, 100vw)` }}
-                className={`fixed top-0 right-0 bottom-0 z-[1] border-l flex flex-col border-[var(--border)] bg-[var(--bg)] text-[var(--text)] shadow-2xl outline-none transition-[transform,visibility] duration-200 ease-out motion-reduce:transition-none ${classes}`}
+                className={`fixed top-0 right-0 bottom-0 z-[1] flex flex-col bg-[var(--bg)] text-[var(--text)] outline-none ${fill ? "" : "border-l border-[var(--border)] shadow-2xl"} transition-[transform,visibility] duration-200 ease-out motion-reduce:transition-none ${classes}`}
             >
                 {!fill && <ResizeHandle width={settings.width} onResize={(width) => update({ width })} />}
                 <SidebarHeader onOpenSettings={() => setTab("settings")} onClose={fill ? undefined : () => store.set(false)} />
