@@ -77,7 +77,7 @@ export default function SidebarShell({ store, fill = false }: Props) {
                     <div hidden={tab !== "check"}><CheckTab /></div>
                     {/* Kept mounted so the conversation survives tab switches. */}
                     <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab /></div>
-                    {tab === "history" && <HistoryView />}
+                    {tab === "history" && <HistoryView settings={settings} />}
                     {tab === "settings" && <SettingsView settings={settings} onChange={update} />}
                 </main>
             </aside>
