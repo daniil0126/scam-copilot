@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { ArrowLeft, History } from "lucide-react"
 import { HISTORY } from "../../data/mock.js"
-import HistoryGrid from "./HistoryItem.js"
+import HistoryItem from "./HistoryItem.js"
 import VerificationView from "../check/VerificationView.js"
 import type { UserSettings } from "../../types.js"
 
@@ -37,8 +37,6 @@ export default function HistoryView({ settings }: HistoryViewProps) {
     }
 
     return (
-        <div className="p-2">
-            <HistoryGrid data={HISTORY} settings={settings} onOpen={(id) => setOpenId(id)} />
-        </div>
+        <HistoryItem data={HISTORY} settings={settings} onOpen={(id) => setOpenId(id)} />
     )
 }
