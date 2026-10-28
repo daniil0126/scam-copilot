@@ -1,4 +1,4 @@
-import type { VerificationResult } from "../../types.js"
+import type { VerificationResult } from "../../api/types.js"
 import RiskIndicator from "./RiskIndicator.js"
 import FindingsList from "./FindingsList.js"
 

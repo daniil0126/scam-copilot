@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import type { UserSettings } from "../types.js"
+import type { UserSettings } from "../api/types.js"
 import { DEFAULT_SETTINGS, loadSettings, normalizeSettings, saveSettings, subscribeSettings } from "../lib/settings.js"
 
 const SAVE_DELAY_MS = 300

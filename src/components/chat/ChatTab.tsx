@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { MessageCircle } from "lucide-react"
-import type { Message } from "../../types.js"
+import type { Message } from "../../api/types.js"
 import ChatBox from "../ChatBox.js"
 import MessageList from "../MessageList.js"
 

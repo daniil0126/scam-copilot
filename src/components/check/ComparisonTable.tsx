@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react"
-import type { ComparisonRow } from "../../types.js"
+import type { ComparisonRow } from "../../api/types.js"
 
 export default function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
     return (

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
-import type { VerificationResult } from "../../types.js"
+import type { VerificationResult } from "../../api/types.js"
 import { LEVEL_META, alertTitle } from "../../lib/risk.js"
 import RiskSummary from "./RiskSummary.js"
 import ComparisonTable from "./ComparisonTable.js"

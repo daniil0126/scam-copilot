@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react"
-import type { TabId } from "../../types.js"
+import type { TabId } from "../../api/types.js"
 import type { OpenStore } from "../../overlay/store.js"
 import { useSettings } from "../../overlay/useSettings.js"
 import SidebarHeader from "./SidebarHeader.js"

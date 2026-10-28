@@ -1,5 +1,11 @@
 export type ExtensionMessage =
     | { action: "GET_DOM_STRUCTURE" }
+    | { action: "GET_PAYPAL_INVOICE" }
+
+export type PayPalInvoiceResponse = {
+    invoiceId: string | null
+    url: string
+}
 
 export type DOMResonse = {
     dom: string
@@ -42,7 +48,9 @@ export type ComparisonRow = {
 
 export type Supplier = {
     name: string
-    iban: string
+    iban?: string
+    email?: string
+    phone?: string
 }
 
 export type Invoice = {
@@ -51,6 +59,8 @@ export type Invoice = {
     amount: number
     currency: string
     dueDate: string
+    note?: string
+    status?: string
 }
 
 export type VerificationResult = {

@@ -1,4 +1,4 @@
-import type { UserSettings } from "../types.js"
+import type { UserSettings } from "../api/types.js"
 
 export const MIN_WIDTH = 280
 export const MAX_WIDTH = 560

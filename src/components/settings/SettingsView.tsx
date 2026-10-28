@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { Moon, Sun, type LucideIcon } from "lucide-react"
-import type { Theme, UserSettings } from "../../types.js"
+import type { Theme, UserSettings } from "../../api/types.js"
 
 type Props = {
     settings: UserSettings

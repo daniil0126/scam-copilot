@@ -1,4 +1,4 @@
-import type { RiskLevel } from "../../types.js"
+import type { RiskLevel } from "../../api/types.js"
 import { LEVEL_META } from "../../lib/risk.js"
 
 const R = 26

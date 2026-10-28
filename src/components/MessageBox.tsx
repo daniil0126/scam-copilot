@@ -1,5 +1,5 @@
 import React from "react";
-import { Message } from "../types.js";
+import { Message } from "../api/types.js";
 
 export default function MessageBox(message: Message) {
     const isUser = message.role === "user"

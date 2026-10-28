@@ -1,4 +1,4 @@
-import { DEMO_INVOICE, DEMO_LINE_ITEMS } from "../../data/mock.js"
+import { DEMO_INVOICE, DEMO_LINE_ITEMS } from "../../api/mock.js"
 import { formatMoney } from "../../lib/risk.js"
 
 // The mock page uses fixed colours on purpose: the sidebar theme must not restyle the "host page".

@@ -1,23 +1,28 @@
 import { useCallback, useState } from "react"
-import { HIGH_RISK_RESULT, LOW_RISK_RESULT } from "../../data/mock.js"
-import type { VerificationResult } from "../../types.js"
+import { ScanSearch } from "lucide-react"
+import { HIGH_RISK_RESULT } from "../../api/mock.js"
+import type { VerificationResult } from "../../api/types.js"
 import VerificationView from "./VerificationView.js"
 import LoadingView from "./LoadingView.js"
 import UploadCard from "./UploadCard.js"
+import PageCheckCard from "./PageCheckCard.js"
 import { validatePdf } from "../../lib/pdf.js"
 
-type DemoState = "high" | "low"
-
-const DEMO_RESULTS: Record<DemoState, VerificationResult> = { high: HIGH_RISK_RESULT, low: LOW_RISK_RESULT }
+type Shown = { result: VerificationResult; sample: boolean }
 
 export default function CheckTab() {
-    const [demo, setDemo] = useState<DemoState>("high")
     const [analysing, setAnalysing] = useState(false)
+    const [shown, setShown] = useState<Shown | null>(null)
 
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
 
-    const finish = useCallback(() => setAnalysing(false), [])
+    // PDF analysis is not connected yet: after the animation it shows sample data, clearly labelled.
+    const finishPdfDemo = useCallback(() => {
+        setAnalysing(false)
+        setShown({ result: HIGH_RISK_RESULT, sample: true })
+    }, [])
+    const cancelAnalysis = useCallback(() => setAnalysing(false), [])
 
     const selectFile = async (chosen: File) => {
         const problem = await validatePdf(chosen)
@@ -29,36 +34,32 @@ export default function CheckTab() {
         setFile(null)
         setError(null)
         setAnalysing(false)
+        setShown(s => (s?.sample ? null : s))
     }
 
     return (
         <div>
-            {/* Demo-only controls: not part of the production design. */}
-            <div role="group" aria-label="Demo state" className="flex items-center gap-1.5 border-b border-dashed border-[var(--border)] px-4 py-2 text-xs text-[var(--muted)]">
-                <span className="mr-auto font-semibold uppercase tracking-wide">Demo</span>
-                {(["high", "low"] as const).map(s => (
-                    <button
-                        key={s}
-                        aria-pressed={demo === s}
-                        onClick={() => { setDemo(s); setAnalysing(false) }}
-                        className={`rounded px-2 py-1 font-medium focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${demo === s ? "bg-[var(--primary-soft)] text-[var(--primary)]" : "hover:bg-[var(--primary-soft)]"}`}
-                    >
-                        {s === "high" ? "High risk" : "Low risk"}
-                    </button>
-                ))}
-                <button
-                    onClick={() => setAnalysing(true)}
-                    className="rounded px-2 py-1 font-medium hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-                >
-                    Run analysis
-                </button>
-            </div>
+            <PageCheckCard onResult={(result) => { setAnalysing(false); setShown({ result, sample: false }) }} />
 
-            <UploadCard file={file} error={error} onSelect={selectFile} onClear={clearFile} onAnalyse={() => setAnalysing(true)} />
+            <UploadCard file={file} error={error} onSelect={selectFile} onClear={clearFile} onAnalyse={() => { setShown(null); setAnalysing(true) }} />
 
-            {analysing
-                ? <LoadingView onDone={finish} onCancel={finish} />
-                : <VerificationView key={demo} result={DEMO_RESULTS[demo]} />}
+            {analysing ? (
+                <LoadingView onDone={finishPdfDemo} onCancel={cancelAnalysis} />
+            ) : shown ? (
+                <>
+                    {shown.sample && (
+                        <p role="note" className="mx-4 mt-4 rounded-lg bg-[var(--warning-soft)] px-3 py-2 text-xs font-medium text-[var(--warning)]">
+                            Sample data: PDF analysis is not connected yet.
+                        </p>
+                    )}
+                    <VerificationView key={shown.result.id} result={shown.result} />
+                </>
+            ) : (
+                <div className="flex flex-col items-center gap-2 p-10 text-center text-[var(--muted)]">
+                    <ScanSearch size={32} aria-hidden />
+                    <p className="text-sm">Open a PayPal invoice and press the button above to check it.</p>
+                </div>
+            )}
         </div>
     )
 }

@@ -10,7 +10,7 @@ import {
     type ICellRendererParams,
 } from "ag-grid-community"
 import { ArrowDownUp, Check, ChevronRight, Filter, Search } from "lucide-react"
-import type { HistoryEntry, RiskLevel, UserSettings } from "../../types.js"
+import type { HistoryEntry, RiskLevel, UserSettings } from "../../api/types.js"
 import { LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
 
 // Rejestracja lżejszego modułu AG Grid

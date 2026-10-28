@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import MessageBox from "./MessageBox.js"
-import type { Message } from "../types.js"
+import type { Message } from "../api/types.js"
 
 export default function MessageList({messages}: {messages: Message[]}){
     const listRef = useRef<HTMLDivElement>(null)

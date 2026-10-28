@@ -1,4 +1,4 @@
-import type { HistoryEntry, Invoice, VerificationResult } from "../types.js"
+import type { HistoryEntry, Invoice, VerificationResult } from "./types.js"
 
 export const DEMO_INVOICE: Invoice = {
     number: "#45872",

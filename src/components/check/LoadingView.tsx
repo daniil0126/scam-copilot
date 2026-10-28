@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Check, Loader2 } from "lucide-react"
-import { ANALYSIS_STAGES } from "../../data/mock.js"
+import { ANALYSIS_STAGES } from "../../api/mock.js"
 
 const STAGE_MS = 900
 

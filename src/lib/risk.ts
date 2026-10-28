@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, ShieldAlert, type LucideIcon } from "lucide-react"
-import type { FindingSeverity, RiskLevel } from "../types.js"
+import type { FindingSeverity, RiskLevel } from "../api/types.js"
 
 type LevelMeta = {
     label: string

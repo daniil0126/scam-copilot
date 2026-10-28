@@ -1,5 +1,5 @@
 import { AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react"
-import type { Finding, FindingSeverity } from "../../types.js"
+import type { Finding, FindingSeverity } from "../../api/types.js"
 import { SEVERITY_TEXT } from "../../lib/risk.js"
 
 const ICONS: Record<FindingSeverity, typeof AlertCircle> = {

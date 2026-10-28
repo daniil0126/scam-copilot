@@ -1,4 +1,4 @@
-import type { TabId } from "../../types.js"
+import type { TabId } from "../../api/types.js"
 
 export const TABS: { id: TabId, label: string }[] = [
     { id: "check", label: "Check" },
