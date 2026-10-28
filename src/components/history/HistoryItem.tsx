@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { AgGridReact } from "ag-grid-react"
 import {
-    AllCommunityModule,
+    ClientSideRowModelModule,
     ModuleRegistry,
     colorSchemeDark,
     colorSchemeLight,
@@ -13,7 +13,8 @@ import { ArrowDownUp, Check, ChevronRight, Filter, Search } from "lucide-react"
 import type { HistoryEntry, RiskLevel, UserSettings } from "../../types.js"
 import { LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
 
-ModuleRegistry.registerModules([AllCommunityModule])
+// Rejestracja lżejszego modułu AG Grid
+ModuleRegistry.registerModules([ClientSideRowModelModule])
 
 type SortMode = "date-desc" | "price-desc" | "price-asc"
 
@@ -43,31 +44,25 @@ const gridParams = {
 const lightTheme = themeQuartz.withPart(colorSchemeLight).withParams(gridParams)
 const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(gridParams)
 
-function formatCompactMoney(amount: number, currency: string) {
-    return new Intl.NumberFormat(undefined, {
-        style: "currency",
-        currency,
-        notation: "compact",
-        maximumFractionDigits: 1,
-    }).format(amount)
-}
-
+// Poprawione formatowanie kwoty w statystykach na styl angielski (np. $2.5k)
 function computeStats(data: HistoryEntry[]) {
     let highRiskCount = 0
     let flaggedSum = 0
-    let currency: string | undefined
 
     for (const entry of data) {
         if (entry.level !== "high") continue
         highRiskCount++
         flaggedSum += entry.invoice.amount
-        currency ??= entry.invoice.currency
     }
+
+    const formattedFlagged = flaggedSum >= 1000 
+        ? `$${(flaggedSum / 1000).toFixed(1)}k` 
+        : `$${flaggedSum.toFixed(2)}`
 
     return {
         totalChecked: data.length,
         highRiskCount,
-        flaggedAmount: formatCompactMoney(flaggedSum, currency ?? data[0]?.invoice.currency ?? "USD"),
+        flaggedAmount: formattedFlagged,
     }
 }
 
@@ -116,7 +111,8 @@ function AmountCell({ data }: ICellRendererParams<HistoryEntry>) {
 function ChevronCell() {
     return (
         <div className="flex items-center justify-center h-full pr-1">
-            <ChevronRight size={20} strokeWidth={2.5} className="shrink-0 text-[var(--muted)]" aria-hidden />
+            {/* Poprawiona, widoczna strzałka */}
+            <ChevronRight size={22} strokeWidth={2.5} className="w-5 h-5 shrink-0 text-[var(--muted)]" aria-hidden />
         </div>
     )
 }
@@ -182,7 +178,7 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
         setRiskFilters(prev => ({ ...prev, [level]: !prev[level] }))
 
     return (
-        <div className="flex flex-col gap-4 p-4 w-full">
+        <div className="flex flex-col gap-4 p-4 w-full box-border">
             <div className="grid grid-cols-3 gap-2 py-2 border-b border-[var(--border)] text-center">
                 <div>
                     <span className="block text-xs text-[var(--muted)]">Invoices checked</span>
@@ -290,6 +286,7 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                         headerHeight={0}
                         suppressHorizontalScroll
                         suppressCellFocus
+                        autoSizeStrategy={{ type: 'fitGridWidth' }}
                         onRowClicked={event => {
                             if (event.data) onOpen(event.data.id)
                         }}
