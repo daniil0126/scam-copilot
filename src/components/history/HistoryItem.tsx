@@ -1,18 +1,132 @@
-import { useState, useMemo, useRef, useEffect } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { AgGridReact } from "ag-grid-react"
-import { 
-    ColDef, 
-    ModuleRegistry, 
-    AllCommunityModule, 
-    ICellRendererParams, 
-    ValueGetterParams 
+import {
+    AllCommunityModule,
+    ModuleRegistry,
+    colorSchemeDark,
+    colorSchemeLight,
+    themeQuartz,
+    type ColDef,
+    type ICellRendererParams,
 } from "ag-grid-community"
-import { ChevronRight, Search, Filter, Check, ArrowDownUp } from "lucide-react"
+import { ArrowDownUp, Check, ChevronRight, Filter, Search } from "lucide-react"
 import type { HistoryEntry, RiskLevel, UserSettings } from "../../types.js"
 import { LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
 
-// Rejestracja modułów AG Grid Community
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([AllCommunityModule])
+
+type SortMode = "date-desc" | "price-desc" | "price-asc"
+
+const RISK_LEVELS: RiskLevel[] = ["high", "medium", "low"]
+
+const SORT_OPTIONS: { value: SortMode; label: string }[] = [
+    { value: "date-desc", label: "Date (newest)" },
+    { value: "price-desc", label: "Price: highest first" },
+    { value: "price-asc", label: "Price: lowest first" },
+]
+
+const COMPARATORS: Record<SortMode, (a: HistoryEntry, b: HistoryEntry) => number> = {
+    "date-desc": (a, b) => new Date(b.checkedAt).getTime() - new Date(a.checkedAt).getTime(),
+    "price-desc": (a, b) => b.invoice.amount - a.invoice.amount,
+    "price-asc": (a, b) => a.invoice.amount - b.invoice.amount,
+}
+
+const gridParams = {
+    backgroundColor: "transparent",
+    headerBackgroundColor: "transparent",
+    borderColor: "transparent",
+    wrapperBorder: false,
+    wrapperBorderRadius: 0,
+    rowBorder: { style: "solid", width: 1, color: "var(--border)" },
+} as const
+
+const lightTheme = themeQuartz.withPart(colorSchemeLight).withParams(gridParams)
+const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(gridParams)
+
+function formatCompactMoney(amount: number, currency: string) {
+    return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency,
+        notation: "compact",
+        maximumFractionDigits: 1,
+    }).format(amount)
+}
+
+function computeStats(data: HistoryEntry[]) {
+    let highRiskCount = 0
+    let flaggedSum = 0
+    let currency: string | undefined
+
+    for (const entry of data) {
+        if (entry.level !== "high") continue
+        highRiskCount++
+        flaggedSum += entry.invoice.amount
+        currency ??= entry.invoice.currency
+    }
+
+    return {
+        totalChecked: data.length,
+        highRiskCount,
+        flaggedAmount: formatCompactMoney(flaggedSum, currency ?? data[0]?.invoice.currency ?? "USD"),
+    }
+}
+
+function LevelCell({ data }: ICellRendererParams<HistoryEntry>) {
+    if (!data) return null
+    const meta = LEVEL_META[data.level]
+    const Icon = meta.icon
+    return (
+        <div className="flex items-center justify-center h-full">
+            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${meta.soft} ${meta.text}`}>
+                <Icon size={18} aria-hidden />
+            </span>
+        </div>
+    )
+}
+
+function SupplierCell({ data }: ICellRendererParams<HistoryEntry>) {
+    if (!data) return null
+    return (
+        <div className="flex flex-col justify-center h-full py-1 min-w-0 pr-2">
+            <span className="block truncate text-sm font-semibold text-[var(--text)]">
+                {data.invoice.supplier.name}
+            </span>
+            <span className="block truncate text-xs text-[var(--muted)]">
+                {formatDateTime(data.checkedAt)}
+            </span>
+        </div>
+    )
+}
+
+function AmountCell({ data }: ICellRendererParams<HistoryEntry>) {
+    if (!data) return null
+    const meta = LEVEL_META[data.level]
+    return (
+        <div className="flex flex-col justify-center items-end h-full py-1 text-right">
+            <span className="block whitespace-nowrap text-sm font-semibold text-[var(--text)]">
+                {formatMoney(data.invoice.amount, data.invoice.currency)}
+            </span>
+            <span className={`block whitespace-nowrap text-xs font-medium ${meta.text}`}>
+                {meta.label}
+            </span>
+        </div>
+    )
+}
+
+function ChevronCell() {
+    return (
+        <div className="flex items-center justify-center h-full pr-1">
+            <ChevronRight size={20} strokeWidth={2.5} className="shrink-0 text-[var(--muted)]" aria-hidden />
+        </div>
+    )
+}
+
+const columnDefs: ColDef<HistoryEntry>[] = [
+    { width: 60, minWidth: 60, maxWidth: 60, pinned: "left", cellRenderer: LevelCell },
+    { flex: 2, minWidth: 130, cellRenderer: SupplierCell },
+    { flex: 1.2, minWidth: 100, cellRenderer: AmountCell },
+    { width: 48, minWidth: 48, maxWidth: 48, pinned: "right", cellRenderer: ChevronCell },
+]
 
 interface HistoryItemProps {
     data: HistoryEntry[]
@@ -22,139 +136,53 @@ interface HistoryItemProps {
 
 export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps) {
     const [searchQuery, setSearchQuery] = useState("")
-    const [riskFilters, setRiskFilters] = useState({
+    const [riskFilters, setRiskFilters] = useState<Record<RiskLevel, boolean>>({
         high: true,
         medium: true,
         low: true,
     })
-    const [sortMode, setSortMode] = useState<"date-desc" | "price-desc" | "price-asc">("date-desc")
-    const [isFilterOpen, setIsFilterOpen] = useState(false)
-
-    const filterRef = useRef<HTMLDivElement>(null)
+    const [sortMode, setSortMode] = useState<SortMode>("date-desc")
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const menuRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-                setIsFilterOpen(false)
+        if (!isMenuOpen) return
+
+        function handleMouseDown(event: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false)
             }
         }
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [])
-
-    const stats = useMemo(() => {
-        const totalChecked = data.length
-        const highRiskCount = data.filter(item => item.level === 'high').length
-        const flaggedSum = data
-            .filter(item => item.level === 'high')
-            .reduce((sum, item) => sum + item.invoice.amount, 0)
-
-        const formattedFlagged = flaggedSum >= 1000 
-            ? `$${(flaggedSum / 1000).toFixed(1)}k` 
-            : formatMoney(flaggedSum, data[0]?.invoice.currency || 'USD')
-
-        return {
-            totalChecked,
-            highRiskCount,
-            flaggedAmount: formattedFlagged
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === "Escape") setIsMenuOpen(false)
         }
-    }, [data])
 
-    const processedData = useMemo(() => {
+        document.addEventListener("mousedown", handleMouseDown)
+        document.addEventListener("keydown", handleKeyDown)
+        return () => {
+            document.removeEventListener("mousedown", handleMouseDown)
+            document.removeEventListener("keydown", handleKeyDown)
+        }
+    }, [isMenuOpen])
+
+    const stats = useMemo(() => computeStats(data), [data])
+
+    const rows = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase()
         return data
-            .filter(item => {
-                const matchesSearch = item.invoice.supplier.name.toLowerCase().includes(searchQuery.toLowerCase())
-                if (!matchesSearch) return false
-
-                if (item.level === 'high' && !riskFilters.high) return false
-                if (item.level === 'medium' && !riskFilters.medium) return false
-                if (item.level === 'low' && !riskFilters.low) return false
-                return true
-            })
-            .sort((a, b) => {
-                if (sortMode === "price-desc") return b.invoice.amount - a.invoice.amount
-                if (sortMode === "price-asc") return a.invoice.amount - b.invoice.amount
-                return new Date(b.checkedAt).getTime() - new Date(a.checkedAt).getTime()
-            })
+            .filter(
+                entry =>
+                    riskFilters[entry.level] &&
+                    entry.invoice.supplier.name.toLowerCase().includes(query)
+            )
+            .sort(COMPARATORS[sortMode])
     }, [data, searchQuery, riskFilters, sortMode])
 
-    const columnDefs = useMemo<ColDef<HistoryEntry>[]>(() => [
-        {
-            field: "level",
-            headerName: "",
-            width: 64,
-            pinned: 'left',
-            cellRenderer: (params: ICellRendererParams<HistoryEntry, RiskLevel>) => {
-                const levelKey = params.value || 'low'
-                const meta = LEVEL_META[levelKey]
-                const Icon = meta.icon
-                return (
-                    <div className="flex items-center h-full px-2">
-                        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${meta.soft} ${meta.text}`}>
-                            <Icon size={18} aria-hidden />
-                        </span>
-                    </div>
-                )
-            }
-        },
-        {
-            headerName: "Description",
-            flex: 2,
-            minWidth: 180,
-            valueGetter: (params: ValueGetterParams<HistoryEntry>) => params.data?.invoice.supplier.name,
-            cellRenderer: (params: ICellRendererParams<HistoryEntry>) => {
-                const entry = params.data
-                if (!entry) return null
-                return (
-                    <div className="flex flex-col justify-center h-full py-1 min-w-0">
-                        <span className="block truncate text-sm font-semibold text-[var(--text)]">
-                            {entry.invoice.supplier.name}
-                        </span>
-                        <span className="block text-xs text-[var(--muted)]">
-                            {formatDateTime(entry.checkedAt)}
-                        </span>
-                    </div>
-                )
-            }
-        },
-        {
-            headerName: "Amount",
-            flex: 1.2,
-            minWidth: 120,
-            valueGetter: (params: ValueGetterParams<HistoryEntry>) => params.data?.invoice.amount,
-            cellRenderer: (params: ICellRendererParams<HistoryEntry>) => {
-                const entry = params.data
-                if (!entry) return null
-                const meta = LEVEL_META[entry.level]
-                return (
-                    <div className="flex flex-col justify-center items-end h-full py-1">
-                        <span className="block text-sm font-semibold text-[var(--text)]">
-                            {formatMoney(entry.invoice.amount, entry.invoice.currency)}
-                        </span>
-                        <span className={`block text-xs font-medium ${meta.text}`}>
-                            {meta.label}
-                        </span>
-                    </div>
-                )
-            }
-        },
-        {
-            headerName: "",
-            width: 48,
-            pinned: 'right',
-            cellRenderer: () => (
-                <div className="flex items-center justify-end h-full pr-2">
-                    <ChevronRight size={16} className="text-[var(--muted)]" aria-hidden />
-                </div>
-            )
-        }
-    ], [])
-
-    const gridThemeClass = settings.theme === 'dark' ? 'ag-theme-quartz-dark' : 'ag-theme-quartz';
+    const toggleLevel = (level: RiskLevel) =>
+        setRiskFilters(prev => ({ ...prev, [level]: !prev[level] }))
 
     return (
         <div className="flex flex-col gap-4 p-4 w-full">
-            {/* 1. Statystyki */}
             <div className="grid grid-cols-3 gap-2 py-2 border-b border-[var(--border)] text-center">
                 <div>
                     <span className="block text-xs text-[var(--muted)]">Invoices checked</span>
@@ -162,7 +190,7 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                 </div>
                 <div>
                     <span className="block text-xs text-[var(--muted)]">High risk</span>
-                    <span className="text-xl font-bold text-red-500">{stats.highRiskCount}</span>
+                    <span className={`text-xl font-bold ${LEVEL_META.high.text}`}>{stats.highRiskCount}</span>
                 </div>
                 <div>
                     <span className="block text-xs text-[var(--muted)]">Flagged amount</span>
@@ -170,87 +198,76 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                 </div>
             </div>
 
-            {/* 2. Nagłówek i wyszukiwanie + filtr */}
             <div className="flex flex-col gap-2">
                 <h3 className="text-sm font-semibold text-[var(--text)]">Invoice audit log</h3>
-                
-                <div className="flex items-center gap-2 relative">
-                    <div className="relative flex-1">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" aria-hidden />
+
+                <div className="flex items-center gap-2">
+                    <div className="relative flex-1 min-w-0">
+                        <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]"
+                            aria-hidden
+                        />
                         <input
-                            type="text"
+                            type="search"
+                            aria-label="Search supplier"
                             placeholder="Search supplier..."
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={e => setSearchQuery(e.target.value)}
                             className="w-full pl-9 pr-3 py-2 text-sm bg-[var(--card)] text-[var(--text)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors shadow-sm"
                         />
                     </div>
 
-                    <div className="relative" ref={filterRef}>
+                    <div className="relative shrink-0" ref={menuRef}>
                         <button
-                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                            onClick={() => setIsMenuOpen(open => !open)}
+                            aria-haspopup="true"
+                            aria-expanded={isMenuOpen}
                             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm hover:bg-[var(--primary-soft)] transition-colors"
                         >
-                            <Filter size={16} /> Filters
+                            <Filter size={16} aria-hidden /> Filters
                         </button>
 
-                        {isFilterOpen && (
+                        {isMenuOpen && (
                             <div className="absolute right-0 mt-2 w-56 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-xl p-3 z-30 flex flex-col gap-3">
                                 <div className="flex flex-col gap-1.5">
                                     <span className="text-xs font-semibold text-[var(--muted)] px-1">Risk level</span>
-                                    <label className="flex items-center gap-2 text-xs font-medium cursor-pointer px-1 py-1 hover:bg-[var(--primary-soft)] rounded">
-                                        <input
-                                            type="checkbox"
-                                            checked={riskFilters.high}
-                                            onChange={e => setRiskFilters({ ...riskFilters, high: e.target.checked })}
-                                            className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                                        />
-                                        <span className="text-red-500 font-semibold">High risk</span>
-                                    </label>
-                                    <label className="flex items-center gap-2 text-xs font-medium cursor-pointer px-1 py-1 hover:bg-[var(--primary-soft)] rounded">
-                                        <input
-                                            type="checkbox"
-                                            checked={riskFilters.medium}
-                                            onChange={e => setRiskFilters({ ...riskFilters, medium: e.target.checked })}
-                                            className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                                        />
-                                        <span className="text-amber-500 font-semibold">Medium risk</span>
-                                    </label>
-                                    <label className="flex items-center gap-2 text-xs font-medium cursor-pointer px-1 py-1 hover:bg-[var(--primary-soft)] rounded">
-                                        <input
-                                            type="checkbox"
-                                            checked={riskFilters.low}
-                                            onChange={e => setRiskFilters({ ...riskFilters, low: e.target.checked })}
-                                            className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                                        />
-                                        <span className="text-emerald-500 font-semibold">Low risk</span>
-                                    </label>
+                                    {RISK_LEVELS.map(level => (
+                                        <label
+                                            key={level}
+                                            className={`flex items-center gap-2 text-xs font-semibold cursor-pointer px-1 py-1 hover:bg-[var(--primary-soft)] rounded ${LEVEL_META[level].text}`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={riskFilters[level]}
+                                                onChange={() => toggleLevel(level)}
+                                                className="accent-current"
+                                            />
+                                            {LEVEL_META[level].label}
+                                        </label>
+                                    ))}
                                 </div>
 
                                 <hr className="border-[var(--border)]" />
 
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-xs font-semibold text-[var(--muted)] px-1 flex items-center gap-1">
-                                        <ArrowDownUp size={12} /> Sort by
+                                    <span className="flex items-center gap-1 text-xs font-semibold text-[var(--muted)] px-1">
+                                        <ArrowDownUp size={12} aria-hidden /> Sort by
                                     </span>
-                                    <button
-                                        onClick={() => setSortMode("date-desc")}
-                                        className={`flex items-center justify-between w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[var(--primary-soft)] ${sortMode === 'date-desc' ? 'font-bold text-[var(--primary)]' : 'text-[var(--text)]'}`}
-                                    >
-                                        Date (newest) {sortMode === 'date-desc' && <Check size={14} />}
-                                    </button>
-                                    <button
-                                        onClick={() => setSortMode("price-desc")}
-                                        className={`flex items-center justify-between w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[var(--primary-soft)] ${sortMode === 'price-desc' ? 'font-bold text-[var(--primary)]' : 'text-[var(--text)]'}`}
-                                    >
-                                        Price: highest first {sortMode === 'price-desc' && <Check size={14} />}
-                                    </button>
-                                    <button
-                                        onClick={() => setSortMode("price-asc")}
-                                        className={`flex items-center justify-between w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[var(--primary-soft)] ${sortMode === 'price-asc' ? 'font-bold text-[var(--primary)]' : 'text-[var(--text)]'}`}
-                                    >
-                                        Price: lowest first {sortMode === 'price-asc' && <Check size={14} />}
-                                    </button>
+                                    {SORT_OPTIONS.map(option => (
+                                        <button
+                                            key={option.value}
+                                            onClick={() => setSortMode(option.value)}
+                                            className={`flex items-center justify-between w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[var(--primary-soft)] ${
+                                                sortMode === option.value
+                                                    ? "font-bold text-[var(--primary)]"
+                                                    : "text-[var(--text)]"
+                                            }`}
+                                        >
+                                            {option.label}
+                                            {sortMode === option.value && <Check size={14} aria-hidden />}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -258,23 +275,27 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                 </div>
             </div>
 
-            {/* 3. Tabela AG Grid */}
-            <div className={`${gridThemeClass} w-full h-[380px] rounded-xl overflow-hidden border border-[var(--border)] shadow-sm`}>
-                <AgGridReact<HistoryEntry>
-                    rowData={processedData}
-                    columnDefs={columnDefs}
-                    rowHeight={64}
-                    headerHeight={0}
-                    autoSizeStrategy={{ type: 'fitGridWidth' }}
-                    onRowClicked={event => {
-                        if (event.data) {
-                            onOpen(event.data.id)
-                        }
-                    }}
-                    rowStyle={{ cursor: 'pointer' }}
-                    suppressCellFocus={true}
-                />
-            </div>
+            {rows.length === 0 ? (
+                <div className="flex h-[365px] w-full items-center justify-center text-sm text-[var(--muted)]">
+                    No invoices match your search or filters.
+                </div>
+            ) : (
+                <div className="w-full h-[365px] overflow-hidden [&_.ag-row]:cursor-pointer">
+                    <AgGridReact<HistoryEntry>
+                        theme={settings.theme === "dark" ? darkTheme : lightTheme}
+                        rowData={rows}
+                        columnDefs={columnDefs}
+                        getRowId={params => params.data.id}
+                        rowHeight={64}
+                        headerHeight={0}
+                        suppressHorizontalScroll
+                        suppressCellFocus
+                        onRowClicked={event => {
+                            if (event.data) onOpen(event.data.id)
+                        }}
+                    />
+                </div>
+            )}
         </div>
     )
 }

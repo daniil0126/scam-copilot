@@ -48,22 +48,3 @@ body,
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
 }
-
-/* history theme */
-.ag-theme-quartz,
-.ag-theme-quartz-dark {
-  --ag-background-color: var(--card);
-  --ag-data-background-color: var(--card);
-  --ag-header-background-color: var(--card);
-  --ag-row-hover-color: var(--primary-soft);
-  --ag-border-color: var(--border);
-  --ag-foreground-color: var(--text);
-  --ag-secondary-foreground-color: var(--muted);
-  font-family: inherit;
-}
-
-.ag-theme-quartz-dark .ag-root-wrapper,
-.ag-theme-quartz-dark .ag-body-viewport,
-.ag-theme-quartz-dark .ag-center-cols-container {
-  background-color: var(--card) !important;
-}
