@@ -1,3 +1,4 @@
+import asyncio
 import os
 import time
 from datetime import date, timedelta
@@ -37,12 +38,15 @@ async def get_access_token(client: httpx.AsyncClient) -> str:
     return _token["value"]
 
 
-async def paypal_request(method: str, path: str, json: dict | None = None) -> dict:
-    async with httpx.AsyncClient(timeout=15) as client:
-        token = await get_access_token(client)
-        res = await client.request(
-            method, f"{BASE_URL}{path}", json=json, headers={"Authorization": f"Bearer {token}"}
-        )
+async def paypal_request(
+    method: str, path: str, json: dict | None = None, client: httpx.AsyncClient | None = None
+) -> dict:
+    """Pass `client` to reuse one connection for many calls; otherwise a short-lived client is used."""
+    if client is None:
+        async with httpx.AsyncClient(timeout=15) as own:
+            return await paypal_request(method, path, json, own)
+    token = await get_access_token(client)
+    res = await client.request(method, f"{BASE_URL}{path}", json=json, headers={"Authorization": f"Bearer {token}"})
     if res.status_code == 404:
         raise HTTPException(404, "Invoice not found in PayPal")
     if res.status_code >= 400:
@@ -73,6 +77,61 @@ def to_invoice(data: dict) -> dict:
         "dueDate": detail.get("payment_term", {}).get("due_date", ""),
         "status": data.get("status", ""),
     }
+
+
+PAGE_SIZE = 100
+MAX_INVOICES = 500  # upper bound so a huge account cannot hang a request
+
+
+async def fetch_invoices(limit: int = MAX_INVOICES) -> dict:
+    """Lists invoices (all pages, up to `limit`) already mapped with `to_invoice`.
+
+    List items carry the same fields as a single invoice, so no extra request per invoice is needed.
+    """
+    items: list[dict] = []
+    total = 0
+    async with httpx.AsyncClient(timeout=15) as client:
+        page = 1
+        while True:
+            data = await paypal_request(
+                "GET", f"/v2/invoicing/invoices?page={page}&page_size={PAGE_SIZE}&total_required=true", client=client
+            )
+            batch = data.get("items", [])
+            items += batch
+            total = data.get("total_items", len(items))
+            if not batch or page >= data.get("total_pages", 1) or len(items) >= limit:
+                break
+            page += 1
+    items = [item for item in items[:limit] if item.get("id")]
+    # Live check: list items omit the invoicer's name, so such invoices are loaded one by one (a few at a time).
+    gate = asyncio.Semaphore(8)
+
+    async def full(item: dict) -> dict:
+        if to_invoice(item)["supplier"]["name"]:
+            return item
+        async with gate:
+            try:
+                return await paypal_request("GET", f"/v2/invoicing/invoices/{item['id']}", client=client)
+            except HTTPException:
+                return item  # keep the partial list data rather than fail the whole listing
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        items = await asyncio.gather(*(full(item) for item in items))
+    invoices = [
+        {
+            "id": item["id"],
+            "createdAt": item.get("detail", {}).get("metadata", {}).get("create_time", ""),
+            "invoice": to_invoice(item),
+        }
+        for item in items
+    ]
+    return {"invoices": invoices, "total": total, "truncated": total > len(invoices)}
+
+
+@router.get("/invoices")
+async def list_invoices():
+    """Lists the account's invoices from PayPal Invoicing API v2."""
+    return await fetch_invoices()
 
 
 @router.get("/invoices/{invoice_id}")

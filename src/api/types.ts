@@ -73,6 +73,17 @@ export type VerificationResult = {
     comparison: ComparisonRow[]
     recommendation: string
     evidence: string[]
+    // Present only when the server has an LLM configured and it answered.
+    ai?: { summary: string; provider: string }
 }
 
 export type HistoryEntry = VerificationResult
+
+export type BulkCheckResponse = {
+    results: VerificationResult[]
+    errors: { invoiceId: string; error: string }[]
+    summary: Record<RiskLevel, number> & { total: number; failed: number }
+    truncated: boolean
+}
+
+export type ChatTurn = { role: "user" | "assistant"; content: string }

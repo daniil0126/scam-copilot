@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Sparkles } from "lucide-react"
 import type { VerificationResult } from "../../api/types.js"
 import { LEVEL_META, alertTitle } from "../../lib/risk.js"
 import RiskSummary from "./RiskSummary.js"
@@ -48,6 +48,15 @@ export default function VerificationView({ result }: { result: VerificationResul
                         <ChevronDown size={16} className={`text-[var(--muted)] transition-transform ${diffOpen ? "rotate-180" : ""}`} aria-hidden />
                     </button>
                     {diffOpen && <ComparisonTable rows={result.comparison} />}
+                </section>
+            )}
+
+            {result.ai && (
+                <section aria-label="AI review" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3">
+                    <h3 className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                        <Sparkles size={14} aria-hidden /> AI review
+                    </h3>
+                    <p className="text-sm">{result.ai.summary}</p>
                 </section>
             )}
 

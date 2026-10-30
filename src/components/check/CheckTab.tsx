@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { ScanSearch } from "lucide-react"
 import { HIGH_RISK_RESULT } from "../../api/mock.js"
 import type { VerificationResult } from "../../api/types.js"
@@ -10,9 +10,19 @@ import { validatePdf } from "../../lib/pdf.js"
 
 type Shown = { result: VerificationResult; sample: boolean }
 
-export default function CheckTab() {
+type Props = {
+    onOpenHistory: () => void
+    // Id of the stored check on screen (null for none or for sample data), used as chat context.
+    onShownChange: (id: string | null) => void
+}
+
+export default function CheckTab({ onOpenHistory, onShownChange }: Props) {
     const [analysing, setAnalysing] = useState(false)
     const [shown, setShown] = useState<Shown | null>(null)
+
+    useEffect(() => {
+        onShownChange(shown && !shown.sample ? shown.result.id : null)
+    }, [shown, onShownChange])
 
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -39,7 +49,7 @@ export default function CheckTab() {
 
     return (
         <div>
-            <PageCheckCard onResult={(result) => { setAnalysing(false); setShown({ result, sample: false }) }} />
+            <PageCheckCard onOpenHistory={onOpenHistory} onResult={(result) => { setAnalysing(false); setShown({ result, sample: false }) }} />
 
             <UploadCard file={file} error={error} onSelect={selectFile} onClear={clearFile} onAnalyse={() => { setShown(null); setAnalysing(true) }} />
 

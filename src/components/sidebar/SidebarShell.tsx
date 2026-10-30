@@ -25,6 +25,7 @@ export default function SidebarShell({ store, fill = false }: Props) {
     const open = useSyncExternalStore(store.subscribe, store.get)
     const { settings, update } = useSettings()
     const [tab, setTab] = useState<TabId>("check")
+    const [shownCheckId, setShownCheckId] = useState<string | null>(null)
 
     const panelRef = useRef<HTMLElement>(null)
     const restoreFocusTo = useRef<Element | null>(null)
@@ -74,9 +75,9 @@ export default function SidebarShell({ store, fill = false }: Props) {
                 <SidebarTabs tab={tab} onChange={setTab} />
                 <main role="tabpanel" className="min-h-0 flex-1 overflow-y-auto">
                     {/* Kept mounted so the analysis result survives tab switches. */}
-                    <div hidden={tab !== "check"}><CheckTab /></div>
+                    <div hidden={tab !== "check"}><CheckTab onOpenHistory={() => setTab("history")} onShownChange={setShownCheckId} /></div>
                     {/* Kept mounted so the conversation survives tab switches. */}
-                    <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab /></div>
+                    <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab checkId={shownCheckId} /></div>
                     {tab === "history" && <HistoryView settings={settings} />}
                     {tab === "settings" && <SettingsView settings={settings} onChange={update} />}
                 </main>
