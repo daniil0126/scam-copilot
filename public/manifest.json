@@ -1,9 +1,9 @@
 {
     "manifest_version": 3,
-    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3BtWlRh2ladIFHtybFwLqxjKBJ/t7nEELoYD02msPRnFLLZey2srXeHhLoiL37/v7kCk50LpoYYHyVbyWSKOs8GRyDKymPRTj8wKd78FfWWSg1t/gAR7LeyFLmNl/I89xs3Yn81IriLl92LcCjXmC4JxMEJejPavbuy177ggWQAvBZSUQuWigN7eN+Tvdar+1mtEz5oLKdRVIsEtu3JkQ7QtWkV41fttfPjxKID10roKb2EO88vMdQMGWSDU7v+3I42qbXYO49ABrdzm4upomWgbbJzamylLAHNOl2wEzDzTvO5FYZqI+enKbtc5htetUxC1oI9jcmVQ9ldjJSzrjwIDAQAB",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1daeAiSi0fFQ85MI4/rBm/YOjWegj32litTcTEn4XwJE2T860dt2w/Fk3hsX/16Rghdnk8vx3Z8IdzKr267A308cg9SDN2BfVjIYnsgZZknmYZytZDmVSEK64gRA7xDTNyiiBpOw/9fkKsX9E5mNmzwduxcXtzmFXftjKkhm2VYrbsoLenIOHWhGTWuP1T0sVMDGMQKo+3hILSnHDmKv2oVcIeIurEdxza0zQUfo7/Sk4uCLxMiX4q3cNL6acqeRZg6AUR4XHEw5/dR301aqPzXq8/MA0ji8zoWMY0WZG1H49KyqbyqRrtsO+KhzQxlYqL4D/p6VBBRXpgkAYSbDZwIDAQAB",
     "name": "Scam Copilot",
     "version": "1.0.0",
-    "description": "wille be filled later",
+    "description": "Checks PayPal invoices for signs of fraud before you pay.",
     "permissions": [
         "storage",
         "sidePanel"
