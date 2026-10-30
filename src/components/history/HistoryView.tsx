@@ -7,9 +7,11 @@ import type { HistoryEntry, UserSettings } from "../../api/types.js"
 
 type HistoryViewProps = {
     settings: UserSettings
+    // Changes when the background monitor stores something new, so the list reloads without a click.
+    reloadKey?: string
 }
 
-export default function HistoryView({ settings }: HistoryViewProps) {
+export default function HistoryView({ settings, reloadKey }: HistoryViewProps) {
     const [openId, setOpenId] = useState<string | null>(null)
     const [history, setHistory] = useState<HistoryEntry[] | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -21,7 +23,7 @@ export default function HistoryView({ settings }: HistoryViewProps) {
             .then(data => { if (!cancelled) setHistory(data) })
             .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : "Could not load the history.") })
         return () => { cancelled = true }
-    }, [])
+    }, [reloadKey])
 
     if (error) {
         return <p role="alert" className="p-6 text-center text-sm font-medium text-[var(--danger)]">{error}</p>

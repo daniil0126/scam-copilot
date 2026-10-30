@@ -20,7 +20,7 @@ export type Message = {
     message: string
 }
 
-export type TabId = "check" | "history" | "chat" | "settings"
+export type TabId = "check" | "monitor" | "history" | "chat" | "settings"
 
 export type Theme = "light" | "dark"
 
@@ -89,3 +89,31 @@ export type BulkCheckResponse = {
 }
 
 export type ChatTurn = { role: "user" | "assistant"; content: string }
+
+export type MonitoringState = "ACTIVE" | "PAUSED" | "ERROR"
+
+// One stored version of an invoice that the background monitor picked up (GET /monitoring, `recentEvents`).
+export type MonitoringEvent = {
+    invoiceId: string
+    eventType: "NEW_INVOICE" | "INVOICE_UPDATED"
+    detectedAt: string
+    invoiceNumber: string | null
+    senderName: string | null
+    amount: string | null
+    currency: string | null
+    status: string | null
+    riskLevel: RiskLevel | null
+    signals: string[]
+}
+
+export type MonitoringStatus = {
+    state: MonitoringState
+    lastSuccessfulSyncAt: string | null
+    totalInvoices: number
+    highRisk: number
+    criticalRisk: number
+    potentialDuplicates: number
+    vendorAnomalies: number
+    recentEvents: MonitoringEvent[]
+    errors: string[]
+}

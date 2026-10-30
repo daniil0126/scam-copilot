@@ -3,12 +3,16 @@ import type { TabId } from "../../api/types.js"
 import type { OpenStore } from "../../overlay/store.js"
 import { useSettings } from "../../overlay/useSettings.js"
 import SidebarHeader from "./SidebarHeader.js"
-import SidebarTabs from "./SidebarTabs.js"
+import SidebarTabs, { type TabBadge } from "./SidebarTabs.js"
 import ResizeHandle from "./ResizeHandle.js"
 import FloatingCollapsedTab from "./FloatingCollapsedTab.js"
 import CheckTab from "../check/CheckTab.js"
 import ChatTab from "../chat/ChatTab.js"
 import HistoryView from "../history/HistoryView.js"
+import MonitoringCard from "../monitoring/MonitoringCard.js"
+import { eventKey } from "../monitoring/monitoringMeta.js"
+import MonitorStatusChip from "../monitoring/MonitorStatusChip.js"
+import { useMonitoring } from "../monitoring/useMonitoring.js"
 import SettingsView from "../settings/SettingsView.js"
 
 // Full class names only: Tailwind cannot detect names built from fragments.
@@ -26,6 +30,17 @@ export default function SidebarShell({ store, fill = false }: Props) {
     const { settings, update } = useSettings()
     const [tab, setTab] = useState<TabId>("check")
     const [shownCheckId, setShownCheckId] = useState<string | null>(null)
+    const monitoring = useMonitoring()
+    // The badge counts what the monitor found after the panel opened or after the Monitor tab was last in view.
+    const [seenAt, setSeenAt] = useState(() => new Date().toISOString())
+    const changeTab = (next: TabId) => {
+        if (tab === "monitor" || next === "monitor") setSeenAt(new Date().toISOString())
+        setTab(next)
+    }
+    const unseen = tab === "monitor" ? [] : (monitoring.status?.recentEvents ?? []).filter(e => e.detectedAt > seenAt)
+    const badges: Partial<Record<TabId, TabBadge>> = {
+        monitor: { count: unseen.length, urgent: unseen.some(e => e.riskLevel === "high") },
+    }
 
     const panelRef = useRef<HTMLElement>(null)
     const restoreFocusTo = useRef<Element | null>(null)
@@ -71,14 +86,18 @@ export default function SidebarShell({ store, fill = false }: Props) {
                 className={`fixed top-0 right-0 bottom-0 z-[1] flex flex-col bg-[var(--bg)] text-[var(--text)] outline-none ${fill ? "" : "border-l border-[var(--border)] shadow-2xl"} transition-[transform,visibility] duration-200 ease-out motion-reduce:transition-none ${classes}`}
             >
                 {!fill && <ResizeHandle width={settings.width} onResize={(width) => update({ width })} />}
-                <SidebarHeader onOpenSettings={() => setTab("settings")} onClose={fill ? undefined : () => store.set(false)} />
-                <SidebarTabs tab={tab} onChange={setTab} />
+                <SidebarHeader
+                    status={<MonitorStatusChip status={monitoring.status} onClick={() => changeTab("monitor")} />}
+                    onOpenSettings={() => changeTab("settings")}
+                    onClose={fill ? undefined : () => store.set(false)} />
+                <SidebarTabs tab={tab} onChange={changeTab} badges={badges} />
                 <main role="tabpanel" className="min-h-0 flex-1 overflow-y-auto">
                     {/* Kept mounted so the analysis result survives tab switches. */}
-                    <div hidden={tab !== "check"}><CheckTab onOpenHistory={() => setTab("history")} onShownChange={setShownCheckId} /></div>
+                    <div hidden={tab !== "check"}><CheckTab onOpenHistory={() => changeTab("history")} onShownChange={setShownCheckId} /></div>
                     {/* Kept mounted so the conversation survives tab switches. */}
                     <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab checkId={shownCheckId} /></div>
-                    {tab === "history" && <HistoryView settings={settings} />}
+                    {tab === "monitor" && <MonitoringCard {...monitoring} />}
+                    {tab === "history" && <HistoryView settings={settings} reloadKey={eventKey(monitoring.status?.recentEvents[0])} />}
                     {tab === "settings" && <SettingsView settings={settings} onChange={update} />}
                 </main>
             </aside>
