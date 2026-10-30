@@ -32,11 +32,6 @@ def get_invoice_card(invoice_id: str):
             "analysisStatus": "ANALYZED", "versions": [], "vendor": None}
 
 
-@router.get("/monitoring")
-def get_monitoring():
-    return fixture("monitoring.json")
-
-
 @router.get("/notifications")
 def get_notifications():
     return {"items": [fixture("notification.json")], "unread": 1}

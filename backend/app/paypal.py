@@ -122,15 +122,13 @@ def _rfc3339(moment: datetime) -> str:
     return moment.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-async def fetch_invoices(
+async def list_invoice_items(
     limit: int = MAX_INVOICES, created_from: datetime | None = None, created_to: datetime | None = None
-) -> dict:
-    """Lists invoices (all pages, up to `limit`) already mapped with `to_invoice`.
+) -> tuple[list[dict], int]:
+    """Raw list items (all pages, up to `limit`) and the total PayPal reports.
 
     With `created_from` / `created_to` (timezone-aware) only invoices created in that range are listed,
     through `POST /v2/invoicing/search-invoices` (`creation_date_range`). Without them the plain list is used.
-
-    List items carry the same fields as a single invoice, so no extra request per invoice is needed.
     """
     items: list[dict] = []
     total = 0
@@ -151,7 +149,17 @@ async def fetch_invoices(
             if not batch or page >= data.get("total_pages", 1) or len(items) >= limit:
                 break
             page += 1
-    items = [item for item in items[:limit] if item.get("id")]
+    return [item for item in items[:limit] if item.get("id")], total
+
+
+async def fetch_invoices(
+    limit: int = MAX_INVOICES, created_from: datetime | None = None, created_to: datetime | None = None
+) -> dict:
+    """Lists invoices (see `list_invoice_items`) already mapped with `to_invoice`.
+
+    List items carry the same fields as a single invoice, so no extra request per invoice is needed.
+    """
+    items, total = await list_invoice_items(limit, created_from, created_to)
     # Live check: list items omit the invoicer's name, so such invoices are loaded one by one (a few at a time).
     gate = asyncio.Semaphore(8)
 
