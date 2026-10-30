@@ -17,6 +17,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionMessage, _sender, sendRe
         const response: PayPalInvoiceResponse = {
             invoiceId: extractPayPalInvoiceId(window.location.href, document.body?.innerText ?? ""),
             url: window.location.href,
+            text: (document.body?.innerText ?? "").slice(0, 20_000),
         }
         sendResponse(response)
     }

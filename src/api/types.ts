@@ -5,6 +5,8 @@ export type ExtensionMessage =
 export type PayPalInvoiceResponse = {
     invoiceId: string | null
     url: string
+    // Visible text of the page, sent only because the user pressed the button. The backend caps it at 20 000 characters.
+    text: string
 }
 
 export type DOMResonse = {

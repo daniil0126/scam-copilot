@@ -111,3 +111,19 @@ def test_bulk_one_broken_invoice_does_not_stop_the_rest():
     assert body["summary"]["total"] == 2 and body["summary"]["failed"] == 1
     assert body["errors"][0]["invoiceId"] == "INV2-BAD"
     assert len(client.get("/checks").json()) == 2
+
+
+def test_page_check_scores_a_payer_page_and_rejects_other_text():
+    import json
+    from pathlib import Path
+    f = json.loads((Path(__file__).parent / "fixtures/payer_pages/0006_dba.json").read_text())
+    res = client.post("/checks/page", json=f)
+    assert res.status_code == 200
+    body = res.json()
+    assert body["invoice"]["supplier"]["name"] == "Acme Supplies Ltd." and body["invoice"]["amount"] == 110.0
+    assert body["level"] in ("low", "medium", "high")
+    again = client.post("/checks/page", json=f).json()
+    assert again["id"] == body["id"] and len(client.get("/checks").json()) == 1  # same invoice: one entry
+
+    assert client.post("/checks/page", json={"url": f["url"], "text": "hello"}).status_code == 422
+    assert client.post("/checks/page", json={"url": f["url"], "text": "x" * 20_001}).status_code == 422

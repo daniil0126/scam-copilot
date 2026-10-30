@@ -4,6 +4,10 @@ import type { BulkCheckResponse, ChatTurn, HistoryEntry, VerificationResult } fr
 export const checkPayPalInvoice = (invoiceId: string) =>
     request<VerificationResult>("/checks", { method: "POST", body: JSON.stringify({ invoice_id: invoiceId }) })
 
+// For invoices PayPal's API will not return (not ours): the backend reads the text of the payer page.
+export const checkPayerPage = (url: string, text: string) =>
+    request<VerificationResult>("/checks/page", { method: "POST", body: JSON.stringify({ url, text }) })
+
 export const fetchHistory = () => request<HistoryEntry[]>("/checks")
 
 export const checkAllPayPalInvoices = () => request<BulkCheckResponse>("/checks/bulk", { method: "POST" })

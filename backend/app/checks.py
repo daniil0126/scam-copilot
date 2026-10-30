@@ -1,14 +1,16 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from app import llm
 from app.db import get_db
 from app.models import Check
+from app.normalize import normalize_payer_page
+from app.payer_page import MAX_TEXT, is_payer_page
 from app.paypal import fetch_invoices, get_invoice
 from app.scoring import score_invoice
 
@@ -67,6 +69,32 @@ async def run_check(
 @router.post("")
 async def create_check(body: CheckRequest, db: Session = Depends(get_db)):
     return await run_check(db, body.invoice_id, await get_invoice(body.invoice_id), use_ai=True)
+
+
+class PageCheckRequest(BaseModel):
+    url: str = Field(max_length=2048)
+    text: str = Field(max_length=MAX_TEXT)
+
+
+@router.post("/page")
+async def create_page_check(body: PageCheckRequest, db: Session = Depends(get_db)):
+    """Checks an invoice from the text of a PayPal payer page, for invoices PayPal's API will not give us (not ours).
+
+    The same invoice checked through the API and through its page updates one entry: the id is the same.
+    """
+    if not is_payer_page(body.url, body.text):
+        raise HTTPException(422, "This is not a PayPal invoice page for the payer.")
+    inv = normalize_payer_page(body.url, body.text)
+    legacy = {
+        "number": inv.invoiceNumber or "",
+        "supplier": {"name": inv.senderName or "", "email": inv.senderEmail or "", "phone": inv.senderPhone or ""},
+        "note": inv.note or "",
+        "amount": float(inv.amount) if inv.amount is not None else 0.0,
+        "currency": inv.currency or "",
+        "dueDate": inv.dueDate.isoformat() if inv.dueDate else "",
+        "status": "",
+    }
+    return await run_check(db, inv.id, legacy, use_ai=True)
 
 
 @router.post("/bulk")
