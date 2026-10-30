@@ -5,6 +5,9 @@
 ## Цель
 Раздел Batch Audit на AG Grid и подробная карточка инвойса, объясняющая «почему».
 
+## Связь с существующим
+`HistoryItem.tsx` уже на AG Grid Community: общий рендерер уровня риска (цвет и текст) и фильтры выносим в общий компонент для History и Batch Audit. Кнопка «Check all invoices» (ROADMAP 1.6 предлагал убрать) превращается во вход во вкладку Batch Audit. Сравнение с поставщиком в AG Grid (ROADMAP 4.2) переиспользуется в карточке инвойса. Задачи ROADMAP 4.x ведутся здесь.
+
 ## Задачи
 - [ ] Новая вкладка в сайдпанели, использовать существующую архитектуру и AG Grid Community (как в `HistoryItem.tsx`); выбор периода запускает план 08.
 - [ ] Колонки: Invoice ID, Number, Sender, Amount, Currency, Invoice Date, Risk Score, Risk Level, Signals, Analysis Status.
