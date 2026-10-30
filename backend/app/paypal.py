@@ -1,7 +1,8 @@
 import asyncio
 import os
+import random
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
 from dotenv import load_dotenv
@@ -38,6 +39,28 @@ async def get_access_token(client: httpx.AsyncClient) -> str:
     return _token["value"]
 
 
+MAX_ATTEMPTS = 3
+MAX_WAIT = 10.0  # seconds; a longer Retry-After is not waited out inside a request
+
+
+def _retryable(method: str, path: str, status: int) -> bool:
+    """429 is safe to repeat for any call (PayPal did not process it). 5xx only for reads, so a retry cannot
+    create a second invoice: GET, and the POST that only searches."""
+    if status == 429:
+        return True
+    reads = method == "GET" or path.startswith("/v2/invoicing/search-invoices")
+    return status >= 500 and reads
+
+
+def _delay(res: httpx.Response, attempt: int) -> float:
+    """Honours Retry-After (seconds) when given, otherwise exponential backoff with jitter."""
+    try:
+        wait = float(res.headers["Retry-After"])
+    except (KeyError, ValueError):
+        wait = 0.5 * 2**attempt * (1 + random.random() / 2)
+    return min(wait, MAX_WAIT)
+
+
 async def paypal_request(
     method: str, path: str, json: dict | None = None, client: httpx.AsyncClient | None = None
 ) -> dict:
@@ -45,10 +68,22 @@ async def paypal_request(
     if client is None:
         async with httpx.AsyncClient(timeout=15) as own:
             return await paypal_request(method, path, json, own)
-    token = await get_access_token(client)
-    res = await client.request(method, f"{BASE_URL}{path}", json=json, headers={"Authorization": f"Bearer {token}"})
+    for attempt in range(MAX_ATTEMPTS):
+        token = await get_access_token(client)
+        res = await client.request(method, f"{BASE_URL}{path}", json=json, headers={"Authorization": f"Bearer {token}"})
+        if attempt + 1 < MAX_ATTEMPTS and _retryable(method, path, res.status_code):
+            await asyncio.sleep(_delay(res, attempt))
+            continue
+        break
     if res.status_code == 404:
         raise HTTPException(404, "Invoice not found in PayPal")
+    if res.status_code == 401:
+        _token["value"] = None  # the cached token was rejected; the next call asks for a new one
+        raise HTTPException(401, "PayPal rejected the access token")
+    if res.status_code == 403:
+        raise HTTPException(403, f"PayPal denied access: {res.text}")
+    if res.status_code == 429:
+        raise HTTPException(429, "PayPal rate limit reached, try again later")
     if res.status_code >= 400:
         raise HTTPException(502, f"PayPal error {res.status_code}: {res.text}")
     return res.json() if res.content else {}
@@ -83,8 +118,17 @@ PAGE_SIZE = 100
 MAX_INVOICES = 500  # upper bound so a huge account cannot hang a request
 
 
-async def fetch_invoices(limit: int = MAX_INVOICES) -> dict:
+def _rfc3339(moment: datetime) -> str:
+    return moment.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+async def fetch_invoices(
+    limit: int = MAX_INVOICES, created_from: datetime | None = None, created_to: datetime | None = None
+) -> dict:
     """Lists invoices (all pages, up to `limit`) already mapped with `to_invoice`.
+
+    With `created_from` / `created_to` (timezone-aware) only invoices created in that range are listed,
+    through `POST /v2/invoicing/search-invoices` (`creation_date_range`). Without them the plain list is used.
 
     List items carry the same fields as a single invoice, so no extra request per invoice is needed.
     """
@@ -93,9 +137,14 @@ async def fetch_invoices(limit: int = MAX_INVOICES) -> dict:
     async with httpx.AsyncClient(timeout=15) as client:
         page = 1
         while True:
-            data = await paypal_request(
-                "GET", f"/v2/invoicing/invoices?page={page}&page_size={PAGE_SIZE}&total_required=true", client=client
-            )
+            paging = f"page={page}&page_size={PAGE_SIZE}&total_required=true"
+            if created_from or created_to:
+                window = {k: _rfc3339(v) for k, v in (("start", created_from), ("end", created_to)) if v}
+                data = await paypal_request(
+                    "POST", f"/v2/invoicing/search-invoices?{paging}", json={"creation_date_range": window}, client=client
+                )
+            else:
+                data = await paypal_request("GET", f"/v2/invoicing/invoices?{paging}", client=client)
             batch = data.get("items", [])
             items += batch
             total = data.get("total_items", len(items))

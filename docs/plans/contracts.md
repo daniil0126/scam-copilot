@@ -1,6 +1,6 @@
 # Контракты данных и API
 
-**Версия:** 0.2 (Q1 и Q3 закрыты решением владельца продукта; остальное требует одобрения всех четверых). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
+**Версия:** 0.4 (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
 
 Основано на текущем коде: `backend/app/paypal.py` (`to_invoice`), `scoring.py` (`score_invoice`), `checks.py` (`run_check`), `models.py` (`Check`), `src/api/types.ts`.
 
@@ -33,6 +33,7 @@ class Invoice(BaseModel):
     invoiceDate: date | None
     dueDate: date | None
     senderName: str | None
+    senderLegalName: str | None   # только payer_page: бизнес за именем «doing business as» (добавлено в 0.4)
     senderEmail: str | None       # lower-case, trim
     senderPhone: str | None
     recipientName: str | None
@@ -52,10 +53,14 @@ class InvoiceItem(BaseModel):
     unitAmount: str | None
 ```
 
-**Откуда поля (проверить на реальном ответе Sandbox до реализации, Даниил, задача плана 01):**
+**Откуда поля.** Проверено 2026-10-30 на одном счёте Sandbox и по схеме Invoicing v2 (см. [adr/001](adr/001-paypal-oauth-and-invoicing-api.md)):
+- Есть в детальном ответе `GET /v2/invoicing/invoices/{id}`: `detail.invoice_date`, `detail.metadata.last_update_time`, `invoicer.business_name/name/email_address/phones`, `primary_recipients[].billing_info.email_address`, `items[].id/name/quantity/unit_amount/unit_of_measure`, `detail.metadata.recipient_view_url` и `invoicer_view_url`.
+- Не пришли на проверенном счёте (в схеме есть, поэтому остаются `null`, если пусто): `billing_info.name/business_name` (`recipientName`), `detail.note`, `items[].description`.
+- `paymentLinks`: берём `recipient_view_url` (страница плательщика PayPal). Отдельной ссылки «оплатить» в ответе не найдено; `links[]` это операции API, в `paymentLinks` не кладём.
+- В элементе **списка** нет имени выставителя, телефона, `items`, `last_update_time`; есть `invoice_date`, email получателя и выставителя.
 - Уже используются в коде: `detail.invoice_number`, `detail.currency_code`, `detail.payment_term.due_date`, `detail.metadata.create_time`, `detail.note/memo/terms_and_conditions`, `invoicer.business_name/name/email_address/phones`, `amount.value/currency_code`, `status`.
-- Присутствуют в запросе создания, но их наличие в ответе не проверено: `primary_recipients[].billing_info`, `items[]`, `detail.invoice_date`, `detail.metadata.last_update_time` (или аналог), ссылки на оплату (`links`). Если поля нет, значение `null`.
-- Список (`GET /v2/invoicing/invoices`) не отдаёт имя выставителя (см. комментарий в `fetch_invoices`), поэтому имя догружается отдельным запросом.
+- Если поля нет в ответе, значение `null`; ничего не достраиваем.
+- Список (`GET /v2/invoicing/invoices`) не отдаёт имя выставителя (подтверждено), поэтому полные данные догружаются отдельным запросом по каждому счёту.
 
 ### 1.1 Режимы работы (решение Q1)
 
@@ -201,14 +206,14 @@ class Notification(BaseModel):
 Даниил кладёт образцы JSON в `backend/tests/fixtures/contracts/` (в этом же PR, что и версия контракта 0.2):
 `invoice_minimal.json` (почти все поля `null`), `invoice_full.json`, `risk_result_low.json`, `risk_result_critical.json`, `audit_progress.json`, `invoice_rows_partial.json` (есть FAILED), `monitoring.json`, `notification.json`. Образцы синтетические; в UI-сборку не попадают.
 
-## 7. Открытые вопросы (закрыть до версии 0.2)
+## 7. Вопросы (все закрыты в 0.3)
 
-- ~~**Q1.**~~ **Закрыт.** Подключённый PayPal-аккаунт обязателен для всех функций с историей. Без него только standalone-анализ PDF/страницы без интеграции (раздел 1.1).
-- **Q2.** Показывать ли `INSUFFICIENT_DATA` как сигнал в списке или отдельным полем `dataGaps`? Предложение: сигнал со `status = INSUFFICIENT_DATA`, UI рисует нейтрально.
-- ~~**Q3.**~~ **Закрыт: PayPal OAuth подключаем** (раздел 9). Формат сессии и scope уточняются в ADR после проверки документации.
-- **Q4.** `PAYPAL_MODE=live` в коде против `production` в ТЗ. Предложение: оставить `live` как есть, в документации писать «live (Production)».
-- **Q5.** Миграция старых записей `checks` в `invoices/analyses`: переносим или оставляем как историю старого режима? Предложение: оставить, новые таблицы стартуют пустыми.
-- **Q6.** 3 уровня расширения против 4 уровней ТЗ: фронт Дениса переходит на `riskLevel` из 4 значений только в новых экранах; старый экран проверки остаётся на `low/medium/high` до отдельного решения.
+- ~~**Q1.**~~ Подключённый PayPal-аккаунт обязателен для всех функций с историей. Без него только standalone-анализ PDF/страницы (раздел 1.1).
+- ~~**Q2.**~~ **Закрыт:** `INSUFFICIENT_DATA` остаётся сигналом со `status = INSUFFICIENT_DATA`, в score не входит, UI рисует нейтрально. Отдельного `dataGaps` нет.
+- ~~**Q3.**~~ PayPal OAuth подключаем (раздел 9). Оговорка: пользовательский токен для Invoicing API не подтверждён (adr/001), поэтому действует откат на токен приложения до ручной проверки.
+- ~~**Q4.**~~ **Закрыт:** `PAYPAL_MODE=live` остаётся как есть, в документации писать «live (Production)».
+- ~~**Q5.**~~ **Закрыт:** старые записи `checks` не переносим, они остаются историей старого режима; новые таблицы стартуют пустыми.
+- ~~**Q6.**~~ **Закрыт:** новые экраны используют `riskLevel` из 4 значений, старый экран проверки остаётся на `low/medium/high` до отдельного решения.
 
 ## 8. Журнал изменений
 
@@ -216,6 +221,8 @@ class Notification(BaseModel):
 |---|---|---|---|
 | 0.1 | 2026-10-30 | Первый черновик на основе текущего кода | Даниил |
 | 0.2 | 2026-10-30 | Q1: режимы Connected/Standalone, `accountId` nullable, `source` += `pdf`. Q3: PayPal OAuth, раздел 9 | Даниил |
+| 0.4 | 2026-10-30 | `Invoice.senderLegalName` (payer_page: «Invoice issued by X (doing business as Y)»). Только добавление поля | Даниил (черновик: Claude) |
+| 0.3 | 2026-10-30 | Q2, Q4, Q5, Q6 закрыты по предложениям. Раздел 1: поля сверены с реальным ответом Sandbox и схемой Invoicing v2, `paymentLinks` = `recipient_view_url`. Раздел 9: оговорка по пользовательскому токену | Даниил (черновик: Claude) |
 
 ## 9. Аутентификация (решение Q3)
 
@@ -233,4 +240,4 @@ Backend -> расширению: сессионный токен backend (не �
 - Каждый запрос к `/accounts/*`, `/audits*`, `/invoices*`, `/vendors*`, `/monitoring*`, `/notifications*`, `/reports*` требует `Authorization: Bearer <session>`; `accountId` берётся из сессии. Чужой ресурс отдаёт `NOT_FOUND`, не `FORBIDDEN`, чтобы не раскрывать существование.
 - `/paypal/sandbox/*` остаются только при `PAYPAL_MODE=sandbox`.
 - CORS: сейчас разрешён один `chrome-extension://{PROJECT_ID}`, оставляем.
-- **Нужно проверить по документации PayPal (Даниил, план 01/02):** какие scope нужны для чтения инвойсов пользователя, поддерживает ли Log in with PayPal нужный scope в Sandbox, нужен ли отдельный app review для Production. Если пользовательский токен не даёт доступ к Invoicing API, откат на токен приложения с привязкой к одному аккаунту фиксируется отдельной ADR; контракт API при этом не меняется.
+- **Проверено ([adr/001](adr/001-paypal-oauth-and-invoicing-api.md)): пользовательский токен Log in with PayPal не даёт доступ к Invoicing API (scope отклонён, список счетов даёт 403). Действует откат ниже; `/accounts/connect` и `/accounts/callback` отложены.** Исходный текст: какие scope нужны для чтения инвойсов пользователя, поддерживает ли Log in with PayPal нужный scope в Sandbox, нужен ли отдельный app review для Production. Если пользовательский токен не даёт доступ к Invoicing API, откат на токен приложения с привязкой к одному аккаунту фиксируется отдельной ADR; контракт API при этом не меняется.
