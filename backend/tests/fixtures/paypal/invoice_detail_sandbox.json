@@ -1,0 +1,217 @@
+{
+  "id": "INV2-5BEX-VJZW-MSZM-JRVQ",
+  "status": "SENT",
+  "detail": {
+    "currency_code": "USD",
+    "category_code": "SHIPPABLE",
+    "invoice_number": "0055",
+    "invoice_date": "2026-10-30",
+    "payment_term": {
+      "term_type": "DUE_ON_RECEIPT",
+      "due_date": "2026-10-30"
+    },
+    "viewed_by_recipient": true,
+    "group_draft": false,
+    "metadata": {
+      "create_time": "2026-10-30T01:24:01Z",
+      "last_update_time": "2026-10-30T01:24:21Z",
+      "first_sent_time": "2026-10-30T01:24:23Z",
+      "last_sent_time": "2026-10-30T01:24:23Z",
+      "created_by_flow": "REGULAR_SINGLE",
+      "recipient_view_url": "https://www.sandbox.paypal.com/invoice/p/#5BEXVJZWMSZMJRVQ",
+      "invoicer_view_url": "https://www.sandbox.paypal.com/invoice/details/INV2-5BEX-VJZW-MSZM-JRVQ",
+      "caller_type": "DESKTOP_WEB_INVOICING",
+      "spam_info": {}
+    },
+    "archived": false
+  },
+  "invoicer": {
+    "business_name": "Test Store",
+    "name": {
+      "given_name": "John",
+      "surname": "Doe",
+      "full_name": "John Doe"
+    },
+    "address": {
+      "address_line_1": "Free Trade Zone",
+      "admin_area_2": "Astana",
+      "postal_code": "010000",
+      "country_code": "KZ"
+    },
+    "email_address": "sb-rgubl53282606@business.example.com",
+    "phones": [
+      {
+        "country_code": "7",
+        "national_number": "7985829311",
+        "phone_type": "MOBILE"
+      }
+    ],
+    "website": "https://www.example.com"
+  },
+  "primary_recipients": [
+    {
+      "billing_info": {
+        "email_address": "sb-kckt753313725@personal.example.com",
+        "language": "en-US"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-88J052937F5492340",
+      "name": "Chicken Nuggets",
+      "quantity": "1",
+      "unit_amount": {
+        "currency_code": "USD",
+        "value": "299.00"
+      },
+      "unit_of_measure": "AMOUNT"
+    }
+  ],
+  "configuration": {
+    "tax_calculated_after_discount": true,
+    "tax_inclusive": false,
+    "allow_tip": false,
+    "allow_only_pay_by_bank": false,
+    "allow_vba_payments": false,
+    "save_item_for_future": true,
+    "template_id": "TEMP-1RJ08093CF713830L"
+  },
+  "amount": {
+    "breakdown": {
+      "item_total": {
+        "currency_code": "USD",
+        "value": "299.00"
+      },
+      "discount": {
+        "invoice_discount": {
+          "amount": {
+            "currency_code": "USD",
+            "value": "0.00"
+          }
+        },
+        "item_discount": {
+          "currency_code": "USD",
+          "value": "0.00"
+        }
+      },
+      "tax_total": {
+        "currency_code": "USD",
+        "value": "0.00"
+      }
+    },
+    "currency_code": "USD",
+    "value": "299.00"
+  },
+  "due_amount": {
+    "currency_code": "USD",
+    "value": "299.00"
+  },
+  "links": [
+    {
+      "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-5BEX-VJZW-MSZM-JRVQ",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-5BEX-VJZW-MSZM-JRVQ",
+      "rel": "replace",
+      "method": "PUT"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-5BEX-VJZW-MSZM-JRVQ/cancel",
+      "rel": "cancel",
+      "method": "POST"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-5BEX-VJZW-MSZM-JRVQ/remind",
+      "rel": "remind",
+      "method": "POST"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-5BEX-VJZW-MSZM-JRVQ/payments",
+      "rel": "record-payment",
+      "method": "POST"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-5BEX-VJZW-MSZM-JRVQ/generate-qr-code",
+      "rel": "qr-code",
+      "method": "GET"
+    }
+  ],
+  "unilateral": false,
+  "settings": {
+    "invoice_details_settings": [
+      {
+        "field_name": "ORDER_DETAILS",
+        "display_preference": {
+          "hidden": true
+        }
+      },
+      {
+        "field_name": "PROJECT_DETAILS",
+        "display_preference": {
+          "hidden": true
+        }
+      },
+      {
+        "field_name": "SERVICE_DETAILS",
+        "display_preference": {
+          "hidden": true
+        }
+      }
+    ],
+    "invoice_policy_and_agreement_settings": [
+      {
+        "field_name": "CANCELLATION_POLICY",
+        "display_preference": {
+          "hidden": true
+        }
+      },
+      {
+        "field_name": "PAYMENT_TERMS",
+        "display_preference": {
+          "hidden": true
+        }
+      },
+      {
+        "field_name": "RETURN_POLICY",
+        "display_preference": {
+          "hidden": true
+        }
+      },
+      {
+        "field_name": "SERVICE_AGREEMENT",
+        "display_preference": {
+          "hidden": true
+        }
+      },
+      {
+        "field_name": "TERMS_AND_CONDITIONS",
+        "display_preference": {
+          "hidden": false
+        }
+      }
+    ],
+    "invoice_additional_settings": [
+      {
+        "field_name": "ATTACHMENT",
+        "display_preference": {
+          "hidden": false
+        }
+      },
+      {
+        "field_name": "MEMO",
+        "display_preference": {
+          "hidden": false
+        }
+      },
+      {
+        "field_name": "REFERENCE",
+        "display_preference": {
+          "hidden": false
+        }
+      }
+    ]
+  }
+}
