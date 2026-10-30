@@ -1,0 +1,20 @@
+{
+  "auditId": "aud_synthetic",
+  "status": "RUNNING",
+  "period": "30d",
+  "progress": {
+    "total": 40,
+    "done": 25,
+    "failed": 1,
+    "skipped": 6
+  },
+  "summary": {
+    "low": 18,
+    "medium": 5,
+    "high": 2,
+    "critical": 0,
+    "unanalyzed": 15
+  },
+  "startedAt": "2026-10-30T10:00:00Z",
+  "finishedAt": null
+}

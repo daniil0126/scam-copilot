@@ -30,3 +30,22 @@ tsconfig.tsbuildinfo
 __pycache__
 .env
 backend/scamcopilot.db
+
+# Extension signing key: never commit
+*.pem
+
+# Claude Code local settings and session data
+.claude/
+
+# Test, coverage and tool caches
+.pytest_cache
+.coverage
+htmlcov
+.ruff_cache
+.mypy_cache
+
+# Local databases and env variants (keep .env.example)
+*.db
+*.sqlite3
+.env.*
+!.env.example

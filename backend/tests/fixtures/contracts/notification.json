@@ -1,0 +1,13 @@
+{
+  "id": "ntf_synthetic",
+  "invoiceId": "INV2-SYNTH-0003",
+  "eventType": "CRITICAL_RISK",
+  "riskLevel": "CRITICAL",
+  "detectedAt": "2026-10-30T10:01:00Z",
+  "signals": [
+    "UNUSUAL_AMOUNT",
+    "SENDER_MISMATCH"
+  ],
+  "read": false,
+  "link": "/invoices/INV2-SYNTH-0003"
+}

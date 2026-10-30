@@ -1,0 +1,15 @@
+{
+  "invoiceId": "INV2-SYNTH-0002",
+  "invoiceVersionHash": "sha256:synthetic",
+  "riskScore": 8,
+  "riskLevel": "LOW",
+  "confidence": "HIGH",
+  "signals": [],
+  "recommendations": [
+    "No action needed; pay through usual channels"
+  ],
+  "comparison": [],
+  "engineVersion": "0.0.0-fixture",
+  "analyzedAt": "2026-10-30T10:00:00Z",
+  "ai": null
+}

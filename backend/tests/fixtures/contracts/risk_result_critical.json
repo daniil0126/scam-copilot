@@ -1,0 +1,44 @@
+{
+  "invoiceId": "INV2-SYNTH-0003",
+  "invoiceVersionHash": "sha256:synthetic",
+  "riskScore": 86,
+  "riskLevel": "CRITICAL",
+  "confidence": "MEDIUM",
+  "signals": [
+    {
+      "type": "UNUSUAL_AMOUNT",
+      "severity": "HIGH",
+      "status": "DETECTED",
+      "evidence": "Amount 9800.00 USD vs historical average 1200.00 USD (5 invoices)",
+      "evidenceData": {},
+      "source": "RULE_ENGINE",
+      "ruleVersion": "fixture"
+    },
+    {
+      "type": "SENDER_MISMATCH",
+      "severity": "HIGH",
+      "status": "DETECTED",
+      "evidence": "Sender email differs from historical records",
+      "evidenceData": {},
+      "source": "RULE_ENGINE",
+      "ruleVersion": "fixture"
+    },
+    {
+      "type": "DUPLICATE_POTENTIAL",
+      "severity": "MEDIUM",
+      "status": "INSUFFICIENT_DATA",
+      "evidence": "",
+      "evidenceData": {},
+      "source": "RULE_ENGINE",
+      "ruleVersion": "fixture"
+    }
+  ],
+  "recommendations": [
+    "Verify sender identity",
+    "Confirm payment details independently"
+  ],
+  "comparison": [],
+  "engineVersion": "0.0.0-fixture",
+  "analyzedAt": "2026-10-30T10:00:00Z",
+  "ai": null
+}

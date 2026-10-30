@@ -1,0 +1,11 @@
+{
+  "state": "ACTIVE",
+  "lastSuccessfulSyncAt": "2026-10-30T09:55:00Z",
+  "totalInvoices": 40,
+  "highRisk": 2,
+  "criticalRisk": 0,
+  "potentialDuplicates": 1,
+  "vendorAnomalies": 1,
+  "recentEvents": [],
+  "errors": []
+}

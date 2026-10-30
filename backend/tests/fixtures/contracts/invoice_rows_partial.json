@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "invoiceId": "INV2-SYNTH-0002",
+      "invoiceNumber": "0042",
+      "senderName": "Example Supplies Ltd.",
+      "amount": "1250.00",
+      "currency": "USD",
+      "invoiceDate": "2026-10-01",
+      "status": "SENT",
+      "riskScore": 8,
+      "riskLevel": "LOW",
+      "signalTypes": [],
+      "analysisStatus": "ANALYZED",
+      "error": null
+    },
+    {
+      "invoiceId": "INV2-SYNTH-0003",
+      "invoiceNumber": null,
+      "senderName": null,
+      "amount": null,
+      "currency": null,
+      "invoiceDate": null,
+      "status": null,
+      "riskScore": null,
+      "riskLevel": null,
+      "signalTypes": [],
+      "analysisStatus": "FAILED",
+      "error": "ANALYSIS_FAILED"
+    },
+    {
+      "invoiceId": "INV2-SYNTH-0004",
+      "invoiceNumber": null,
+      "senderName": null,
+      "amount": null,
+      "currency": null,
+      "invoiceDate": null,
+      "status": null,
+      "riskScore": null,
+      "riskLevel": null,
+      "signalTypes": [],
+      "analysisStatus": "PENDING",
+      "error": null
+    }
+  ],
+  "nextCursor": null
+}

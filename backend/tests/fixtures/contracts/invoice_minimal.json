@@ -1,0 +1,23 @@
+{
+  "id": "INV2-SYNTH-0001",
+  "accountId": "acc_synthetic",
+  "source": "paypal_api",
+  "invoiceNumber": null,
+  "status": null,
+  "amount": null,
+  "currency": null,
+  "invoiceDate": null,
+  "dueDate": null,
+  "senderName": null,
+  "senderEmail": null,
+  "senderPhone": null,
+  "recipientName": null,
+  "recipientEmail": null,
+  "paymentTerms": null,
+  "items": null,
+  "paymentLinks": null,
+  "note": null,
+  "createdAt": null,
+  "updatedAt": null,
+  "contentHash": "sha256:synthetic-min"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "INV2-SYNTH-0002",
+  "accountId": "acc_synthetic",
+  "source": "paypal_api",
+  "invoiceNumber": "0042",
+  "status": "SENT",
+  "amount": "1250.00",
+  "currency": "USD",
+  "invoiceDate": "2026-10-01",
+  "dueDate": "2026-10-15",
+  "senderName": "Example Supplies Ltd.",
+  "senderEmail": "billing@example.com",
+  "senderPhone": "001 5550100",
+  "recipientName": "Test Buyer",
+  "recipientEmail": "buyer@example.org",
+  "paymentTerms": "Net 14",
+  "items": [
+    {
+      "name": "Consulting",
+      "description": "October",
+      "quantity": "1",
+      "unitAmount": "1250.00"
+    }
+  ],
+  "paymentLinks": [
+    "https://www.paypal.com/invoice/p/#SYNTH"
+  ],
+  "note": "Thank you",
+  "createdAt": "2026-10-01T09:00:00Z",
+  "updatedAt": "2026-10-01T09:00:00Z",
+  "contentHash": "sha256:synthetic-full"
+}
