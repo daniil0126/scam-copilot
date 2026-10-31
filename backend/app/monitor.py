@@ -17,6 +17,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import paypal
@@ -88,9 +89,24 @@ async def _process(db: Session, account: str, item: dict, pending: frozenset[str
         return False
 
     detail = await paypal.paypal_request("GET", f"/v2/invoicing/invoices/{invoice_id}")
+    return await store_version(db, account, invoice_id, detail, list_hash, pending, now)
+
+
+async def store_version(
+    db: Session, account: str, invoice_id: str, detail: dict, list_hash: str | None, pending: frozenset[str], now: datetime,
+) -> bool:
+    """The part shared by polling and webhooks: a loaded invoice becomes a stored, checked version if it is new.
+
+    `list_hash` is the hash of the list item the polling pass saw; a webhook has none, and passes None to keep the
+    stored one (a changed invoice then costs the next pass one extra detail request, which finds the same version).
+    True when the version was not stored before.
+    """
     invoice = normalize_paypal(detail, account)
+    known = db.get(MonitoredInvoice, (account, invoice_id))
     if known and known.current_version_hash == invoice.contentHash:
-        known.list_hash, known.last_synced_at = list_hash, _naive(now)
+        if list_hash is not None:
+            known.list_hash = list_hash
+        known.last_synced_at = _naive(now)
         db.commit()
         return False
 
@@ -106,13 +122,19 @@ async def _process(db: Session, account: str, item: dict, pending: frozenset[str
             normalized=invoice.model_dump(mode="json"), raw=detail, seen_at=_naive(now),
         ))
     if known:
-        known.current_version_hash, known.list_hash, known.last_synced_at = invoice.contentHash, list_hash, _naive(now)
+        known.current_version_hash, known.last_synced_at = invoice.contentHash, _naive(now)
+        if list_hash is not None:
+            known.list_hash = list_hash
     else:
         db.add(MonitoredInvoice(
-            account_id=account, id=invoice_id, current_version_hash=invoice.contentHash, list_hash=list_hash,
+            account_id=account, id=invoice_id, current_version_hash=invoice.contentHash, list_hash=list_hash or "",
             first_seen_at=_naive(now), last_synced_at=_naive(now),
         ))
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:  # a webhook and a polling pass stored the same version at once: one of them won
+        db.rollback()
+        return False
     return stored is None
 
 

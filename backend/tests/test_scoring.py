@@ -92,3 +92,15 @@ def test_score_is_capped_at_100():
 
 def test_zero_previous_amount_does_not_crash():
     assert score_invoice(invoice(amount=50), past(amount=0), None)["level"] == "low"
+
+
+def test_a_field_the_source_does_not_show_is_not_a_difference():
+    # an invoice email has no seller PayPal email: empty against a known one must not read as "differs"
+    result = score_invoice(invoice(email=""), past(), None)
+    rows = {r["field"]: r for r in result["comparison"]}
+    assert rows["PayPal email"]["differs"] is False
+
+
+def test_findings_carry_their_explanation():
+    result = score_invoice(invoice(amount=140.0), past(), None)
+    assert all(f["detail"] for f in result["findings"])

@@ -11,13 +11,44 @@ BRANDS = ("norton", "mcafee", "geek squad", "geeksquad", "lifelock", "avast", "a
           "paypal", "best buy", "walmart", "netflix")
 
 
+RECOMMENDATIONS = {
+    "high": "This invoice differs from previous ones. Contact the supplier through an official channel before paying.",
+    "medium": "Some details look unusual. Verify them with the supplier before paying.",
+    "low": "No obvious issues were found. Pay only through your usual, trusted channels.",
+}
+
+
+def level_for(score: int, findings: list[dict]) -> str:
+    level = "high" if score >= 60 else "medium" if score >= 30 else "low"
+    if level == "low" and any(f["severity"] == "high" for f in findings):
+        level = "medium"  # one serious red flag is never "low risk"
+    return level
+
+
+def apply_extra(result: dict, extra: dict) -> None:
+    """Adds findings from another source (the email rules) to a scored result and recomputes score and level.
+
+    `extra` is {"findings": [{id, label, severity, pts, text}], "comparison": [rows]}.
+    """
+    for f in extra.get("findings", []):
+        result["findings"].append({
+            "id": f["id"], "label": f["label"], "severity": f["severity"], "detail": f["text"],
+            **({"skipped": True} if f.get("skipped") else {}),
+        })
+        result["evidence"].append(f["text"])
+        result["score"] = min(result["score"] + f["pts"], 100)
+    result["comparison"] = [*result["comparison"], *extra.get("comparison", [])]
+    result["level"] = level_for(result["score"], result["findings"])
+    result["recommendation"] = RECOMMENDATIONS[result["level"]]
+
+
 def score_invoice(invoice: dict, previous: Check | None, known_by_email: Check | None):
     supplier = invoice["supplier"]
     findings, evidence, comparison, points = [], [], [], 0
 
     def add(fid, label, severity, pts, text):
         nonlocal points
-        findings.append({"id": fid, "label": label, "severity": severity})
+        findings.append({"id": fid, "label": label, "severity": severity, "detail": text})
         evidence.append(text)
         points += pts
 
@@ -47,9 +78,9 @@ def score_invoice(invoice: dict, previous: Check | None, known_by_email: Check |
 
         comparison = [
             {"field": "Supplier", "current": supplier["name"], "previous": prev.supplier_name,
-             "differs": supplier["name"] != prev.supplier_name},
+             "differs": bool(supplier["name"] and prev.supplier_name) and supplier["name"] != prev.supplier_name},
             {"field": "PayPal email", "current": supplier["email"], "previous": prev.supplier_email,
-             "differs": supplier["email"] != prev.supplier_email},
+             "differs": bool(supplier["email"] and prev.supplier_email) and supplier["email"] != prev.supplier_email},
             {"field": "Amount", "current": f"{invoice['amount']:.2f} {invoice['currency']}",
              "previous": f"{prev.amount:.2f} {prev.currency}", "differs": invoice["amount"] != prev.amount},
         ]
@@ -83,13 +114,6 @@ def score_invoice(invoice: dict, previous: Check | None, known_by_email: Check |
         add("due", "Overdue invoice", "medium", 10, "The due date is already in the past; scammers often add urgency.")
 
     score = min(points, 100)
-    level = "high" if score >= 60 else "medium" if score >= 30 else "low"
-    if level == "low" and any(f["severity"] == "high" for f in findings):
-        level = "medium"  # one serious red flag is never "low risk"
-    recommendation = {
-        "high": "This invoice differs from previous ones. Contact the supplier through an official channel before paying.",
-        "medium": "Some details look unusual. Verify them with the supplier before paying.",
-        "low": "No obvious issues were found. Pay only through your usual, trusted channels.",
-    }[level]
+    level = level_for(score, findings)
     return {"level": level, "score": score, "findings": findings, "comparison": comparison,
-            "recommendation": recommendation, "evidence": evidence}
+            "recommendation": RECOMMENDATIONS[level], "evidence": evidence}

@@ -55,3 +55,23 @@ class SyncState(Base):
     last_successful_sync_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     state: Mapped[str] = mapped_column(String, default="ACTIVE")  # ACTIVE / PAUSED / ERROR
     last_error: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class InvoiceEmail(Base):
+    """One PayPal notification email about an invoice. Only extracted fields are kept, never the HTML.
+
+    An email is an event ("issued", "updated"), not a content version: two update emails that look the same
+    (the note changed, which the email does not show) are two events, so `message_key` is built from the email
+    itself and not from the invoice content alone.
+    """
+
+    __tablename__ = "invoice_emails"
+
+    row_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    message_key: Mapped[str] = mapped_column(String, unique=True)
+    invoice_id: Mapped[str] = mapped_column(String, index=True)
+    kind: Mapped[str] = mapped_column(String)  # new / updated / unknown
+    template: Mapped[str | None] = mapped_column(String, nullable=True)
+    normalized: Mapped[dict] = mapped_column(JSON)
+    links: Mapped[list] = mapped_column(JSON)  # host and flags per link, query strings removed
+    received_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)

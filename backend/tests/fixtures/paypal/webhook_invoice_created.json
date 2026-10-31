@@ -1,0 +1,139 @@
+{
+  "id": "WH-3PK83088J5229421N-0MF80951FF735721W",
+  "event_version": "1.0",
+  "create_time": "2026-10-31T10:13:37.104Z",
+  "resource_type": "invoices",
+  "event_type": "INVOICING.INVOICE.CREATED",
+  "summary": "An invoice is created.",
+  "resource": {
+    "invoice": {
+      "id": "INV2-2W5X-CPAQ-9FN7-8ENR",
+      "status": "DRAFT",
+      "detail": {
+        "currency_code": "USD",
+        "note": "Scenario",
+        "category_code": "SHIPPABLE",
+        "invoice_number": "0064",
+        "invoice_date": "2026-10-31",
+        "payment_term": {
+          "term_type": "DUE_ON_DATE_SPECIFIED",
+          "due_date": "2026-11-14"
+        },
+        "viewed_by_recipient": false,
+        "group_draft": false,
+        "metadata": {
+          "create_time": "2026-10-31T10:13:28Z",
+          "last_update_time": "2026-10-31T10:13:28Z",
+          "created_by_flow": "REGULAR_SINGLE",
+          "recipient_view_url": "https://www.sandbox.paypal.com/invoice/p/#2W5XCPAQ9FN78ENR",
+          "invoicer_view_url": "https://www.sandbox.paypal.com/invoice/details/INV2-2W5X-CPAQ-9FN7-8ENR",
+          "caller_type": "API_V2_INVOICE",
+          "spam_info": {}
+        },
+        "archived": false
+      },
+      "invoicer": {
+        "business_name": "Acme Supplies Ltd.",
+        "email_address": "billing@acme-supplies.example.com"
+      },
+      "primary_recipients": [
+        {
+          "billing_info": {
+            "email_address": "sb-kckt753313725@personal.example.com"
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "ITEM-63251915G9319253R",
+          "name": "Test item",
+          "quantity": "1",
+          "unit_amount": {
+            "currency_code": "USD",
+            "value": "100.00"
+          }
+        }
+      ],
+      "configuration": {
+        "tax_calculated_after_discount": false,
+        "tax_inclusive": false,
+        "allow_tip": false,
+        "allow_only_pay_by_bank": false,
+        "allow_vba_payments": false,
+        "save_item_for_future": true,
+        "template_id": "TEMP-1RJ08093CF713830L"
+      },
+      "amount": {
+        "breakdown": {
+          "item_total": {
+            "currency_code": "USD",
+            "value": "100.00"
+          },
+          "discount": {
+            "invoice_discount": {
+              "amount": {
+                "currency_code": "USD",
+                "value": "0.00"
+              }
+            },
+            "item_discount": {
+              "currency_code": "USD",
+              "value": "0.00"
+            }
+          },
+          "tax_total": {
+            "currency_code": "USD",
+            "value": "0.00"
+          }
+        },
+        "currency_code": "USD",
+        "value": "100.00"
+      },
+      "due_amount": {
+        "currency_code": "USD",
+        "value": "100.00"
+      },
+      "links": [
+        {
+          "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-2W5X-CPAQ-9FN7-8ENR",
+          "rel": "self",
+          "method": "GET"
+        },
+        {
+          "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-2W5X-CPAQ-9FN7-8ENR/send",
+          "rel": "send",
+          "method": "POST"
+        },
+        {
+          "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-2W5X-CPAQ-9FN7-8ENR",
+          "rel": "replace",
+          "method": "PUT"
+        },
+        {
+          "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-2W5X-CPAQ-9FN7-8ENR",
+          "rel": "delete",
+          "method": "DELETE"
+        },
+        {
+          "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-2W5X-CPAQ-9FN7-8ENR/payments",
+          "rel": "record-payment",
+          "method": "POST"
+        }
+      ],
+      "unilateral": false,
+      "settings": {}
+    }
+  },
+  "links": [
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-3PK83088J5229421N-0MF80951FF735721W",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-3PK83088J5229421N-0MF80951FF735721W/resend",
+      "rel": "resend",
+      "method": "POST"
+    }
+  ]
+}

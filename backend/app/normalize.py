@@ -22,7 +22,7 @@ class InvoiceItem(BaseModel):
 class Invoice(BaseModel):
     id: str
     accountId: str | None = None
-    source: Literal["paypal_api", "payer_page", "pdf"]
+    source: Literal["paypal_api", "payer_page", "email", "pdf"]
     invoiceNumber: str | None = None
     status: str | None = None
     amount: Decimal | None = None
@@ -187,5 +187,32 @@ def normalize_payer_page(url: str, text: str) -> Invoice:
         paymentTerms=page["dueText"],
         paymentLinks=extract_links(page["note"], *[t for i in page["items"] or [] for t in (i["name"], i["description"])]) or None,
         note=page["note"],
+    )
+    return Invoice(**fields, items=items, contentHash=content_hash({**fields, "items": [i.model_dump() for i in items] if items else None}))
+
+
+def normalize_email(html: str, mail: dict | None = None) -> Invoice:
+    """Maps a PayPal invoice notification email to the normalized `Invoice` (source `email`, no account).
+
+    The sender's email and phone are not in these emails, so they stay None. An update email carries no note: `note`
+    is None there, which means "not shown", not "removed".
+    """
+    from app.email_invoice import parse_invoice_email
+
+    mail = mail or parse_invoice_email(html)
+    items = [InvoiceItem(**i) for i in mail["items"] or []] or None
+    own = mail["primaryLink"]["url"] if mail["primaryLink"] else None
+    fields = dict(
+        id=mail["invoiceId"] or "email-" + hashlib.sha256(html.encode()).hexdigest()[:12],
+        source="email",
+        invoiceNumber=mail["number"],
+        amount=mail["amount"],
+        currency=mail["currency"],
+        dueDate=mail["dueDate"],
+        senderName=mail["merchant"],
+        recipientName=mail["recipientName"],
+        recipientEmail=mail["recipientEmail"],
+        paymentLinks=[*([own] if own else []), *extract_links(mail["note"], *[t for i in mail["items"] or [] for t in (i["name"], i["description"])])] or None,
+        note=mail["note"],
     )
     return Invoice(**fields, items=items, contentHash=content_hash({**fields, "items": [i.model_dump() for i in items] if items else None}))

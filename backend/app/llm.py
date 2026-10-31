@@ -47,7 +47,11 @@ def get_provider() -> LLMProvider | None:
     if factory is None:
         log.warning("LLM_PROVIDER=%r is not registered; AI features are off", name)
         return None
-    return factory()
+    try:
+        return factory()
+    except Exception as e:  # a provider that refuses its own settings (for example a paid model) must leave the app on rules
+        log.error("LLM provider %r refused to start, AI features are off: %s", name, e)
+        return None
 
 
 # The invoice text comes from a stranger, so it is data and never instructions.
