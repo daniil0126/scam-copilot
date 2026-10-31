@@ -1,6 +1,6 @@
 # Контракты данных и API
 
-**Версия:** 0.4 (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
+**Версия:** 0.6 (добавлен `POST /webhooks/paypal`). Ранее 0.5 (добавлены `source = "email"` и `POST /inbound/email`, см. раздел 8; на подтверждение командой в PR с пометкой `contract`). Далее без изменений, версия 0.4: (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
 
 Основано на текущем коде: `backend/app/paypal.py` (`to_invoice`), `scoring.py` (`score_invoice`), `checks.py` (`run_check`), `models.py` (`Check`), `src/api/types.ts`.
 
@@ -9,7 +9,7 @@
 | Что | Где | Форма |
 |---|---|---|
 | Инвойс для фронта | `to_invoice()` | `{number, supplier{name,email,phone}, note, amount(float), currency, dueDate, status}` |
-| Результат проверки | `score_invoice()` + `run_check()` | `{id, invoice, checkedAt, level(low/medium/high), score, findings[{id,label,severity}], comparison[], recommendation, evidence[], ai?}` |
+| Результат проверки | `score_invoice()` + `run_check()` | `{id, invoice, checkedAt, level(low/medium/high), score, findings[{id,label,severity,detail?,skipped?}], comparison[], recommendation, evidence[], ai?}` |
 | Хранение | таблица `checks` | одна строка на PayPal-инвойс, `result` JSON, при перепроверке строка **перезаписывается** |
 | Эндпоинты | `/checks`, `/checks/bulk`, `GET /checks`, `/paypal/invoices`, `/paypal/invoices/{id}`, `/chat` | без авторизации и без `account_id` |
 
@@ -25,7 +25,7 @@
 class Invoice(BaseModel):
     id: str                       # PayPal id (INV2-...) или id из URL страницы
     accountId: str | None         # подключённый PayPal-аккаунт; null только в standalone-режиме (см. раздел 1.1)
-    source: Literal["paypal_api", "payer_page", "pdf"]
+    source: Literal["paypal_api", "payer_page", "email", "pdf"]
     invoiceNumber: str | None
     status: str | None            # как вернул PayPal (DRAFT, SENT, PAID, ...), без перевода
     amount: Decimal | None        # в JSON строкой "123.45", не float
@@ -150,6 +150,7 @@ class HistoricalInvoice(BaseModel):
 | `invoice_versions` | `(accountId, invoiceId, contentHash)` unique, `normalized` JSON, `raw` JSON, `seenAt` |
 | `analyses` | `id`, `(accountId, invoiceId, contentHash)`, `engineVersion`, `result` JSON (RiskResult), `analyzedAt`; строки не перезаписываются |
 | `vendors` | `(accountId, senderKey)`, агрегаты, `contactHistory` JSON |
+| `invoice_emails` | `rowId` PK, `messageKey` unique, `invoiceId`, `kind` (`new`/`updated`/`unknown`), `template`, `normalized` JSON (Invoice, `source = email`), `links` JSON (хост и признаки, без query), `receivedAt`; HTML письма не хранится. Реализовано в `models.py` (`InvoiceEmail`) |
 | `sync_checkpoints`, `sync_logs`, `jobs`, `notifications`, `audit_reports` | поля описаны в планах 08, 09, 10, 12 |
 
 Идемпотентность: unique `(accountId, invoiceId, contentHash)` для версий и `(accountId, invoiceId, contentHash, engineVersion)` для анализов; уведомления unique `(accountId, invoiceId, contentHash, eventType)`.
@@ -175,6 +176,8 @@ class HistoricalInvoice(BaseModel):
 | `GET /invoices/{id}/analyses` | история анализов | `{items: [RiskResult]}` |
 | `POST /invoices/{id}/explain` | AI-объяснение и вопросы | body `{question?}` -> `{ai: AiExplanation}` |
 | `GET /vendors/{senderKey}` | профиль поставщика | `VendorSummary` |
+| `POST /inbound/email` | письмо PayPal об инвойсе для плательщика (реализовано) | заголовок `X-Inbound-Secret`, тело HTML (`text/html`), без секрета на сервере `503` -> `{stored, duplicate, kind, template, invoiceId, invoice: Invoice, links[{url,text,host,isPaypal,textMismatch}], check: VerificationResult \| null}`; ошибки `401`, `413`, `422` |
+| `POST /webhooks/paypal` | событие Invoicing от PayPal (реализовано, только для инвойсов своего аккаунта) | заголовки `PAYPAL-*`, тело события; без `PAYPAL_WEBHOOK_ID` `503`, подпись не прошла `401` -> `{accepted, invoiceId?, reason?}`; из события берётся только id, данные читаются из PayPal |
 | `GET /monitoring` | дашборд | `{state, lastSuccessfulSyncAt, totalInvoices, highRisk, criticalRisk, potentialDuplicates, vendorAnomalies, recentEvents[], errors[]}` |
 | `POST /monitoring/pause`, `/resume`, `/sync` | управление | `{state}` / `{jobId}` |
 | `GET/PUT /monitoring/settings` | пороги алертов | `{alertThreshold, categories{...}}` |
@@ -221,6 +224,8 @@ class Notification(BaseModel):
 |---|---|---|---|
 | 0.1 | 2026-10-30 | Первый черновик на основе текущего кода | Даниил |
 | 0.2 | 2026-10-30 | Q1: режимы Connected/Standalone, `accountId` nullable, `source` += `pdf`. Q3: PayPal OAuth, раздел 9 | Даниил |
+| 0.6 | 2026-10-31 | Новый эндпоинт `POST /webhooks/paypal`. Только добавление | Даниил (черновик: Claude) |
+| 0.5 | 2026-10-31 (дополнено в тот же день: `Finding.detail?`, `Finding.skipped?`, оба необязательные) | `Invoice.source` += `email`. Новый эндпоинт `POST /inbound/email` и таблица `invoice_emails` (письма PayPal плательщику: «Invoice from X», «X updated your invoice»). Только добавление | Даниил (черновик: Claude) |
 | 0.4 | 2026-10-30 | `Invoice.senderLegalName` (payer_page: «Invoice issued by X (doing business as Y)»). Только добавление поля | Даниил (черновик: Claude) |
 | 0.3 | 2026-10-30 | Q2, Q4, Q5, Q6 закрыты по предложениям. Раздел 1: поля сверены с реальным ответом Sandbox и схемой Invoicing v2, `paymentLinks` = `recipient_view_url`. Раздел 9: оговорка по пользовательскому токену | Даниил (черновик: Claude) |
 
