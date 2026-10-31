@@ -24,12 +24,12 @@ export const SEVERITY_TEXT: Record<FindingSeverity, string> = {
     ok: "text-[var(--success)]",
 }
 
-export function alertTitle(level: RiskLevel, findingCount: number): { title: string, subtitle: string } {
-    if (level === "low") return { title: "All good", subtitle: "No obvious issues found" }
-    const noun = findingCount === 1 ? "risk" : "risks"
+// `signCount` counts only the signs to look at: passed and not-checked findings are not "risks found".
+export function alertTitle(level: RiskLevel, signCount: number): { title: string, subtitle: string } {
+    if (level === "low") return { title: "No obvious issues", subtitle: "Only the available signals were checked" }
     return {
-        title: level === "high" ? "Suspicious invoice" : "Needs attention",
-        subtitle: `${findingCount} ${noun} found`,
+        title: level === "high" ? "Several signs of a suspicious invoice" : "Some signs need attention",
+        subtitle: signCount === 1 ? "1 sign to look at" : `${signCount} signs to look at`,
     }
 }
 

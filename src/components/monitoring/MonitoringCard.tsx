@@ -20,7 +20,8 @@ function money(amount: string | null, currency: string | null): string {
     }
 }
 
-export default function MonitoringCard({ status, error, busy, sync, toggle }: Monitoring) {
+// `highlightSince`: events detected after this moment are marked as new.
+export default function MonitoringCard({ status, error, busy, sync, toggle, highlightSince }: Monitoring & { highlightSince: string }) {
     const [showAll, setShowAll] = useState(false)
 
     if (!status) {
@@ -114,14 +115,19 @@ export default function MonitoringCard({ status, error, busy, sync, toggle }: Mo
                             const risk = event.riskLevel ? LEVEL_META[event.riskLevel] : null
                             const isNew = event.eventType === "NEW_INVOICE"
                             const Icon = isNew ? FilePlus2 : FilePenLine
+                            // The row flashes once when it is added (CSS animation on mount); the "New" label stays, so the mark survives reduced motion.
+                            const fresh = Date.parse(event.detectedAt) > Date.parse(highlightSince)
                             return (
-                                <li key={eventKey(event)} className="flex gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2.5">
+                                <li key={eventKey(event)} className={`flex gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2.5 ${fresh ? "sc-fresh" : ""}`}>
                                     <span aria-hidden className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${risk ? `${risk.soft} ${risk.text}` : "bg-[var(--border)] text-[var(--muted)]"}`}>
                                         <Icon size={15} />
                                     </span>
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-baseline justify-between gap-2">
-                                            <p className="truncate text-sm font-semibold">{event.senderName ?? "Unknown sender"}</p>
+                                            <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
+                                                <span className="truncate">{event.senderName ?? "Unknown sender"}</span>
+                                                {fresh && <span className="shrink-0 rounded border border-[var(--primary)]/40 bg-[var(--primary-soft)] px-1.5 text-xs font-bold text-[var(--primary)]">New</span>}
+                                            </p>
                                             <time dateTime={event.detectedAt} className="shrink-0 text-xs tabular-nums text-[var(--muted)]">{clock(event.detectedAt)}</time>
                                         </div>
                                         <p className="text-xs text-[var(--muted)]">

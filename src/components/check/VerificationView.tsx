@@ -7,15 +7,16 @@ import ComparisonTable from "./ComparisonTable.js"
 import RecommendationCard from "./RecommendationCard.js"
 import VerificationActions from "./VerificationActions.js"
 import PayPalDemoModal from "./PayPalDemoModal.js"
+import { groupFindings } from "../../lib/groupResult.js"
 
-export default function VerificationView({ result }: { result: VerificationResult }) {
+export default function VerificationView({ result, sample = false }: { result: VerificationResult, sample?: boolean }) {
     const [alertOpen, setAlertOpen] = useState(true)
     const [diffOpen, setDiffOpen] = useState(true)
     const [detailsOpen, setDetailsOpen] = useState(false)
     const [paypalOpen, setPaypalOpen] = useState(false)
 
     const meta = LEVEL_META[result.level]
-    const { title, subtitle } = alertTitle(result.level, result.findings.length)
+    const { title, subtitle } = alertTitle(result.level, groupFindings(result.findings).flagged.length)
     const Icon = meta.icon
 
     return (
@@ -44,7 +45,7 @@ export default function VerificationView({ result }: { result: VerificationResul
                         aria-expanded={diffOpen}
                         className="mb-2 flex w-full items-center justify-between text-sm font-semibold focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
                     >
-                        Key differences
+                        Comparison
                         <ChevronDown size={16} className={`text-[var(--muted)] transition-transform ${diffOpen ? "rotate-180" : ""}`} aria-hidden />
                     </button>
                     {diffOpen && <ComparisonTable rows={result.comparison} />}
@@ -78,7 +79,7 @@ export default function VerificationView({ result }: { result: VerificationResul
             />
 
             <p className="text-[11px] leading-snug text-[var(--muted)]">
-                Sample analysis data for demonstration. The score is not a calibrated probability of fraud, and differences do not prove fraud.
+                {sample && "Sample analysis data for demonstration. "}The score is not a calibrated probability of fraud, and differences do not prove fraud.
                 {result.level === "low" && " Only the available signals were checked, so a low score does not guarantee the invoice is safe."}
             </p>
 

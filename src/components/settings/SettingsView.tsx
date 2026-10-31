@@ -1,6 +1,7 @@
-import type { ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { Moon, Sun, type LucideIcon } from "lucide-react"
 import type { Theme, UserSettings } from "../../api/types.js"
+import { loadInboundSecret, saveInboundSecret } from "../../lib/inboundSecret.js"
 
 type Props = {
     settings: UserSettings
@@ -68,6 +69,9 @@ const THEMES: Option<Theme>[] = [
 ]
 
 export default function SettingsView({ settings, onChange }: Props) {
+    const [secret, setSecret] = useState("")
+    useEffect(() => { void loadInboundSecret().then(setSecret) }, [])
+
     return (
         <div className="p-4">
             <Section title="Appearance">
@@ -76,6 +80,22 @@ export default function SettingsView({ settings, onChange }: Props) {
 
             <Section title="Collapsed mode">
                 <Toggle label="Collapse to a floating tab" checked={settings.collapsed} onChange={collapsed => onChange({ collapsed })} />
+            </Section>
+
+            <Section title="Email checks">
+                <label className="block text-sm text-[var(--text)]">
+                    Inbound secret
+                    <input
+                        type="password"
+                        autoComplete="off"
+                        value={secret}
+                        onChange={(e) => { setSecret(e.target.value); void saveInboundSecret(e.target.value) }}
+                        className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+                    />
+                </label>
+                <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
+                    Must match INBOUND_EMAIL_SECRET on the server. Stored only in this browser.
+                </p>
             </Section>
 
             <Section title="Notifications">

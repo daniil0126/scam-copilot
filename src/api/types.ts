@@ -1,12 +1,20 @@
 export type ExtensionMessage =
     | { action: "GET_DOM_STRUCTURE" }
     | { action: "GET_PAYPAL_INVOICE" }
+    | { action: "GET_PAYPAL_EMAIL" }
 
 export type PayPalInvoiceResponse = {
     invoiceId: string | null
     url: string
     // Visible text of the page, sent only because the user pressed the button. The backend caps it at 20 000 characters.
     text: string
+}
+
+export type PayPalEmailResponse = {
+    // HTML of the PayPal invoice email found on the page, or null when there is none. Sent only because the user pressed the button.
+    html: string | null
+    // Set when reading the page failed inside the content script.
+    error?: string
 }
 
 export type DOMResonse = {
@@ -39,6 +47,10 @@ export type Finding = {
     id: string
     label: string
     severity: FindingSeverity
+    // Why the finding was raised, in one sentence. Absent on older stored results.
+    detail?: string
+    // The check could not run (for example nothing to compare with): neither a pass nor a risk.
+    skipped?: boolean
 }
 
 export type ComparisonRow = {
@@ -116,4 +128,26 @@ export type MonitoringStatus = {
     vendorAnomalies: number
     recentEvents: MonitoringEvent[]
     errors: string[]
+}
+
+export type InboundEmailKind = "new" | "updated" | "unknown"
+
+// Answer of POST /inbound/email. `check` is null only for a duplicate whose first check was never stored.
+export type InboundEmailResponse = {
+    stored: boolean
+    duplicate: boolean
+    kind: InboundEmailKind
+    template: string | null
+    invoiceId: string
+    invoice: Record<string, unknown>
+    links: { url: string; text: string; host: string | null; isPaypal: boolean; textMismatch: boolean }[]
+    check: VerificationResult | null
+}
+
+// What a result on screen was checked from. It decides which fields exist, so it is always shown with the result.
+export type CheckSource = {
+    kind: "api" | "page" | "email"
+    label: string
+    // What this source cannot show, so a missing field is not read as "fine" or as "changed".
+    limits?: string
 }

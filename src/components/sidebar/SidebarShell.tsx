@@ -33,7 +33,10 @@ export default function SidebarShell({ store, fill = false }: Props) {
     const monitoring = useMonitoring()
     // The badge counts what the monitor found after the panel opened or after the Monitor tab was last in view.
     const [seenAt, setSeenAt] = useState(() => new Date().toISOString())
+    // Rows newer than this are highlighted on the Monitor tab: what arrived since the tab was last in view, and what arrives while it is.
+    const [highlightSince, setHighlightSince] = useState(seenAt)
     const changeTab = (next: TabId) => {
+        if (next === "monitor" && tab !== "monitor") setHighlightSince(seenAt)
         if (tab === "monitor" || next === "monitor") setSeenAt(new Date().toISOString())
         setTab(next)
     }
@@ -96,7 +99,7 @@ export default function SidebarShell({ store, fill = false }: Props) {
                     <div hidden={tab !== "check"}><CheckTab onOpenHistory={() => changeTab("history")} onShownChange={setShownCheckId} /></div>
                     {/* Kept mounted so the conversation survives tab switches. */}
                     <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab checkId={shownCheckId} /></div>
-                    {tab === "monitor" && <MonitoringCard {...monitoring} />}
+                    {tab === "monitor" && <MonitoringCard {...monitoring} highlightSince={highlightSince} />}
                     {tab === "history" && <HistoryView settings={settings} reloadKey={eventKey(monitoring.status?.recentEvents[0])} />}
                     {tab === "settings" && <SettingsView settings={settings} onChange={update} />}
                 </main>

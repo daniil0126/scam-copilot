@@ -16,6 +16,9 @@
     --warning-soft: #fdf4e0;
     --danger: #e54855;
     --danger-soft: #fdecee;
+    /* Flash of a new row. White cannot show on a near-white row, so the light theme uses a neutral dark wash. */
+    --fresh-tint: #172033;
+    --fresh-amount: 12%;
 }
 
 :root[data-theme="dark"],
@@ -34,6 +37,8 @@
     --warning-soft: #33290f;
     --danger: #ff7a85;
     --danger-soft: #3a1a22;
+    --fresh-tint: #ffffff;
+    --fresh-amount: 22%;
 }
 
 body {
@@ -45,6 +50,21 @@ body,
     font-family: Inter, system-ui, sans-serif;
 }
 
+/* A row that has just appeared in a live list: a translucent flash, held for a moment, then faded out to the row's own
+   background (not to transparent, which would flash the card behind it), like a fresh line in a log. */
+@keyframes sc-fresh {
+    0%, 35% { background-color: color-mix(in srgb, var(--fresh-tint) var(--fresh-amount), var(--bg)); }
+    100% { background-color: var(--bg); }
+}
+
+.sc-fresh {
+    animation: sc-fresh 4s ease-out backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
+    .sc-fresh {
+        animation: none;
+        background-color: color-mix(in srgb, var(--fresh-tint) var(--fresh-amount), var(--bg));
+    }
 }
