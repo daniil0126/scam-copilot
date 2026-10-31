@@ -26,6 +26,7 @@ from app.db import SessionLocal, get_db
 from app.models import Check, InvoiceVersion, MonitoredInvoice, SyncState
 from app.normalize import normalize_paypal
 from app.notifications import service as alerts
+from app.reports import service as reports
 from app.paypal import to_invoice
 
 log = logging.getLogger("monitor")
@@ -115,6 +116,7 @@ async def store_version(
     result = await run_check(db, invoice_id, to_invoice(detail), pending)
     # One alert per invoice version at most; it is committed together with the version below.
     alerts.process_result(db, account, invoice_id, invoice.contentHash, result)
+    reports.record_analysis(db, account, invoice_id, invoice.contentHash, result)
     stored = db.scalar(select(InvoiceVersion.row_id).where(
         InvoiceVersion.account_id == account, InvoiceVersion.invoice_id == invoice_id,
         InvoiceVersion.content_hash == invoice.contentHash,
