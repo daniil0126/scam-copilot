@@ -1,0 +1,2900 @@
+{
+  "schema": "dataset/1",
+  "contractVersion": "0.6",
+  "histories": {
+    "nordhost": [
+      {
+        "id": "INV2-HIST-NH-01",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0036",
+        "status": "PAID",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-04-28",
+        "dueDate": "2026-05-12",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-HIST-NH-01"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-04-28T09:00:00Z",
+        "updatedAt": "2026-04-28T09:00:00Z",
+        "contentHash": "sha256:c3d5b0f5cacf10414f6d801ae6abb9685c5db98bcf0d79a5244a0618603bb0a5"
+      },
+      {
+        "id": "INV2-HIST-NH-02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0037",
+        "status": "PAID",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-05-28",
+        "dueDate": "2026-06-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-HIST-NH-02"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-05-28T09:00:00Z",
+        "updatedAt": "2026-05-28T09:00:00Z",
+        "contentHash": "sha256:2baed640ddfd85203424f0ca9d0e57a10cf4ce028f09ea5c12128800df0aaad1"
+      },
+      {
+        "id": "INV2-HIST-NH-03",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0038",
+        "status": "PAID",
+        "amount": "29.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-06-28",
+        "dueDate": "2026-07-12",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "29.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-HIST-NH-03"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-06-28T09:00:00Z",
+        "updatedAt": "2026-06-28T09:00:00Z",
+        "contentHash": "sha256:ca6296d5ce77292df51a3e330fe855860c7da82c23473d9025bfe1b044a99f19"
+      },
+      {
+        "id": "INV2-HIST-NH-04",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0039",
+        "status": "PAID",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-07-28",
+        "dueDate": "2026-08-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-HIST-NH-04"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-07-28T09:00:00Z",
+        "updatedAt": "2026-07-28T09:00:00Z",
+        "contentHash": "sha256:1d23e910d21ce250c6adc9cad97a790ea1a8921297e1111370b184ca635fc1dd"
+      },
+      {
+        "id": "INV2-HIST-NH-05",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0040",
+        "status": "PAID",
+        "amount": "35.67",
+        "currency": "EUR",
+        "invoiceDate": "2026-08-28",
+        "dueDate": "2026-09-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.67"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-HIST-NH-05"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-08-28T09:00:00Z",
+        "updatedAt": "2026-08-28T09:00:00Z",
+        "contentHash": "sha256:21ddcf223d46f226fb1c65dca99b35e63ac93f0c20857ad605bf0a4a344cf1d0"
+      },
+      {
+        "id": "INV2-HIST-NH-06",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0041",
+        "status": "PAID",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-09-28",
+        "dueDate": "2026-10-12",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-HIST-NH-06"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-09-28T09:00:00Z",
+        "updatedAt": "2026-09-28T09:00:00Z",
+        "contentHash": "sha256:1884d43ff89103030142e90395982c816f7f70fabf65b463aaff2cdb6a22df87"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "caseId": "N01",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L01",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N01",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N01"
+        ],
+        "note": "Hosting plan Pro, period 01.11.2026 - 30.11.2026. Thank you for your business!",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:a21f13b38d24cf8a8a760b67422b7a7de2953ddbc6e92fdbf7284996a52ab28a"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N02",
+      "category": "normal",
+      "description": "В тексте тот же IBAN, что в истории, или ссылка на прежние реквизиты: смены реквизитов нет.",
+      "origin": "eval_notes.json:L02",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N02"
+        ],
+        "note": "Payment to DE91100000000123456789. Invoice INV-2026-001234, PO 4500123456.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:b311191820eb6ae2f541be7ab6e985b251ff55e9c88b4048e2f517e6cdffcd9f"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N03",
+      "category": "normal",
+      "description": "В тексте тот же IBAN, что в истории, или ссылка на прежние реквизиты: смены реквизитов нет.",
+      "origin": "eval_notes.json:L03",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N03",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-27",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N03"
+        ],
+        "note": "Please pay DE91 1000 0000 0123 4567 89 within 30 days (Net 30).",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:d85b3d8b35a2cbfedb73a9ed68d800d91674fc0230a0e7c301092fc689aff73c"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N04",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L04",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N04",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N04"
+        ],
+        "note": "Hosting for November. Questions? Contact billing@nordhost.test",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:56e9410c7c1c8d35dd04f24ad9b13d262625361bd4874972cd7c11739c258f8d"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N05",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L05",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N05",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "29.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-15",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "29.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N05"
+        ],
+        "note": "Due date 2026-11-15, amount 29.00 EUR. Auto-renewal on 2026-12-01.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:66aab87ab195e287541fd7dc14df4c59d6cfb709b00d5da3064dcb50b3a65399"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N06",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L07",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N06",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N06"
+        ],
+        "note": "Thank you!",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:909fab4d6878558521819334b5f40d84cf0681d0b0db5296381ec70864070fe9"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N07",
+      "category": "normal",
+      "description": "Продление домена у известного поставщика, но другой продукт: истории по такой сумме нет, поэтому история не привязана.",
+      "origin": "eval_notes.json:L08",
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-N07",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "12.99",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Domain renewal example.com",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "12.99"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N07"
+        ],
+        "note": "Domain renewal example.com for 1 year, 12.99 EUR.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:818538146494bf780dde9196781685f27378c0426f1edecda82f88ecf632daf4"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "N08",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L09",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N08",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-15",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N08"
+        ],
+        "note": "Reminder: this invoice is due on 15.11.2026.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:b0cbe28604743fc883969dad85304a1f6d1ed1db1b28bd3c77dd790cc778e3c9"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N09",
+      "category": "normal",
+      "description": "В тексте тот же IBAN, что в истории, или ссылка на прежние реквизиты: смены реквизитов нет.",
+      "origin": "eval_notes.json:L10",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N09",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N09"
+        ],
+        "note": "Pay by bank transfer. IBAN: DE91100000000123456789. Reference: INV-2026-001234",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:293b48313f41c868a9f268c30645ed3f76e5b2774cb36702bc9b477dc9702323"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N10",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L11",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N10",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N10"
+        ],
+        "note": "Dear customer, your VPS plan was renewed. Customer ID 1234567890.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:39cc65dd5153f24170778cd47b2ef703a729183cf61aaee1d3c9dd93a55e5ffa"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N11",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L12",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N11",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.67",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.67"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N11"
+        ],
+        "note": "Prices include 23% VAT. Total 35.67 EUR.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:94b10c93c12eaf5645ecab69a77a22e4403d377eec961762507bd77d23393508"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N12",
+      "category": "normal",
+      "description": "Телефон в тексте совпадает с телефоном поставщика в истории, это не PHONE_IN_TEXT.",
+      "origin": "eval_notes.json:L13",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N12",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N12"
+        ],
+        "note": "Questions about this invoice? Our support team: +49 30 1234567.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:1a3aeccbfb348182e939f4d0d41696ef70787e58a20367039fff1867fa9c4dfb"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N13",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L15",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N13",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N13"
+        ],
+        "note": "Your site loads quickly thanks to the new CDN add-on (included in your plan).",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:d9441974da3053567b979c9f78e6fa4a9dac98ff169fecb00c0816ed30bc46fa"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N14",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L16",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N14",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "PAID",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N14"
+        ],
+        "note": "Payment received, thank you. This invoice is already paid.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:8d097d79c2a9a72044a9e11e270f6cbd87bb245e93667de106440a03d09bcb4a"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N15",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_notes.json:L17",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N15",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": "Net 14",
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N15"
+        ],
+        "note": "Billing period: Nov 2026. Payment terms: net 14 days.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:bad39764877913124fea99966983b4816b2f45f9b762d8985b70696d3f8b03d0"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N16",
+      "category": "normal",
+      "description": "В тексте тот же IBAN, что в истории, или ссылка на прежние реквизиты: смены реквизитов нет.",
+      "origin": "eval_notes.json:L18",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N16",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N16"
+        ],
+        "note": "IBAN DE91100000000123456789 (once again: DE91100000000123456789).",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:eb7c25cc5bea6e1f30cd4790bb7890634b1d6fb44d3a6fc949559c38e1bab745"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N17",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL01",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N17",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N17"
+        ],
+        "note": "Faktura za usługi hostingowe za listopad 2026. Dziękujemy!",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:68c90860e423ff1543c132e8cf58a9877cb853ca91f1284761592d4feece24eb"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N18",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL02",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N18",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N18"
+        ],
+        "note": "You can download this invoice as PDF from your customer portal after you sign in.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:1fdcbd860cc0be1a89673cc2f9c1711a839caba483c220adf3452e780dd07969"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N19",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL03",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N19",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N19"
+        ],
+        "note": "To update your payment method, open Settings > Billing in your account.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:871858346a051182188fef252d75fa544e8ded30a8bea939aef3c45739770562"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N20",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL04",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N20",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N20"
+        ],
+        "note": "If you have questions about this invoice, reply to this email and our billing team will help you.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:6650a01da81108c5e3a190d3d6f479679e6abf4cde497b249753ee0c02eddf75"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N21",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL05",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N21",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N21"
+        ],
+        "note": "Your overpayment from last month (12.00 EUR) was credited to your account balance.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:0346373b7d7050ecbb47315448ffd29fa98c25989d6bd2d0590325c78117bc66"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N22",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL06",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N22",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N22"
+        ],
+        "note": "This invoice was generated automatically. Prices are in EUR, 23% VAT included.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:b4c9cc3cfef06395235edb682abf5a95db955a0823a78f66d513b69211796187"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N23",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL07",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N23",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N23"
+        ],
+        "note": "Your plan renews automatically on 2026-12-01. You can cancel at any time in the portal.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:e00a8ed0ec18c4edc1284db2651220f0c646cecdb72dd6ad81f0f9d2fff9f6b9"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N24",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL08",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N24",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N24"
+        ],
+        "note": "Late payment interest may apply after the due date, as described in our terms.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:64805cb4127dd0d45f85ab9bef29a6264a486b187f2e5f89145c3a1459801f1a"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N25",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL09",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N25",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N25"
+        ],
+        "note": "A SEPA payment QR code is included at the bottom of this invoice.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:b79a4748273d39f1ae1382b29b6f40261cb73e3b93f64007e5ed4ad041a8bca0"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N26",
+      "category": "normal",
+      "description": "Обычный ежемесячный счёт известного поставщика Nordhost: сумма и реквизиты как в истории, текст безобидный.",
+      "origin": "eval_test.json:TL10",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N26",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N26"
+        ],
+        "note": "Please find the PDF invoice attached.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:86512018fbc2d17bffb4b6b826d370de8fe7356220b557dad3aef8a9c7c1f876"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N27",
+      "category": "normal",
+      "description": "В тексте тот же IBAN, что в истории, или ссылка на прежние реквизиты: смены реквизитов нет.",
+      "origin": "eval_heldout.json:HL01",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N27",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N27"
+        ],
+        "note": "Our bank details are unchanged. Please continue paying to the IBAN on your previous invoices.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:58bb3734db7fa05512c69d9a5ce26e5f5b4a27ff57679070487a825cc59ccc4b"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "N28",
+      "category": "normal",
+      "description": "Ссылка в тексте ведёт на собственный домен поставщика (nordhost.test), не должна давать SUSPICIOUS_LINK.",
+      "origin": "eval_heldout.json:HL07",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-N28",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-N28",
+          "https://nordhost.test/invoices/2026-11"
+        ],
+        "note": "You can view this invoice at https://nordhost.test/invoices/2026-11 after logging in.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:318de671c4afa8b0f11bce74059c5972a328997379d7a4f9ebdca65580e8f1ad"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-TF01",
+      "category": "suspicious",
+      "description": "Просьба платить третьей компании (BEC). Поставщик известен, история есть.",
+      "origin": "eval_test.json:TF01",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-TF01",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-TF01"
+        ],
+        "note": "From now on our partner company Delta Trade Ltd handles all collections for us. Please make payments to them.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:a9db764b4adb657c49f4bd9aa16ea3820cd2f8df38b748cf39f284d07ee364e8"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-TF02",
+      "category": "suspicious",
+      "description": "Фишинговая ссылка на чужой домен. Поставщик известен, история есть.",
+      "origin": "eval_test.json:TF02",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-TF02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-TF02",
+          "http://nordhost-invoices.example/d/88213"
+        ],
+        "note": "Download your invoice here: http://nordhost-invoices.example/d/88213",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:45ba537e84e710e36a3e681cc507515ef9aefe9810654a1a08743740dbbe95de"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SUSPICIOUS_LINK"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-TF03",
+      "category": "suspicious",
+      "description": "Техподдержка и удалённый доступ. Поставщик известен, история есть.",
+      "origin": "eval_test.json:TF03",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-TF03",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-TF03"
+        ],
+        "note": "Your server has been compromised. Install the attached remote support tool so that our engineer can fix it.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:d1ea24690efb7eeeb289339d36ec9853b67014108d9491b5253e8ef31110f1ff"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-HF02",
+      "category": "suspicious",
+      "description": "Угроза штрафа и ссылка на оплату на чужом домене. Поставщик известен, история есть.",
+      "origin": "eval_heldout.json:HF02",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-HF02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-HF02",
+          "https://tax-office-pay.example/case/88213"
+        ],
+        "note": "Final notice from the tax authority: unpaid VAT, a penalty will be added. Pay via https://tax-office-pay.example/case/88213",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:3f50e380c9f74f37e19f8a9af1738799ba790a787a8b2699f6239b1c5def8b61"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SUSPICIOUS_LINK",
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-HF05",
+      "category": "suspicious",
+      "description": "Схема с переплатой. Поставщик известен, история есть.",
+      "origin": "eval_heldout.json:HF05",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-HF05",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-HF05"
+        ],
+        "note": "We accidentally overpaid your last invoice by 1,240 EUR. Please send the difference back to us.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:7686cb381b1c5a1d7bcef35703a76bc514181d3a91a61f40db175bde2a68f639"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-HF07",
+      "category": "suspicious",
+      "description": "Оплата по QR-коду из вложения. Поставщик известен, история есть.",
+      "origin": "eval_heldout.json:HF07",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-HF07",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-HF07"
+        ],
+        "note": "Scan the QR code in the attachment to complete the payment.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:5bc17c3feb4d5cff3d41fce1ac6c70eafcac963727147787be637bb846e577cc"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-HF08",
+      "category": "suspicious",
+      "description": "Угроза судом, давление срочностью. Поставщик известен, история есть.",
+      "origin": "eval_heldout.json:HF08",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-HF08",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-HF08"
+        ],
+        "note": "Your account is overdue. Legal proceedings will be started tomorrow unless the full amount is paid.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:e66a3995ee16df2019eba07125a4d12897a5fe26c9154e0e8d264759020081a5"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-F08",
+      "category": "suspicious",
+      "description": "Оплата подарочными картами. Поставщик известен, история есть.",
+      "origin": "eval_notes.json:F08",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-F08",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-F08"
+        ],
+        "note": "Pay the overdue amount with Google Play gift cards and send us the codes.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:a74ef905cc9c8a605b0161d2d67b768da79fcbede7bb6c061c1c5aaea53e2d79"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-F10",
+      "category": "suspicious",
+      "description": "Оплата криптовалютой на кошелёк. Поставщик известен, история есть.",
+      "origin": "eval_notes.json:F10",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-F10",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-F10"
+        ],
+        "note": "Send the payment in USDT to wallet TXq8a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:548e58deef776d25eadc71c0ded3c9d92116a69daa9330e3013e2c3fec5cb94c"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SCAM_WORDING"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "S-F01",
+      "category": "suspicious",
+      "description": "Фальшивое продление и телефон «для отмены» (tech support scam). Поставщик новый, истории нет.",
+      "origin": "eval_notes.json:F01",
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-F01",
+        "accountId": "acc_dataset",
+        "source": "payer_page",
+        "invoiceNumber": "A-4471",
+        "status": "SENT",
+        "amount": "499.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "SecureProtect",
+        "senderLegalName": null,
+        "senderEmail": "billing@securprotect.test",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Subscription",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "499.00"
+          }
+        ],
+        "paymentLinks": null,
+        "note": "Your subscription to SecureProtect Pro was renewed for 499.00 USD. Call +1 (800) 555-0199 to cancel.",
+        "createdAt": null,
+        "updatedAt": null,
+        "contentHash": "sha256:e627e031604c409b62b7147ab25aaf5a9dc4e1db4f3875df37e377ed7cdb4421"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "PHONE_IN_TEXT",
+          "SCAM_WORDING",
+          "NEW_SENDER"
+        ],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "S-F03",
+      "category": "suspicious",
+      "description": "Чек за покупку, которой не было, и телефон для «спора». Поставщик новый, истории нет.",
+      "origin": "eval_notes.json:F03",
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-F03",
+        "accountId": "acc_dataset",
+        "source": "payer_page",
+        "invoiceNumber": "A-4471",
+        "status": "SENT",
+        "amount": "1299.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Store Receipts",
+        "senderLegalName": null,
+        "senderEmail": "orders@store-receipts.test",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Subscription",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "1299.00"
+          }
+        ],
+        "paymentLinks": null,
+        "note": "Thank you for your purchase of an iPhone 15. If you did not authorize this charge, contact us at 1-888-555-0123.",
+        "createdAt": null,
+        "updatedAt": null,
+        "contentHash": "sha256:e69d7f399068cca15cc373a2958dd62759132e8b316ce27982c683375f98e106"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "PHONE_IN_TEXT",
+          "NEW_SENDER"
+        ],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "S-F07",
+      "category": "suspicious",
+      "description": "Известный бренд (Geek Squad) под несвязанным именем и телефон в тексте. Поставщик новый, истории нет.",
+      "origin": "eval_notes.json:F07",
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-F07",
+        "accountId": "acc_dataset",
+        "source": "payer_page",
+        "invoiceNumber": "A-4471",
+        "status": "SENT",
+        "amount": "899.99",
+        "currency": "USD",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Pay Secure",
+        "senderLegalName": null,
+        "senderEmail": "service@pay-secure.test",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Subscription",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "899.99"
+          }
+        ],
+        "paymentLinks": null,
+        "note": "You sent a payment of 899.99 USD to Geek Squad. Not you? Call (800) 555-0147",
+        "createdAt": null,
+        "updatedAt": null,
+        "contentHash": "sha256:961e2d635047785d63324e6d6fa95c6133fbacf19c13a14b48241bdd879562ba"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "PHONE_IN_TEXT",
+          "BRAND_IMPERSONATION",
+          "NEW_SENDER"
+        ],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "S-SJSON",
+      "category": "suspicious",
+      "description": "Демо-счёт suspicious.json: срочный звонок, IBAN в тексте, новый поставщик.",
+      "origin": "suspicious.json",
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-SJSON",
+        "accountId": "acc_dataset",
+        "source": "payer_page",
+        "invoiceNumber": "A-99817",
+        "status": "SENT",
+        "amount": "530.28",
+        "currency": "USD",
+        "invoiceDate": "2026-10-17",
+        "dueDate": "2026-10-31",
+        "senderName": "Secure Protect Services LLC",
+        "senderLegalName": null,
+        "senderEmail": "support-billing@securprotect.test",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Antivirus Premium 3 years",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "499.00"
+          },
+          {
+            "name": "Setup fee",
+            "description": null,
+            "quantity": "2",
+            "unitAmount": "19.99"
+          }
+        ],
+        "paymentLinks": null,
+        "note": "Your subscription renews today. To cancel or dispute call our support IMMEDIATELY: +1 (555) 010-0199. Please pay to IBAN DE67100000000555555555",
+        "createdAt": null,
+        "updatedAt": null,
+        "contentHash": "sha256:9d87bd20ed0f4d2d530a3295f92fe6b51bfd36aba44d6cf14961f62c2dc69cce"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "PHONE_IN_TEXT",
+          "SCAM_WORDING",
+          "NEW_SENDER"
+        ],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "D01",
+      "category": "duplicate",
+      "description": "Тот же номер 0041, сумма, дата и текст, что у последнего счёта в истории; другой id.",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-D01",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0041",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-09-28",
+        "dueDate": "2026-10-12",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-D01"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-09-28T09:00:00Z",
+        "updatedAt": "2026-09-28T09:00:00Z",
+        "contentHash": "sha256:f1abc2e062dfa2b0850c79a526330c51b8b21c7b264fb58a7db9867334f0dd73"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "DUPLICATE_EXACT"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "D02",
+      "category": "duplicate",
+      "description": "Та же сумма и дата, что у последнего счёта, но другой номер 0099.",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-D02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0099",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-09-28",
+        "dueDate": "2026-10-12",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-D02"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-09-28T09:00:00Z",
+        "updatedAt": "2026-09-28T09:00:00Z",
+        "contentHash": "sha256:981f1dbde1b6bfef5bc92ef74e703e19d8529f236ea48c6559b18a5ae742d4e7"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "DUPLICATE_POTENTIAL"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "D03",
+      "category": "duplicate",
+      "description": "Почти копия: тот же текст и позиция, сумма 36.00 вместо 35.00, дата на два дня позже.",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-D03",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0043",
+        "status": "SENT",
+        "amount": "36.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-09-30",
+        "dueDate": "2026-10-14",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "36.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-D03"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-09-30T09:00:00Z",
+        "updatedAt": "2026-09-30T09:00:00Z",
+        "contentHash": "sha256:69d24b621b2e53eb2dce58953b0e5b5fe2b23f416f40889c1b545cc9c6812672"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "DUPLICATE_SIMILAR"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "D04",
+      "category": "duplicate",
+      "description": "Не дубликат: тот же текст и сумма, но следующий месяц и следующий номер (регулярная подписка).",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-D04",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-D04"
+        ],
+        "note": "Hosting. Pay to IBAN DE91100000000123456789. Questions? billing@nordhost.test",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:23247a17ce77768f78005e523cd084003492d2abb84596da47fbbf19772e0594"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "C01",
+      "category": "supplier_change",
+      "description": "Имя прежнее, email сменился на billing@nordhost-pay.test.",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-C01",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost-pay.test",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-C01"
+        ],
+        "note": "Hosting for November.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:26bb11b07ddaf86b06b3f60e5d5db9cb04ad64d1873b80de2a5eb4b315dc8d96"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SENDER_MISMATCH"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "C02",
+      "category": "supplier_change",
+      "description": "Email и телефон прежние, имя сменилось на Nordhost Payments Ltd.",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-C02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost Payments Ltd",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-C02"
+        ],
+        "note": "Hosting for November.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:350c7e814d1e3276a9e7463c252984f9b70764bdcfa6e0177d82b877ba0b475a"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SENDER_NAME_CHANGED"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "C03",
+      "category": "supplier_change",
+      "description": "Подмена домена: nordh0st.test (ноль вместо o), в тексте новый IBAN.",
+      "origin": "eval_notes.json:B12",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-C03",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordh0st.test",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-C03"
+        ],
+        "note": "Hosting for November. Pay to DE67100000000555555555",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:dd21cd7ddefb575177b6bf6ef939a9ca03bf5168d11348b3dfdf6b790e497dd2"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SENDER_MISMATCH"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "C04",
+      "category": "supplier_change",
+      "description": "Подмена домена: billing@nordhost.test.evil.com, в тексте новый IBAN.",
+      "origin": "eval_notes.json:B13",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-C04",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test.evil.com",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-C04"
+        ],
+        "note": "Hosting for November. Pay to DE67100000000555555555",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:0b14b4f6e278fda522c30d87d5aa6856288ce0ce8bc0e003f72a6a2f8842610a"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "SENDER_MISMATCH"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "C05",
+      "category": "supplier_change",
+      "description": "Поставщик прежний, но в тексте заявлена смена банка и новый IBAN (GB).",
+      "origin": "eval_notes.json:B03",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-C05",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-C05"
+        ],
+        "note": "Due to an audit our bank has changed. New IBAN: GB82WEST12345698765432",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:96196b3f57d6c97c8ed1b427d21ae50cdf6ae56f2e4eeff24b400a9d250c981e"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "C06",
+      "category": "supplier_change",
+      "description": "Поставщик прежний, в тексте старый IBAN помечен «не использовать» и дан новый DE67100000000555555555.",
+      "origin": "eval_notes.json:B05",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-C06",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-C06"
+        ],
+        "note": "IBAN DE91100000000123456789 (old, do not use). Use DE67100000000555555555 instead.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:b6bb49f1f59e33a67050d3ecf9d0dcccb900411fe42e06e513b6d62055b48415"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "U01",
+      "category": "unusual_amount",
+      "description": "Сумма 3500.00 EUR при обычных 29–36 EUR (примерно в 100 раз больше).",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-U01",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "3500.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "3500.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-U01"
+        ],
+        "note": "Hosting for November.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:0f01bdebd0b63ea656aa52c125f7a1d5095b68087502059ce5a0e9bc025a7d4f"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "UNUSUAL_AMOUNT"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "U02",
+      "category": "unusual_amount",
+      "description": "Сумма 349.00 EUR при обычных 29–36 EUR (примерно в 10 раз больше).",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-U02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "349.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "349.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-U02"
+        ],
+        "note": "Hosting for November.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:8e99c4eb4d4bd1c9614eedcc3e1cf93cdc759caaedcbc2dd1a5ef30cd6ec7fa7"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "UNUSUAL_AMOUNT"
+        ],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "U03",
+      "category": "unusual_amount",
+      "description": "Не аномалия: 41.50 EUR (+16% к среднему), объяснено изменением НДС в тексте.",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-U03",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "41.50",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "41.50"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-U03"
+        ],
+        "note": "Prices include 23% VAT.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:b8c6fc9a970e6682d3c3113ec53dbdb04ee231d5d3a1fc4477188602e3e52457"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "I01",
+      "category": "insufficient_data",
+      "description": "Только id, источник и короткий текст; ни суммы, ни поставщика. Нельзя оценить, но и подозрений нет.",
+      "origin": "eval_notes.json:L07",
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-I01",
+        "accountId": null,
+        "source": "payer_page",
+        "invoiceNumber": null,
+        "status": "SENT",
+        "amount": null,
+        "currency": null,
+        "invoiceDate": null,
+        "dueDate": null,
+        "senderName": null,
+        "senderLegalName": null,
+        "senderEmail": null,
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": null,
+        "paymentTerms": null,
+        "items": null,
+        "paymentLinks": null,
+        "note": "Thank you!",
+        "createdAt": null,
+        "updatedAt": null,
+        "contentHash": "sha256:29b8d7ad3593391d291edce685aae12b96349a5541d6416dcd8aa2d31b953bf2"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "I02",
+      "category": "insufficient_data",
+      "description": "Нет суммы, валюты и email поставщика; имя есть, текст безобидный.",
+      "origin": null,
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-I02",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": null,
+        "currency": null,
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": null,
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": null,
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-I02"
+        ],
+        "note": "Hosting for November.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:ba30913b30e0f5a87acf05fa329e1c28ce872c770e7cb0f3823ad9880f74b1ce"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "I03",
+      "category": "insufficient_data",
+      "description": "Первый счёт нового поставщика Brightlane Studio, чистый текст: истории нет, подозрений нет.",
+      "origin": null,
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-I03",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "120.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Brightlane Studio",
+        "senderLegalName": null,
+        "senderEmail": "hello@brightlane.test",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Logo design",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "120.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-I03"
+        ],
+        "note": "Logo design, final payment. Thank you.",
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:148ea7a2e0b0ff4fa17f250bf76d382ca6b18e285a5d0144e1c5c7a5a06a7efa"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": true
+      }
+    },
+    {
+      "caseId": "I04",
+      "category": "insufficient_data",
+      "description": "Известный поставщик, но текст пустой (note = null): проверять нечего, подозрений нет.",
+      "origin": "eval_notes.json:L06",
+      "history": "nordhost",
+      "invoice": {
+        "id": "INV2-DS-I04",
+        "accountId": "acc_dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": [
+          "https://www.paypal.com/invoice/p/#INV2-DS-I04"
+        ],
+        "note": null,
+        "createdAt": "2026-10-28T09:00:00Z",
+        "updatedAt": "2026-10-28T09:00:00Z",
+        "contentHash": "sha256:a82ce1f49e4648dd12de8b987e40c419561a305e954d1c2d205e6a826776a441"
+      },
+      "expected": {
+        "flagged": false,
+        "signals": [],
+        "insufficientData": false
+      }
+    },
+    {
+      "caseId": "I05",
+      "category": "insufficient_data",
+      "description": "Режим standalone (accountId = null, истории нет): работают только проверки по тексту, телефон и просьба писать в WhatsApp дают подозрение.",
+      "origin": "eval_notes.json:F09",
+      "history": null,
+      "invoice": {
+        "id": "INV2-DS-I05",
+        "accountId": null,
+        "source": "payer_page",
+        "invoiceNumber": "0042",
+        "status": "SENT",
+        "amount": "35.00",
+        "currency": "EUR",
+        "invoiceDate": "2026-10-28",
+        "dueDate": "2026-11-11",
+        "senderName": "Nordhost GmbH",
+        "senderLegalName": null,
+        "senderEmail": "billing@nordhost.test",
+        "senderPhone": "+49 30 1234567",
+        "recipientName": null,
+        "recipientEmail": "buyer@example.org",
+        "paymentTerms": null,
+        "items": [
+          {
+            "name": "Hosting plan Pro",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "35.00"
+          }
+        ],
+        "paymentLinks": null,
+        "note": "Write to us on WhatsApp +48 501 234 567 to cancel.",
+        "createdAt": null,
+        "updatedAt": null,
+        "contentHash": "sha256:d6ce4af88bf6f57e7b86d031b0f2c0adc2730da7bf26381422af11ed341485c1"
+      },
+      "expected": {
+        "flagged": true,
+        "signals": [
+          "PHONE_IN_TEXT"
+        ],
+        "insufficientData": true
+      }
+    }
+  ]
+}
