@@ -1,0 +1,1392 @@
+{
+  "schemaVersion": "contracts-0.6",
+  "generatedFor": "backend/app/scoring.py legacy scorer adapter",
+  "records": [
+    {
+      "id": "DS-N-001",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 48,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-001",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1000",
+        "status": "SENT",
+        "amount": "48.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "48.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-1"
+      }
+    },
+    {
+      "id": "DS-N-002",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 89.5,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-002",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1001",
+        "status": "SENT",
+        "amount": "89.50",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "accounts@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "89.50"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-2"
+      }
+    },
+    {
+      "id": "DS-N-003",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Greenfield Hosting",
+        "senderEmail": "billing@greenfield.example",
+        "amount": 120,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-003",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1002",
+        "status": "SENT",
+        "amount": "120.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Greenfield Hosting",
+        "senderLegalName": null,
+        "senderEmail": "billing@greenfield.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "120.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-3"
+      }
+    },
+    {
+      "id": "DS-N-004",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Metro Print Services",
+        "senderEmail": "invoices@metroprint.example",
+        "amount": 245,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-004",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1003",
+        "status": "SENT",
+        "amount": "245.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Metro Print Services",
+        "senderLegalName": null,
+        "senderEmail": "invoices@metroprint.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "245.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-4"
+      }
+    },
+    {
+      "id": "DS-N-005",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 310,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-005",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1004",
+        "status": "SENT",
+        "amount": "310.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "310.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-5"
+      }
+    },
+    {
+      "id": "DS-N-006",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 48,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-006",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1005",
+        "status": "SENT",
+        "amount": "48.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "accounts@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "48.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-6"
+      }
+    },
+    {
+      "id": "DS-N-007",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Greenfield Hosting",
+        "senderEmail": "billing@greenfield.example",
+        "amount": 89.5,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-007",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1006",
+        "status": "SENT",
+        "amount": "89.50",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Greenfield Hosting",
+        "senderLegalName": null,
+        "senderEmail": "billing@greenfield.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "89.50"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-7"
+      }
+    },
+    {
+      "id": "DS-N-008",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Metro Print Services",
+        "senderEmail": "invoices@metroprint.example",
+        "amount": 120,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-008",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1007",
+        "status": "SENT",
+        "amount": "120.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Metro Print Services",
+        "senderLegalName": null,
+        "senderEmail": "invoices@metroprint.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "120.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-8"
+      }
+    },
+    {
+      "id": "DS-N-009",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 245,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-009",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1008",
+        "status": "SENT",
+        "amount": "245.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "245.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-9"
+      }
+    },
+    {
+      "id": "DS-N-010",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 310,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-010",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1009",
+        "status": "SENT",
+        "amount": "310.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "accounts@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "310.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-10"
+      }
+    },
+    {
+      "id": "DS-N-011",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Greenfield Hosting",
+        "senderEmail": "billing@greenfield.example",
+        "amount": 48,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-011",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1010",
+        "status": "SENT",
+        "amount": "48.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Greenfield Hosting",
+        "senderLegalName": null,
+        "senderEmail": "billing@greenfield.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "48.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-11"
+      }
+    },
+    {
+      "id": "DS-N-012",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Metro Print Services",
+        "senderEmail": "invoices@metroprint.example",
+        "amount": 89.5,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-012",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1011",
+        "status": "SENT",
+        "amount": "89.50",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Metro Print Services",
+        "senderLegalName": null,
+        "senderEmail": "invoices@metroprint.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "89.50"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-12"
+      }
+    },
+    {
+      "id": "DS-N-013",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 120,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-013",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1012",
+        "status": "SENT",
+        "amount": "120.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "120.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-13"
+      }
+    },
+    {
+      "id": "DS-N-014",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 245,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-014",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1013",
+        "status": "SENT",
+        "amount": "245.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "accounts@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "245.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-14"
+      }
+    },
+    {
+      "id": "DS-N-015",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Greenfield Hosting",
+        "senderEmail": "billing@greenfield.example",
+        "amount": 310,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-015",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1014",
+        "status": "SENT",
+        "amount": "310.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Greenfield Hosting",
+        "senderLegalName": null,
+        "senderEmail": "billing@greenfield.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "310.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-15"
+      }
+    },
+    {
+      "id": "DS-N-016",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Metro Print Services",
+        "senderEmail": "invoices@metroprint.example",
+        "amount": 48,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-016",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1015",
+        "status": "SENT",
+        "amount": "48.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Metro Print Services",
+        "senderLegalName": null,
+        "senderEmail": "invoices@metroprint.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "48.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-16"
+      }
+    },
+    {
+      "id": "DS-N-017",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 89.5,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-017",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1016",
+        "status": "SENT",
+        "amount": "89.50",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "89.50"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-17"
+      }
+    },
+    {
+      "id": "DS-N-018",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 120,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-018",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1017",
+        "status": "SENT",
+        "amount": "120.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "accounts@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "120.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-18"
+      }
+    },
+    {
+      "id": "DS-N-019",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Greenfield Hosting",
+        "senderEmail": "billing@greenfield.example",
+        "amount": 245,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-019",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1018",
+        "status": "SENT",
+        "amount": "245.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Greenfield Hosting",
+        "senderLegalName": null,
+        "senderEmail": "billing@greenfield.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "245.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-19"
+      }
+    },
+    {
+      "id": "DS-N-020",
+      "expectedClassification": "normal",
+      "description": "Routine invoice; sender and amount match the supplied prior history.",
+      "baseline": {
+        "senderName": "Metro Print Services",
+        "senderEmail": "invoices@metroprint.example",
+        "amount": 310,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-N-020",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1019",
+        "status": "SENT",
+        "amount": "310.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Metro Print Services",
+        "senderLegalName": null,
+        "senderEmail": "invoices@metroprint.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "310.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-normal-20"
+      }
+    },
+    {
+      "id": "DS-S-001",
+      "expectedClassification": "suspicious",
+      "description": "urgent phone request",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 100,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-001",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2000",
+        "status": "SENT",
+        "amount": "100.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "accounts@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "100.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Please call now at +1 202 555 0188 to cancel this subscription.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-1"
+      }
+    },
+    {
+      "id": "DS-S-002",
+      "expectedClassification": "suspicious",
+      "description": "suspicious wording",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 95,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-002",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2001",
+        "status": "SENT",
+        "amount": "95.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "95.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Your subscription was renewed. Call us immediately to dispute the charge.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-2"
+      }
+    },
+    {
+      "id": "DS-S-003",
+      "expectedClassification": "suspicious",
+      "description": "external link",
+      "baseline": {
+        "senderName": "Greenfield Hosting",
+        "senderEmail": "billing@greenfield.example",
+        "amount": 120,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-003",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2002",
+        "status": "SENT",
+        "amount": "120.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Greenfield Hosting",
+        "senderLegalName": null,
+        "senderEmail": "billing@greenfield.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "120.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Review the payment details at https://pay.example.test/invoice/77",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-3"
+      }
+    },
+    {
+      "id": "DS-S-004",
+      "expectedClassification": "suspicious",
+      "description": "brand impersonation",
+      "baseline": {
+        "senderName": "PayPal Security Department",
+        "senderEmail": "security@unrelated.example",
+        "amount": 240,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-004",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2003",
+        "status": "SENT",
+        "amount": "240.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "PayPal Security Department",
+        "senderLegalName": null,
+        "senderEmail": "security@unrelated.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "240.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-4"
+      }
+    },
+    {
+      "id": "DS-S-005",
+      "expectedClassification": "suspicious",
+      "description": "unusual amount",
+      "baseline": {
+        "senderName": "Metro Print Services",
+        "senderEmail": "invoices@metroprint.example",
+        "amount": 120,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-005",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2004",
+        "status": "SENT",
+        "amount": "950.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Metro Print Services",
+        "senderLegalName": null,
+        "senderEmail": "invoices@metroprint.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "950.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-5"
+      }
+    },
+    {
+      "id": "DS-S-006",
+      "expectedClassification": "suspicious",
+      "description": "overdue invoice",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 125,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-006",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2005",
+        "status": "SENT",
+        "amount": "125.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "accounts@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "125.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-6"
+      }
+    },
+    {
+      "id": "DS-S-007",
+      "expectedClassification": "suspicious",
+      "description": "unknown sender high amount",
+      "baseline": {
+        "senderName": "Unknown Vendor Ltd",
+        "senderEmail": "billing@unknown-vendor.example",
+        "amount": 850,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-007",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2006",
+        "status": "SENT",
+        "amount": "850.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Unknown Vendor Ltd",
+        "senderLegalName": null,
+        "senderEmail": "billing@unknown-vendor.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "850.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-7"
+      }
+    },
+    {
+      "id": "DS-S-008",
+      "expectedClassification": "suspicious",
+      "description": "multiple indicators",
+      "baseline": {
+        "senderName": "Microsoft Billing",
+        "senderEmail": "help@random-mail.example",
+        "amount": 780,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-008",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2007",
+        "status": "SENT",
+        "amount": "780.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Microsoft Billing",
+        "senderLegalName": null,
+        "senderEmail": "help@random-mail.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "780.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Call now at +1 202 555 0199 to dispute this unauthorized subscription. Visit https://claim.example.test",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-8"
+      }
+    },
+    {
+      "id": "DS-S-009",
+      "expectedClassification": "suspicious",
+      "description": "duplicate scenario",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 89.5,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-009",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2008",
+        "status": "SENT",
+        "amount": "89.50",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "89.50"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Second copy of invoice N-1001; please process again.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-9"
+      }
+    },
+    {
+      "id": "DS-S-010",
+      "expectedClassification": "suspicious",
+      "description": "sender change scenario",
+      "baseline": {
+        "senderName": "Acme Design Studio",
+        "senderEmail": "accounts@acme-design.example",
+        "amount": 130,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-010",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2009",
+        "status": "SENT",
+        "amount": "130.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Acme Design Studio",
+        "senderLegalName": null,
+        "senderEmail": "new-bank@acme-design.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "130.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-10"
+      }
+    },
+    {
+      "id": "DS-S-011",
+      "expectedClassification": "suspicious",
+      "description": "missing due date",
+      "baseline": {
+        "senderName": "Greenfield Hosting",
+        "senderEmail": "billing@greenfield.example",
+        "amount": 100,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-011",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2010",
+        "status": "SENT",
+        "amount": "100.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": null,
+        "senderName": "Greenfield Hosting",
+        "senderLegalName": null,
+        "senderEmail": "billing@greenfield.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "100.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-11"
+      }
+    },
+    {
+      "id": "DS-S-012",
+      "expectedClassification": "suspicious",
+      "description": "missing sender email",
+      "baseline": {
+        "senderName": "Metro Print Services",
+        "senderEmail": "invoices@metroprint.example",
+        "amount": 110,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-012",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "S-2011",
+        "status": "SENT",
+        "amount": "110.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Metro Print Services",
+        "senderLegalName": null,
+        "senderEmail": null,
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Consulting service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "110.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-suspicious-12"
+      }
+    },
+    {
+      "id": "DS-S-013",
+      "expectedClassification": "suspicious",
+      "description": "Exact duplicate of DS-N-001: same sender, invoice number, amount and content hash; duplicate detection requires cross-invoice history.",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 48,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-013",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1000",
+        "status": "SENT",
+        "amount": "48.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "48.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-duplicate-of-normal-001"
+      }
+    }
+  ]
+}
