@@ -25,6 +25,7 @@ from app.checks import run_check
 from app.db import SessionLocal, get_db
 from app.models import Check, InvoiceVersion, MonitoredInvoice, SyncState
 from app.normalize import normalize_paypal
+from app.notifications import service as alerts
 from app.paypal import to_invoice
 
 log = logging.getLogger("monitor")
@@ -111,7 +112,9 @@ async def store_version(
         return False
 
     # Checked before the version is stored: if the check fails the version stays unseen and the next pass retries.
-    await run_check(db, invoice_id, to_invoice(detail), pending)
+    result = await run_check(db, invoice_id, to_invoice(detail), pending)
+    # One alert per invoice version at most; it is committed together with the version below.
+    alerts.process_result(db, account, invoice_id, invoice.contentHash, result)
     stored = db.scalar(select(InvoiceVersion.row_id).where(
         InvoiceVersion.account_id == account, InvoiceVersion.invoice_id == invoice_id,
         InvoiceVersion.content_hash == invoice.contentHash,
