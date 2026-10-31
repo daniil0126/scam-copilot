@@ -1345,6 +1345,48 @@
         "updatedAt": "2026-10-01T10:00:00Z",
         "contentHash": "sha256:dataset-suspicious-12"
       }
+    },
+    {
+      "id": "DS-S-013",
+      "expectedClassification": "suspicious",
+      "description": "Exact duplicate of DS-N-001: same sender, invoice number, amount and content hash; duplicate detection requires cross-invoice history.",
+      "baseline": {
+        "senderName": "Northstar Office Supplies",
+        "senderEmail": "billing@northstar.example",
+        "amount": 48,
+        "currency": "USD"
+      },
+      "invoice": {
+        "id": "DS-S-013",
+        "accountId": "sandbox-dataset",
+        "source": "paypal_api",
+        "invoiceNumber": "N-1000",
+        "status": "SENT",
+        "amount": "48.00",
+        "currency": "USD",
+        "invoiceDate": "2026-10-01",
+        "dueDate": "2026-11-15",
+        "senderName": "Northstar Office Supplies",
+        "senderLegalName": null,
+        "senderEmail": "billing@northstar.example",
+        "senderPhone": null,
+        "recipientName": null,
+        "recipientEmail": "payer@example.test",
+        "paymentTerms": "Net 30",
+        "items": [
+          {
+            "name": "Monthly service",
+            "description": null,
+            "quantity": "1",
+            "unitAmount": "48.00"
+          }
+        ],
+        "paymentLinks": [],
+        "note": "Thank you for your business. Please contact our billing team with any questions.",
+        "createdAt": "2026-10-01T10:00:00Z",
+        "updatedAt": "2026-10-01T10:00:00Z",
+        "contentHash": "sha256:dataset-duplicate-of-normal-001"
+      }
     }
   ]
 }
