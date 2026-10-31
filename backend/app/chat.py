@@ -1,7 +1,9 @@
+import copy
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import llm
@@ -36,7 +38,44 @@ async def chat(body: ChatRequest, db: Session = Depends(get_db)):
         reply = await llm.chat_reply([m.model_dump() for m in body.messages], check.result if check else None)
     except llm.LLMUnavailable:
         raise HTTPException(503, "The AI assistant is not configured on the server.")
-    except Exception:
-        llm.log.exception("LLM chat failed")
+    except Exception as e:  # only the type is logged: a provider's message can carry request details
+        llm.log.warning("LLM chat failed: %s", type(e).__name__)
         raise HTTPException(502, "The AI assistant failed to answer. Try again.")
     return {"reply": reply}
+
+
+class ExplainRequest(BaseModel):
+    question: str | None = Field(default=None, min_length=1, max_length=llm.MAX_MESSAGE_CHARS)
+
+
+@router.post("/invoices/{invoice_id}/explain")
+async def explain(invoice_id: str, body: ExplainRequest | None = None, db: Session = Depends(get_db)):
+    """AI explanation of a checked invoice on request (docs/plans/contracts.md, section 5).
+
+    Without a question: the explanation of the result, also for a LOW one, stored with the check. With a question: an
+    answer about this invoice. A model that fails or is rejected gives `status: UNAVAILABLE`, not an error: the check
+    itself is unaffected.
+    """
+    check = db.scalars(select(Check).where(Check.paypal_invoice_id == invoice_id)).first()
+    if check is None:
+        raise HTTPException(404, "This invoice has not been checked yet.")
+    provider = llm.get_provider()
+    if provider is None:
+        raise HTTPException(503, "The AI assistant is not configured on the server.")
+
+    result = copy.deepcopy(check.result)
+    if body and body.question:
+        try:
+            reply = await llm.chat_reply([{"role": "user", "content": body.question}], result)
+        except Exception as e:
+            llm.log.warning("LLM explain failed: %s", type(e).__name__)
+            return {"ai": {"status": "UNAVAILABLE", "summary": llm.UNAVAILABLE_TEXT, "provider": provider.name}}
+        return {"ai": {"status": "OK", "summary": reply, "provider": provider.name}}
+
+    analysis = await llm.analyse_invoice(result["invoice"], result, force=True)
+    if analysis is None:  # the provider was switched off between the two lines above
+        raise HTTPException(503, "The AI assistant is not configured on the server.")
+    llm.apply_analysis(result, analysis)
+    check.result = result  # a new object: SQLAlchemy does not see a change made inside the old JSON
+    db.commit()
+    return {"ai": result["ai"]}
