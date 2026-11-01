@@ -2,7 +2,10 @@ export const API_URL = "http://localhost:8000"
 
 export class ApiError extends Error {}
 
-export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+const INVOICE_NOT_FOUND = "This invoice was not found in PayPal."
+
+// `notFound` replaces the message for a 404 on calls that are not about a PayPal invoice.
+export async function request<T>(path: string, init?: RequestInit, notFound = INVOICE_NOT_FOUND): Promise<T> {
     let res: Response
     try {
         res = await fetch(`${API_URL}${path}`, {
@@ -15,7 +18,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     if (!res.ok) {
         const body = await res.json().catch(() => null)
         const detail = typeof body?.detail === "string" ? body.detail : null
-        throw new ApiError(res.status === 404 ? "This invoice was not found in PayPal." : (detail ?? `Server error (${res.status}).`))
+        throw new ApiError(res.status === 404 ? notFound : (detail ?? `Server error (${res.status}).`))
     }
     return res.json() as Promise<T>
 }

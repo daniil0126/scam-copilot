@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, ShieldAlert, type LucideIcon } from "lucide-react"
-import type { FindingSeverity, RiskLevel } from "../api/types.js"
+import type { AlertLevel, FindingSeverity, RiskLevel } from "../api/types.js"
 
 type LevelMeta = {
     label: string
@@ -15,6 +15,14 @@ export const LEVEL_META: Record<RiskLevel, LevelMeta> = {
     high: { label: "High risk", icon: ShieldAlert, text: "text-[var(--danger)]", soft: "bg-[var(--danger-soft)]", border: "border-[var(--danger)]/30", stroke: "var(--danger)" },
     medium: { label: "Medium risk", icon: AlertTriangle, text: "text-[var(--warning)]", soft: "bg-[var(--warning-soft)]", border: "border-[var(--warning)]/30", stroke: "var(--warning)" },
     low: { label: "Low risk", icon: CheckCircle2, text: "text-[var(--success)]", soft: "bg-[var(--success-soft)]", border: "border-[var(--success)]/30", stroke: "var(--success)" },
+}
+
+// Alerts and reports use four capitalised levels. CRITICAL looks like HIGH with a stronger fill.
+export const ALERT_LEVEL_META: Record<AlertLevel, LevelMeta & { solid: string }> = {
+    CRITICAL: { ...LEVEL_META.high, label: "Critical risk", solid: "bg-[var(--danger)]" },
+    HIGH: { ...LEVEL_META.high, solid: "bg-[var(--danger)]" },
+    MEDIUM: { ...LEVEL_META.medium, solid: "bg-[var(--warning)]" },
+    LOW: { ...LEVEL_META.low, solid: "bg-[var(--success)]" },
 }
 
 export const SEVERITY_TEXT: Record<FindingSeverity, string> = {

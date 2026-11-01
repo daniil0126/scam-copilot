@@ -21,7 +21,7 @@ function money(amount: string | null, currency: string | null): string {
 }
 
 // `highlightSince`: events detected after this moment are marked as new.
-export default function MonitoringCard({ status, error, busy, sync, toggle, highlightSince }: Monitoring & { highlightSince: string }) {
+export default function MonitoringCard({ status, summary, error, busy, sync, toggle, highlightSince }: Monitoring & { highlightSince: string }) {
     const [showAll, setShowAll] = useState(false)
 
     if (!status) {
@@ -71,6 +71,19 @@ export default function MonitoringCard({ status, error, busy, sync, toggle, high
                     <dt className="text-xs text-[var(--muted)]">High risk</dt>
                     <dd className={`text-xl font-bold tabular-nums ${highRisk > 0 ? "text-[var(--danger)]" : ""}`}>{highRisk}</dd>
                 </div>
+                {/* Counted from the stored analyses; the monitor's own counters do not know these two yet. */}
+                {summary && (
+                    <>
+                        <div className={`rounded-lg px-3 py-2 ${summary.potentialDuplicates > 0 ? "bg-[var(--warning-soft)]" : "bg-[var(--bg)]"}`}>
+                            <dt className="text-xs text-[var(--muted)]">Possible duplicates</dt>
+                            <dd className="text-xl font-bold tabular-nums">{summary.potentialDuplicates}</dd>
+                        </div>
+                        <div className={`rounded-lg px-3 py-2 ${summary.vendorAnomalies > 0 ? "bg-[var(--warning-soft)]" : "bg-[var(--bg)]"}`}>
+                            <dt className="text-xs text-[var(--muted)]">Vendor anomalies</dt>
+                            <dd className="text-xl font-bold tabular-nums">{summary.vendorAnomalies}</dd>
+                        </div>
+                    </>
+                )}
             </dl>
 
             <div className="mt-3 flex gap-2 px-4">

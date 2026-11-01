@@ -30,6 +30,8 @@ export type Message = {
 
 export type TabId = "check" | "monitor" | "history" | "chat" | "settings"
 
+export type MonitorSection = "overview" | "alerts" | "report"
+
 export type Theme = "light" | "dark"
 
 export type UserSettings = {
@@ -151,3 +153,86 @@ export type CheckSource = {
     // What this source cannot show, so a missing field is not read as "fine" or as "changed".
     limits?: string
 }
+
+// Alerts, alert rules, the monthly report and the summary. The backend writes risk levels in capitals
+// and has four of them, unlike the three lower-case `RiskLevel` of a single check.
+export type AlertLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+
+export type AlertEventType = "CRITICAL_RISK" | "HIGH_RISK" | "VENDOR_IMPERSONATION" | "POTENTIAL_DUPLICATE" | "SUSPICIOUS_PAYMENT_LINK"
+
+// What an alert is about, from the invoice's latest stored check. Null when that check no longer exists.
+export type AlertInvoice = {
+    checkId: string
+    number: string | null
+    supplierName: string | null
+    amount: number | null
+    currency: string | null
+    dueDate: string | null
+}
+
+export type AppNotification = {
+    id: string
+    invoiceId: string
+    eventType: AlertEventType
+    riskLevel: AlertLevel
+    detectedAt: string
+    signals: string[]
+    read: boolean
+    link: string
+    title: string
+    message: string
+    invoice: AlertInvoice | null
+}
+
+export type NotificationsPage = {
+    items: AppNotification[]
+    unread: number
+    nextCursor: string | null
+}
+
+export type AlertSettings = {
+    alertThreshold: "HIGH" | "CRITICAL"
+    categories: Record<AlertEventType, boolean>
+}
+
+export type MonitoringSummary = {
+    invoices: number
+    high: number
+    critical: number
+    potentialDuplicates: number
+    vendorAnomalies: number
+    recentDetections: { invoiceId: string; riskLevel: AlertLevel; detectedAt: string }[]
+}
+
+export type ReportMeta = { saved: boolean; version?: number; createdAt?: string }
+
+export type EmptyReport = ReportMeta & { month: string; empty: true; message: string; wording: string }
+
+export type FullReport = ReportMeta & {
+    month: string
+    empty: false
+    wording: string
+    analyses: number
+    invoices: number
+    byLevel: Record<AlertLevel, number>
+    potentialDuplicates: number
+    vendorAnomalies: number
+    suspiciousLinks: number
+    topFlaggedSuppliers: { supplierEmail: string; supplierName: string | null; flaggedInvoices: number }[]
+    weeklyTrend: { weekStart: string; analyses: number; averageScore: number; highOrCritical: number }[]
+    manualReview: {
+        invoiceId: string
+        riskLevel: AlertLevel
+        riskScore: number
+        supplierName: string | null
+        signs: string[]
+        // Absent in reports saved before these were added.
+        number?: string | null
+        amount?: number | null
+        currency?: string | null
+        dueDate?: string | null
+        checkId?: string | null
+    }[]
+}
+
+export type MonthlyReport = EmptyReport | FullReport

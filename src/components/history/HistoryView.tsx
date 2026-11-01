@@ -9,10 +9,12 @@ type HistoryViewProps = {
     settings: UserSettings
     // Changes when the background monitor stores something new, so the list reloads without a click.
     reloadKey?: string
+    // The open check lives in the parent so another tab can open a given one.
+    openId: string | null
+    onOpenChange: (id: string | null) => void
 }
 
-export default function HistoryView({ settings, reloadKey }: HistoryViewProps) {
-    const [openId, setOpenId] = useState<string | null>(null)
+export default function HistoryView({ settings, reloadKey, openId, onOpenChange }: HistoryViewProps) {
     const [history, setHistory] = useState<HistoryEntry[] | null>(null)
     const [error, setError] = useState<string | null>(null)
     const opened = history?.find(h => h.id === openId)
@@ -41,7 +43,7 @@ export default function HistoryView({ settings, reloadKey }: HistoryViewProps) {
         return (
             <div>
                 <button
-                    onClick={() => setOpenId(null)}
+                    onClick={() => onOpenChange(null)}
                     className="flex items-center gap-1.5 px-4 pt-3 text-sm font-medium text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
                 >
                     <ArrowLeft size={16} aria-hidden /> Back to history
@@ -61,6 +63,6 @@ export default function HistoryView({ settings, reloadKey }: HistoryViewProps) {
     }
 
     return (
-        <HistoryItem data={history} settings={settings} onOpen={(id) => setOpenId(id)} />
+        <HistoryItem data={history} settings={settings} onOpen={onOpenChange} />
     )
 }

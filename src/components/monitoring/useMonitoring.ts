@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { fetchMonitoring, pauseMonitoring, resumeMonitoring, syncMonitoring } from "../../api/client.js"
-import type { MonitoringStatus } from "../../api/types.js"
+import { fetchMonitoring, fetchMonitoringSummary, pauseMonitoring, resumeMonitoring, syncMonitoring } from "../../api/client.js"
+import type { MonitoringStatus, MonitoringSummary } from "../../api/types.js"
 
 const POLL_MS = 10_000
 const POLL_IDLE_MS = 30_000 // paused or failing: nothing changes on its own, so ask less often
@@ -10,6 +10,7 @@ export type MonitoringBusy = "sync" | "toggle" | null
 // One poller for the whole panel (header indicator, tab badge, Monitor tab). It skips polls while the page is hidden.
 export function useMonitoring() {
     const [status, setStatus] = useState<MonitoringStatus | null>(null)
+    const [summary, setSummary] = useState<MonitoringSummary | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [busy, setBusy] = useState<MonitoringBusy>(null)
     const load = useRef<() => Promise<void>>(() => Promise.resolve())
@@ -25,6 +26,8 @@ export function useMonitoring() {
                     if (cancelled) return
                     setStatus(next)
                     setError(null)
+                    // The extra counters are optional: an older backend without /monitoring/summary just leaves them out.
+                    fetchMonitoringSummary().then(s => { if (!cancelled) setSummary(s) }).catch(() => { if (!cancelled) setSummary(null) })
                     delay = next.state === "ACTIVE" ? POLL_MS : POLL_IDLE_MS
                 } catch (e) {
                     if (cancelled) return
@@ -56,6 +59,7 @@ export function useMonitoring() {
 
     return {
         status,
+        summary,
         error,
         busy,
         sync: () => act("sync", syncMonitoring),

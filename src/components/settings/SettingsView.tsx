@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { Moon, Sun, type LucideIcon } from "lucide-react"
 import type { Theme, UserSettings } from "../../api/types.js"
 import { loadInboundSecret, saveInboundSecret } from "../../lib/inboundSecret.js"
+import AlertRules from "./AlertRules.js"
 
 type Props = {
     settings: UserSettings
@@ -98,8 +99,12 @@ export default function SettingsView({ settings, onChange }: Props) {
                 </p>
             </Section>
 
-            <Section title="Notifications">
-                <Toggle label="Show risk notifications" checked={settings.notifications} onChange={notifications => onChange({ notifications })} />
+            <Section title="Alerts">
+                <Toggle label="Show the unread count on the Monitor tab" checked={settings.notifications} onChange={notifications => onChange({ notifications })} />
+            </Section>
+
+            <Section title="Alert rules">
+                <AlertRules />
             </Section>
         </div>
     )

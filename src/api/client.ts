@@ -1,5 +1,8 @@
 import { API_URL, ApiError, request } from "./httpClient.js"
-import type { BulkCheckResponse, ChatTurn, HistoryEntry, InboundEmailResponse, MonitoringState, MonitoringStatus, VerificationResult } from "./types.js"
+import type {
+    AlertSettings, AppNotification, BulkCheckResponse, ChatTurn, HistoryEntry, InboundEmailResponse, MonitoringState,
+    MonitoringStatus, MonitoringSummary, MonthlyReport, NotificationsPage, VerificationResult,
+} from "./types.js"
 
 export const checkPayPalInvoice = (invoiceId: string) =>
     request<VerificationResult>("/checks", { method: "POST", body: JSON.stringify({ invoice_id: invoiceId }) })
@@ -49,3 +52,28 @@ export const fetchMonitoring = () => request<MonitoringStatus>("/monitoring")
 export const pauseMonitoring = () => request<{ state: MonitoringState }>("/monitoring/pause", { method: "POST" })
 export const resumeMonitoring = () => request<{ state: MonitoringState }>("/monitoring/resume", { method: "POST" })
 export const syncMonitoring = () => request<{ jobId: string }>("/monitoring/sync", { method: "POST" })
+
+// Counters computed from the stored analyses (the monitor's own counters do not know duplicates or vendor anomalies yet).
+export const fetchMonitoringSummary = () => request<MonitoringSummary>("/monitoring/summary")
+
+// Alerts: one per stored invoice version at most, raised by the backend when a version is checked.
+export const fetchNotifications = (opts: { unreadOnly?: boolean; cursor?: string | null; limit?: number } = {}) => {
+    const query = new URLSearchParams()
+    if (opts.unreadOnly) query.set("unreadOnly", "true")
+    if (opts.cursor) query.set("cursor", opts.cursor)
+    if (opts.limit) query.set("limit", String(opts.limit))
+    const text = query.toString()
+    return request<NotificationsPage>(`/notifications${text ? `?${text}` : ""}`)
+}
+export const fetchUnreadCount = () => request<{ unread: number }>("/notifications/unread-count")
+export const markNotificationRead = (id: string) =>
+    request<AppNotification>(`/notifications/${encodeURIComponent(id)}/read`, { method: "POST" }, "This alert no longer exists.")
+
+export const fetchAlertSettings = () => request<AlertSettings>("/monitoring/settings")
+export const saveAlertSettings = (settings: { alertThreshold: AlertSettings["alertThreshold"]; categories: Partial<AlertSettings["categories"]> }) =>
+    request<AlertSettings>("/monitoring/settings", { method: "PUT", body: JSON.stringify(settings) })
+
+// `month` is YYYY-MM. GET returns the last saved report or the same figures computed now; POST stores a new version.
+export const fetchMonthlyReport = (month: string) => request<MonthlyReport>(`/reports/monthly?month=${encodeURIComponent(month)}`)
+export const saveMonthlyReport = (month: string) =>
+    request<MonthlyReport>("/reports/monthly", { method: "POST", body: JSON.stringify({ month }) })

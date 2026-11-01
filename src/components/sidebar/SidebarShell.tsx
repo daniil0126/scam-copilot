@@ -9,7 +9,8 @@ import FloatingCollapsedTab from "./FloatingCollapsedTab.js"
 import CheckTab from "../check/CheckTab.js"
 import ChatTab from "../chat/ChatTab.js"
 import HistoryView from "../history/HistoryView.js"
-import MonitoringCard from "../monitoring/MonitoringCard.js"
+import MonitorTab from "../monitoring/MonitorTab.js"
+import { useUnreadCount } from "../alerts/useUnreadCount.js"
 import { eventKey } from "../monitoring/monitoringMeta.js"
 import MonitorStatusChip from "../monitoring/MonitorStatusChip.js"
 import { useMonitoring } from "../monitoring/useMonitoring.js"
@@ -30,7 +31,9 @@ export default function SidebarShell({ store, fill = false }: Props) {
     const { settings, update } = useSettings()
     const [tab, setTab] = useState<TabId>("check")
     const [shownCheckId, setShownCheckId] = useState<string | null>(null)
+    const [historyOpenId, setHistoryOpenId] = useState<string | null>(null)
     const monitoring = useMonitoring()
+    const alerts = useUnreadCount()
     // The badge counts what the monitor found after the panel opened or after the Monitor tab was last in view.
     const [seenAt, setSeenAt] = useState(() => new Date().toISOString())
     // Rows newer than this are highlighted on the Monitor tab: what arrived since the tab was last in view, and what arrives while it is.
@@ -38,12 +41,22 @@ export default function SidebarShell({ store, fill = false }: Props) {
     const changeTab = (next: TabId) => {
         if (next === "monitor" && tab !== "monitor") setHighlightSince(seenAt)
         if (tab === "monitor" || next === "monitor") setSeenAt(new Date().toISOString())
+        if (next !== "history") setHistoryOpenId(null)  // leaving History closes the check that was open in it
         setTab(next)
     }
-    const unseen = tab === "monitor" ? [] : (monitoring.status?.recentEvents ?? []).filter(e => e.detectedAt > seenAt)
-    const badges: Partial<Record<TabId, TabBadge>> = {
-        monitor: { count: unseen.length, urgent: unseen.some(e => e.riskLevel === "high") },
+    const openCheck = (checkId: string) => {
+        setHistoryOpenId(checkId)
+        setTab("history")
+        if (tab === "monitor") setSeenAt(new Date().toISOString())
     }
+    const unseen = tab === "monitor" ? [] : (monitoring.status?.recentEvents ?? []).filter(e => e.detectedAt > seenAt)
+    // The server's unread alerts when it can be asked, otherwise what the monitor found since the panel opened.
+    const alertsKnown = alerts.error === null
+    const badges: Partial<Record<TabId, TabBadge>> = settings.notifications ? {
+        monitor: alertsKnown
+            ? { count: alerts.unread, urgent: false }
+            : { count: unseen.length, urgent: unseen.some(e => e.riskLevel === "high") },
+    } : {}
 
     const panelRef = useRef<HTMLElement>(null)
     const restoreFocusTo = useRef<Element | null>(null)
@@ -99,8 +112,8 @@ export default function SidebarShell({ store, fill = false }: Props) {
                     <div hidden={tab !== "check"}><CheckTab onOpenHistory={() => changeTab("history")} onShownChange={setShownCheckId} /></div>
                     {/* Kept mounted so the conversation survives tab switches. */}
                     <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab checkId={shownCheckId} /></div>
-                    {tab === "monitor" && <MonitoringCard {...monitoring} highlightSince={highlightSince} />}
-                    {tab === "history" && <HistoryView settings={settings} reloadKey={eventKey(monitoring.status?.recentEvents[0])} />}
+                    {tab === "monitor" && <MonitorTab monitoring={monitoring} alerts={alerts} highlightSince={highlightSince} onOpenCheck={openCheck} />}
+                    {tab === "history" && <HistoryView settings={settings} reloadKey={eventKey(monitoring.status?.recentEvents[0])} openId={historyOpenId} onOpenChange={setHistoryOpenId} />}
                     {tab === "settings" && <SettingsView settings={settings} onChange={update} />}
                 </main>
             </aside>
