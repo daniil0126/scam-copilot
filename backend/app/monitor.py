@@ -20,7 +20,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app import paypal
+from app import audit_log, paypal
 from app.checks import run_check
 from app.db import SessionLocal, get_db
 from app.models import Check, InvoiceVersion, MonitoredInvoice, SyncState
@@ -273,21 +273,22 @@ def get_monitoring(db: Session = Depends(get_db)):
     }
 
 
-def _set_state(db: Session, value: str) -> dict:
+def _set_state(db: Session, value: str, action: str) -> dict:
     state = _state(db, account_id())
-    state.state = value
+    before, state.state = state.state, value
+    audit_log.record(db, account_id(), action, {"before": before, "after": value})
     db.commit()
     return {"state": state.state}
 
 
 @router.post("/pause")
 def pause(db: Session = Depends(get_db)):
-    return _set_state(db, "PAUSED")
+    return _set_state(db, "PAUSED", "monitoring.pause")
 
 
 @router.post("/resume")
 def resume(db: Session = Depends(get_db)):
-    return _set_state(db, "ACTIVE")
+    return _set_state(db, "ACTIVE", "monitoring.resume")
 
 
 @router.post("/sync")
@@ -295,6 +296,8 @@ async def sync(db: Session = Depends(get_db)):
     """Starts a pass now and returns at once."""
     if _state(db, account_id()).state == "PAUSED":
         raise HTTPException(409, "Monitoring is paused")
+    audit_log.record(db, account_id(), "monitoring.sync")
+    db.commit()
 
     async def job():
         try:

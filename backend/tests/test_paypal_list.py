@@ -153,3 +153,14 @@ def test_search_post_counts_as_a_read(monkeypatch):
     client_, calls, _ = _scripted(monkeypatch, [503, 200])
     asyncio.run(paypal.paypal_request("POST", "/v2/invoicing/search-invoices?page=1", json={}, client=client_))
     assert len(calls) == 2
+
+
+def test_invoice_id_that_could_change_the_url_is_refused():
+    import pytest
+    from fastapi import HTTPException
+
+    assert paypal.valid_invoice_id("INV2-ABCD-1234-EFGH-5678") == "INV2-ABCD-1234-EFGH-5678"
+    for bad in ["", "..", "../x", "INV2/1?x=1", "INV2-1 2", "a" * 80, "%2e%2e", None]:
+        with pytest.raises(HTTPException) as err:
+            paypal.valid_invoice_id(bad)
+        assert err.value.status_code == 422

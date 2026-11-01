@@ -1,6 +1,7 @@
 import asyncio
 import os
 import random
+import re
 import time
 from datetime import date, datetime, timedelta, timezone
 
@@ -37,6 +38,16 @@ async def get_access_token(client: httpx.AsyncClient) -> str:
     _token["value"] = body["access_token"]
     _token["expires_at"] = time.time() + body["expires_in"]
     return _token["value"]
+
+
+INVOICE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{2,63}")  # INV2-XXXX-XXXX-XXXX-XXXX; nothing that could change the URL path
+
+
+def valid_invoice_id(value: str) -> str:
+    """The id unchanged, or 422: it goes into a PayPal URL, so `/`, `?`, `..` and the like must never get there."""
+    if not isinstance(value, str) or not INVOICE_ID.fullmatch(value):
+        raise HTTPException(422, "Invalid invoice id")
+    return value
 
 
 MAX_ATTEMPTS = 3
@@ -194,7 +205,7 @@ async def list_invoices():
 @router.get("/invoices/{invoice_id}")
 async def get_invoice(invoice_id: str):
     """Fetches an invoice from PayPal Invoicing API v2."""
-    data = await paypal_request("GET", f"/v2/invoicing/invoices/{invoice_id}")
+    data = await paypal_request("GET", f"/v2/invoicing/invoices/{valid_invoice_id(invoice_id)}")
     return to_invoice(data)
 
 

@@ -103,6 +103,8 @@ async def list_tools() -> list[dict]:
 def _check_args(name: str, args: dict, schema: dict) -> None:
     if not isinstance(args, dict):
         raise McpUnavailable("tool arguments must be an object")
+    if "invoice_id" in args and not paypal.INVOICE_ID.fullmatch(str(args["invoice_id"])):
+        raise McpToolError(f"{name}: invalid invoice id")
     allowed = set((schema or {}).get("properties", {}))
     unknown = set(args) - allowed
     if unknown:

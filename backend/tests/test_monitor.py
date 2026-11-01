@@ -285,3 +285,40 @@ def test_account_id_is_a_short_hash_that_hides_the_client_id(monkeypatch):
     assert "client-id-123" not in first
     monkeypatch.setattr(paypal, "PAYPAL_CLIENT_ID", "other")
     assert monitor.account_id() != first
+
+
+def test_pause_resume_and_sync_are_audited_and_a_refused_sync_is_not(monkeypatch):
+    import sqlalchemy as sa
+    from fastapi.testclient import TestClient
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+
+    from app.audit_log import AuditEvent
+    from app.db import Base, get_db
+    from app.main import app
+
+    engine = sa.create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+
+    def get_test_db():
+        with Session() as session:
+            yield session
+
+    async def no_pass(db):
+        return {}
+
+    monkeypatch.setattr(monitor, "sync_once", no_pass)
+    app.dependency_overrides[get_db] = get_test_db
+    try:
+        client = TestClient(app)
+        assert client.post("/monitoring/pause").status_code == 200
+        assert client.post("/monitoring/sync").status_code == 409
+        assert client.post("/monitoring/resume").status_code == 200
+        assert client.post("/monitoring/sync").status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+    with Session() as check:
+        rows = check.query(AuditEvent).order_by(AuditEvent.id).all()
+    assert [r.action for r in rows] == ["monitoring.pause", "monitoring.resume", "monitoring.sync"]
+    assert rows[0].detail == {"before": "ACTIVE", "after": "PAUSED"}
