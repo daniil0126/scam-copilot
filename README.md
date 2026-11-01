@@ -91,7 +91,7 @@ Credentials come from PayPal Developer → Apps & Credentials → Sandbox → yo
 ### 2. Extension
 
 ```bash
-npm install
+npm ci
 npm run build
 ```
 
@@ -133,7 +133,7 @@ npx tsc -b
 - **Invoice emails.** Sandbox emails are not delivered to a mailbox, only shown in the Developer Dashboard, so the email path is tested on saved emails; the layout of real PayPal emails is not tested. The update email omits the seller's note, and no email shows the issuer's email or phone. A forwarded email loses its sender authentication, so only its content and links are judged.
 - **Sandbox only.** The project has not been tested against live PayPal accounts.
 - **Rule-based baseline.** The rules are hand-tuned on demo scenarios, not on real fraud data.
-- **PDF analysis** in the side panel shows clearly labelled sample data.
+- **No PDF upload.** Invoices are read from PayPal's API, the payer page and PayPal's invoice emails; a PDF file is not analysed.
 
 ## License
 

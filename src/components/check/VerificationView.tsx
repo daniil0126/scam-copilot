@@ -6,14 +6,12 @@ import RiskSummary from "./RiskSummary.js"
 import ComparisonTable from "./ComparisonTable.js"
 import RecommendationCard from "./RecommendationCard.js"
 import VerificationActions from "./VerificationActions.js"
-import PayPalDemoModal from "./PayPalDemoModal.js"
 import { groupFindings } from "../../lib/groupResult.js"
 
-export default function VerificationView({ result, sample = false }: { result: VerificationResult, sample?: boolean }) {
+export default function VerificationView({ result }: { result: VerificationResult }) {
     const [alertOpen, setAlertOpen] = useState(true)
     const [diffOpen, setDiffOpen] = useState(true)
     const [detailsOpen, setDetailsOpen] = useState(false)
-    const [paypalOpen, setPaypalOpen] = useState(false)
 
     const meta = LEVEL_META[result.level]
     const { title, subtitle } = alertTitle(result.level, groupFindings(result.findings).flagged.length)
@@ -75,15 +73,12 @@ export default function VerificationView({ result, sample = false }: { result: V
             <VerificationActions
                 detailsOpen={detailsOpen}
                 onToggleDetails={() => setDetailsOpen(o => !o)}
-                onCheckPayPal={() => setPaypalOpen(true)}
             />
 
             <p className="text-[11px] leading-snug text-[var(--muted)]">
-                {sample && "Sample analysis data for demonstration. "}The score is not a calibrated probability of fraud, and differences do not prove fraud.
+                The score is not a calibrated probability of fraud, and differences do not prove fraud.
                 {result.level === "low" && " Only the available signals were checked, so a low score does not guarantee the invoice is safe."}
             </p>
-
-            {paypalOpen && <PayPalDemoModal onClose={() => setPaypalOpen(false)} />}
         </div>
     )
 }
