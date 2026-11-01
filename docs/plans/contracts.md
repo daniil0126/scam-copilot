@@ -1,6 +1,6 @@
 # Контракты данных и API
 
-**Версия:** 0.7 (описаны уже реализованные эндпоинты уведомлений и отчётов Руслана, таблицы `analyses`, `alert_settings`, `audit_log`). Ранее 0.6 (добавлен `POST /webhooks/paypal`). Ранее 0.5 (добавлены `source = "email"` и `POST /inbound/email`, см. раздел 8; на подтверждение командой в PR с пометкой `contract`). Далее без изменений, версия 0.4: (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
+**Версия:** 0.8 (чат читает счета PayPal двумя инструментами: `toolsUsed` в ответе `/chat`, `tools` в `/ai/status`). Ранее 0.7 (описаны уже реализованные эндпоинты уведомлений и отчётов Руслана, таблицы `analyses`, `alert_settings`, `audit_log`). Ранее 0.6 (добавлен `POST /webhooks/paypal`). Ранее 0.5 (добавлены `source = "email"` и `POST /inbound/email`, см. раздел 8; на подтверждение командой в PR с пометкой `contract`). Далее без изменений, версия 0.4: (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
 
 Основано на текущем коде: `backend/app/paypal.py` (`to_invoice`), `scoring.py` (`score_invoice`), `checks.py` (`run_check`), `models.py` (`Check`), `src/api/types.ts`.
 
@@ -209,6 +209,16 @@ class Notification(BaseModel):
 
 `MonthlyReport` (реализовано, `backend/app/reports/service.py`): `{month, empty, wording, message?}` для пустого месяца, иначе `{month, empty:false, wording, analyses, invoices, byLevel, potentialDuplicates, vendorAnomalies, suspiciousLinks, topFlaggedSuppliers[{supplierEmail, supplierName, flaggedInvoices}], weeklyTrend[{weekStart, analyses, averageScore, highOrCritical}], manualReview[{invoiceId, riskLevel, riskScore, supplierName, signs[]}]}`; все числа считаются из `analyses`. Нужно подтверждение команды (PR с пометкой `contract`).
 
+### Чат с инструментами PayPal (0.8)
+Если выполнены все условия (задан провайдер ИИ, он умеет вызывать инструменты, `paypal_mcp.available()`), `POST /chat` позволяет модели прочитать счета подключённого аккаунта Sandbox. Только чтение, ровно два инструмента (`list_invoices`, `get_invoice`), не более 3 ходов и 4 вызовов на вопрос. Форма запроса не меняется.
+
+| Эндпоинт | Было | Добавлено (необязательное поле) |
+|---|---|---|
+| `POST /chat` | `{ "reply": str }` | `toolsUsed: string[]`: имена инструментов, которые вернули данные. Поля нет, если инструменты не использовались |
+| `GET /ai/status` | `{ "enabled": bool, "provider": str \| null }` | `tools: string[]`: список доступных инструментов. Поля нет, если агент выключен |
+
+Если агент недоступен (нет Node или ключей, модель не поддерживает инструменты, ошибка PayPal или модели), `/chat` отвечает как раньше, без инструментов. Результаты инструментов маскируются (почта, телефон), усекаются и передаются как данные; итоговый ответ проходит те же проверки, что и обычный.
+
 ## 6. Фикстуры для Дениса, Адиля, Руслана
 
 Даниил кладёт образцы JSON в `backend/tests/fixtures/contracts/` (в этом же PR, что и версия контракта 0.2):
@@ -229,6 +239,7 @@ class Notification(BaseModel):
 |---|---|---|---|
 | 0.1 | 2026-10-30 | Первый черновик на основе текущего кода | Даниил |
 | 0.2 | 2026-10-30 | Q1: режимы Connected/Standalone, `accountId` nullable, `source` += `pdf`. Q3: PayPal OAuth, раздел 9 | Даниил |
+| 0.8 | 2026-11-02 | `POST /chat` += `toolsUsed?`, `GET /ai/status` += `tools?`. Только добавление необязательных полей | Даниил (черновик: Claude) |
 | 0.7 | 2026-11-01 | Документированы уже реализованные `GET /notifications` (курсор), `/notifications/unread-count`, `GET/POST /reports/monthly`, `GET /monitoring/summary`; форма `MonthlyReport`; таблицы `analysis_signals`, `alert_settings`, `audit_log`. Только описание кода, поведение не менялось | Даниил (черновик: Claude), код: Руслан |
 | 0.6 | 2026-10-31 | Новый эндпоинт `POST /webhooks/paypal`. Только добавление | Даниил (черновик: Claude) |
 | 0.5 | 2026-10-31 (дополнено в тот же день: `Finding.detail?`, `Finding.skipped?`, оба необязательные) | `Invoice.source` += `email`. Новый эндпоинт `POST /inbound/email` и таблица `invoice_emails` (письма PayPal плательщику: «Invoice from X», «X updated your invoice»). Только добавление | Даниил (черновик: Claude) |
