@@ -97,7 +97,7 @@ npm run build
 
 1. Open `chrome://extensions` and enable **Developer mode**.
 2. Click **Load unpacked** and select the `dist/` folder.
-3. The extension ID is fixed by the `key` in `public/manifest.json` (`cofihcnoeiipgcppdollgpalapkalkem`), which is what `PROJECT_ID` in `.env.example` holds. The backend only accepts requests from that origin.
+3. The extension ID is fixed by the `key` in `public/manifest.json` (`hjkgljmknkdiikgaflofnlmhbjjjilob`), which is what `PROJECT_ID` in `.env.example` holds. The backend only accepts requests from that origin.
 4. Click the Scam Copilot icon to open the side panel.
 
 The UI can also run on its own for development: `npm run dev`. Page reading only works inside the extension.
