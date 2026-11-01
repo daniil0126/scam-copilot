@@ -20,7 +20,7 @@ SCENARIOS = [
     ("3. Same supplier, amount x4.5", dict(supplier_name="Acme Supplies Ltd.", supplier_email=ACME, amount="500.00"), "medium"),
     ("4. Same supplier, payment email swapped", dict(supplier_name="Acme Supplies Ltd.", supplier_email="pay@acme-supp1ies.example.com", amount="100.00"), "high"),
     ("5. Same PayPal email, different name", dict(supplier_name="Totally New Name", supplier_email=ACME, amount="100.00"), "medium"),
-    ("6. Fake Norton invoice with phone number", dict(supplier_name="Norton Security Renewal", supplier_email="qx7731@mail-pay.example.com", amount="499.00",
+    ("6. Fake antivirus renewal with phone number", dict(supplier_name="Premium Antivirus Renewal", supplier_email="qx7731@mail-pay.example.com", amount="499.00",
         supplier_phone="8885550142", note="Your subscription has been renewed and charged. If unauthorized, call 1-888-555-0142 to cancel and get a refund."), "high"),
     ("7. Ordinary small invoice, new supplier", dict(supplier_name="Local Print Shop", supplier_email="orders@localprint.example.com", amount="60.00", note="Business cards, 500 pcs"), "low"),
 ]
