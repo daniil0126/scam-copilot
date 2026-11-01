@@ -30,10 +30,12 @@ TIMEOUT = 15  # per model: a model that has not answered by now is slower than t
 MAX_TOKENS = 700
 _lock = asyncio.Semaphore(2)  # free models have a low requests-per-minute limit
 _verified: dict[str, float] = {}  # model id -> time the zero price was confirmed
+_tools: dict[str, bool] = {}  # model id -> whether OpenRouter lists "tools" among its supported parameters (read with the price)
 _cooling: dict[str, float] = {}  # model id -> time until which it is skipped after failing (a 429 rarely clears sooner)
 COOLDOWN = 60.0
 
 
+MAX_TOOL_CALLS = 4  # tool calls taken from one model reply; the agent applies its own, lower limits
 ROUNDS = 2  # passes over the list; the second follows a short pause
 ROUND_PAUSE = 3.0
 BUSY_STATUSES = {403, 408, 425, 429, 500, 502, 503, 504}  # 403: this model is closed to the account (a data policy), not the key  # worth trying another model: rate limit, overload, upstream error
@@ -41,6 +43,10 @@ BUSY_STATUSES = {403, 408, 425, 429, 500, 502, 503, 504}  # 403: this model is c
 
 class _Busy(Exception):
     """This model could not answer right now (rate limit, overload, timeout, empty answer)."""
+
+
+class _NoTools(Exception):
+    """This model does not take tools. It is skipped for a tool request, without cooling: it still serves plain chat."""
 
 
 class PaidModelRefused(Exception):
@@ -91,6 +97,7 @@ class OpenRouterProvider:
         if paid:
             raise PaidModelRefused(f"{model!r} is not free: {paid}")
         _verified[model] = time.monotonic()
+        _tools[model] = "tools" in (entry.get("supported_parameters") or [])
 
     async def complete(self, system: str, messages: list[dict], *, json_output: bool = False) -> str:
         failures: list[str] = []
@@ -114,15 +121,17 @@ class OpenRouterProvider:
                 return _json_text(text) if json_output else text
         raise RuntimeError("No free model answered (" + "; ".join(dict.fromkeys(failures)) + ")")
 
-    async def _ask(self, model: str, system: str, messages: list[dict]) -> str:
+    async def _chat(self, model: str, body: dict, *, tools: bool = False) -> dict:
+        """One request to one model; returns the reply message. `tools=True` refuses a model without tool support."""
         async with _lock, httpx.AsyncClient(timeout=TIMEOUT, transport=self._transport) as client:
             await self._verify_free(client, model)
+            if tools and not _tools.get(model):
+                raise _NoTools(model)
             try:
                 res = await client.post(
                     f"{BASE_URL}/chat/completions",
                     headers={"Authorization": f"Bearer {self._key}", "X-Title": "Scam Copilot"},
-                    json={"model": model, "messages": [{"role": "system", "content": system}, *messages],
-                          "temperature": 0.2, "max_tokens": MAX_TOKENS},
+                    json={"model": model, **body, "temperature": 0.2, "max_tokens": MAX_TOKENS},
                 )
             except httpx.HTTPError as e:
                 raise _Busy(type(e).__name__) from e
@@ -130,10 +139,80 @@ class OpenRouterProvider:
             raise _Busy(str(res.status_code))
         if res.status_code != 200:  # a bad key or a closed account will not be fixed by another model
             raise RuntimeError(f"OpenRouter answered {res.status_code}")  # the body is not logged: it can echo the prompt
-        text = ((res.json().get("choices") or [{}])[0].get("message") or {}).get("content") or ""
-        if not text.strip():
+        try:
+            return (res.json().get("choices") or [{}])[0].get("message") or {}
+        except ValueError as e:
+            raise _Busy("unreadable answer") from e
+
+    async def _ask(self, model: str, system: str, messages: list[dict]) -> str:
+        message = await self._chat(model, {"messages": [{"role": "system", "content": system}, *messages]})
+        text = message.get("content") or ""
+        if not isinstance(text, str) or not text.strip():
             raise _Busy("empty answer")
         return text.strip()
+
+    async def step(self, system: str, messages: list[dict], tools: list[dict]) -> dict:
+        """One turn of a tool-using conversation: `{"content": str | None, "tool_calls": [{"id", "name", "arguments": dict}]}`.
+
+        `tools` are OpenAI-format function specs. `messages` may hold earlier assistant messages with `tool_calls` and
+        `{"role": "tool", "tool_call_id", "content"}` results, passed on as they are. Only models that list `tools` among
+        their supported parameters are asked; the others are skipped, which is not a failure. A reply that is empty, has
+        arguments that are not a JSON object, or comes with a 429 moves on to the next model, as `complete` does.
+        The free-only guards are the same as for `complete`.
+        """
+        if not tools:
+            raise ValueError("step needs at least one tool")
+        body = {"messages": [{"role": "system", "content": system}, *messages], "tools": tools, "tool_choice": "auto"}
+        failures: list[str] = []
+        for round_ in range(ROUNDS):
+            if round_:
+                await asyncio.sleep(ROUND_PAUSE)
+            retry = False  # a second pass helps only when some model was busy; a model without tools will not change
+            now = time.monotonic()
+            ready = [m for m in self.models if _cooling.get(m, 0) <= now]
+            for model in ready or self.models:
+                try:
+                    out = _parse_step(await self._chat(model, body, tools=True))
+                except PaidModelRefused as e:
+                    failures.append(f"{model}: refused")
+                    log.warning("model skipped: %s", e)
+                    continue
+                except _NoTools:
+                    failures.append(f"{model}: no tool support")
+                    continue
+                except _Busy as e:
+                    failures.append(f"{model}: {e}")
+                    _cooling[model] = time.monotonic() + COOLDOWN
+                    retry = True
+                    continue
+                _cooling.pop(model, None)
+                return out
+            if not retry:
+                break
+        raise RuntimeError("No free model answered a tool request (" + "; ".join(dict.fromkeys(failures)) + ")")
+
+
+def _parse_step(message: dict) -> dict:
+    """The reply of a tool request in our shape. Anything the agent could not act on is `_Busy`, so the next model is tried."""
+    content = message.get("content")
+    content = content.strip() if isinstance(content, str) and content.strip() else None
+    calls = []
+    for raw in (message.get("tool_calls") or [])[:MAX_TOOL_CALLS]:
+        function = (raw.get("function") or {}) if isinstance(raw, dict) else {}
+        call_id, name, arguments = raw.get("id") if isinstance(raw, dict) else None, function.get("name"), function.get("arguments")
+        if not (isinstance(call_id, str) and call_id and isinstance(name, str) and name):
+            raise _Busy("malformed tool call")
+        if isinstance(arguments, str):
+            try:
+                arguments = json.loads(arguments) if arguments.strip() else {}
+            except ValueError as e:
+                raise _Busy("tool arguments are not JSON") from e
+        if not isinstance(arguments, dict):
+            raise _Busy("tool arguments are not an object")
+        calls.append({"id": call_id, "name": name, "arguments": arguments})
+    if not calls and content is None:
+        raise _Busy("empty answer")
+    return {"content": content, "tool_calls": calls}
 
 
 PROVIDERS["openrouter"] = OpenRouterProvider
