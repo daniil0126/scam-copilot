@@ -47,7 +47,7 @@ export default function ChatTab({ checkId, onOpenInvoice, active }: { checkId: s
                 if (event.type === "error") throw new Error(event.message)
                 if (event.type === "answer") {
                     answered = true
-                    setMessages(prev => [...prev, { id: Date.now(), role: "system", message: event.reply, tools: event.toolsUsed, trace: steps, invoices: event.invoices, table: event.table ?? undefined }])
+                    setMessages(prev => [...prev, { id: Date.now(), role: "system", message: event.reply, tools: event.toolsUsed, trace: steps.some(s => s.kind !== "model") ? steps : undefined, invoices: event.invoices, table: event.table ?? undefined }])
                     return
                 }
                 steps = applyEvent(steps, event)

@@ -6,8 +6,10 @@ const argsText = (args: Record<string, string | number | boolean>) =>
 // Folds one event of the stream into the list of steps shown to the user.
 export function applyEvent(steps: TraceStep[], event: ChatEvent): TraceStep[] {
     if (event.type === "model") {
-        const label = event.first ? "Thinking" : "Reading the results"
-        return upsert(steps, { id: event.id, kind: "model", label, state: event.state })
+        // The label is chosen when the turn starts; the later "done" event does not carry `first` and must not rename it.
+        const known = steps.find(s => s.id === event.id)
+        if (known) return upsert(steps, { ...known, state: event.state })
+        return upsert(steps, { id: event.id, kind: "model", label: event.first ? "Thinking" : "Reading the results", state: event.state })
     }
     if (event.type === "tool") {
         return upsert(steps, {
