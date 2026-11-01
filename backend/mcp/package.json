@@ -1,0 +1,9 @@
+{
+  "name": "scamcopilot-paypal-mcp",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Pinned PayPal MCP server used read-only by the chat agent (invoices.list, invoices.get).",
+  "dependencies": {
+    "@paypal/mcp": "1.8.1"
+  }
+}
