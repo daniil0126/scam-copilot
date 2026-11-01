@@ -52,6 +52,7 @@ def test_the_figures_of_a_month_match_the_hand_count(db):
         {"weekStart": "2026-10-19", "analyses": 1, "averageScore": 45.0, "highOrCritical": 0},
     ]
     assert [r["invoiceId"] for r in report["manualReview"]] == ["INV2", "INV1"]
+    assert {"number", "amount", "currency", "dueDate", "checkId"} <= report["manualReview"][0].keys()
 
 
 def test_a_month_without_analyses_is_an_empty_report_not_zeros(db):
@@ -95,3 +96,36 @@ def test_the_dashboard_counts_the_latest_analysis_of_each_invoice(db):
     s = service.monitoring_summary(db, "acc")
     assert s["invoices"] == 5 and s["critical"] == 1 and s["high"] == 1  # INV2 critical, INV5 high
     assert s["vendorAnomalies"] == 1 and s["recentDetections"][0]["invoiceId"] == "INV5"
+
+
+def test_saving_a_report_through_the_api_works_and_is_audited():
+    from fastapi.testclient import TestClient
+    from sqlalchemy.pool import StaticPool
+
+    from app.audit_log import AuditEvent
+    from app.db import get_db
+    from app.main import app
+    from app.security import current_account
+
+    # The endpoint runs in another thread than the test, so this database is shared through one connection.
+    engine = sa.create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    with Session() as seed:
+        service.record_analysis(seed, "acc", "INV1", "h1", result("high", 70, A, PHONE), now=datetime(2026, 10, 5, 9))
+        seed.commit()
+
+    def get_test_db():
+        with Session() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = get_test_db
+    app.dependency_overrides[current_account] = lambda: "acc"
+    try:
+        response = TestClient(app).post("/reports/monthly", json={"month": "2026-10"})
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 200
+    assert response.json()["version"] == 1 and response.json()["saved"] is True
+    with Session() as check:
+        assert check.query(AuditEvent).filter_by(account_id="acc", action="report.create").count() == 1

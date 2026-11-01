@@ -9,6 +9,7 @@ from typing import Literal
 
 from app import audit_log
 from app.db import get_db
+from app.models import Check
 from app.notifications import categories, service
 from app.notifications.models import Notification
 from app.security import current_account
@@ -21,11 +22,29 @@ def _iso(moment: datetime) -> str:
     return moment.strftime("%Y-%m-%dT%H:%M:%SZ")  # stored as naive UTC
 
 
-def to_dict(n: Notification) -> dict:
+def _invoice_context(db: Session, invoice_ids: set[str]) -> dict[str, dict]:
+    """What an alert is about, from the latest stored check of each invoice: who sent it, how much, which check to open."""
+    if not invoice_ids:
+        return {}
+    context = {}
+    for check in db.scalars(select(Check).where(Check.paypal_invoice_id.in_(invoice_ids))):
+        invoice = (check.result or {}).get("invoice") or {}
+        context[check.paypal_invoice_id] = {
+            "checkId": check.id, "number": invoice.get("number") or None,
+            "supplierName": (invoice.get("supplier") or {}).get("name") or None,
+            "amount": invoice.get("amount"), "currency": invoice.get("currency") or None,
+            "dueDate": invoice.get("dueDate") or None,
+        }
+    return context
+
+
+def to_dict(n: Notification, context: dict[str, dict] | None = None) -> dict:
     return {
         "id": f"{PREFIX}{n.row_id}", "invoiceId": n.invoice_id, "eventType": n.event_type, "riskLevel": n.risk_level,
         "detectedAt": _iso(n.detected_at), "signals": n.signals, "read": n.read_at is not None,
         "link": f"/invoices/{n.invoice_id}", "title": n.title, "message": n.message,
+        # None when the invoice has no stored check (a check deleted, or an alert from before checks were stored).
+        "invoice": (context or {}).get(n.invoice_id),
     }
 
 
@@ -48,7 +67,8 @@ def list_notifications(
             raise HTTPException(422, "Invalid cursor")
         query = query.where(Notification.row_id < int(cursor[len(PREFIX):]))
     rows = db.scalars(query.order_by(Notification.row_id.desc()).limit(limit + 1)).all()
-    items = [to_dict(r) for r in rows[:limit]]
+    context = _invoice_context(db, {r.invoice_id for r in rows[:limit]})
+    items = [to_dict(r, context) for r in rows[:limit]]
     return {"items": items, "unread": _unread(db, account), "nextCursor": items[-1]["id"] if len(rows) > limit else None}
 
 
@@ -69,7 +89,7 @@ def mark_read(notification_id: str, account: str = Depends(current_account), db:
     if row.read_at is None:
         row.read_at = datetime.utcnow()
         db.commit()
-    return to_dict(row)
+    return to_dict(row, _invoice_context(db, {row.invoice_id}))
 
 
 class SettingsBody(BaseModel):

@@ -13,7 +13,7 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 from app.db import Base, get_db
 from app.security import current_account
 
-ACTIONS = ("account.connect", "monitoring.pause", "monitoring.resume", "monitoring.sync", "settings.update")
+ACTIONS = ("account.connect", "monitoring.pause", "monitoring.resume", "monitoring.sync", "settings.update", "report.create")
 _SECRET_KEY = re.compile(r"token|secret|password|passwd|api[_-]?key|authorization|credential", re.IGNORECASE)
 MAX_TEXT = 200
 MAX_ITEMS = 20

@@ -87,8 +87,13 @@ def build_monthly(db: Session, account: str, month: str) -> dict:
                           .order_by(Analysis.risk_score.desc(), Analysis.row_id).limit(100)):
         if row.invoice_id not in seen and len(review) < 20:
             seen.add(row.invoice_id)
+            invoice = (row.result or {}).get("invoice") or {}
             review.append({"invoiceId": row.invoice_id, "riskLevel": row.risk_level, "riskScore": row.risk_score,
                            "supplierName": row.supplier_name or None,
+                           # What the invoice is, for a person: its number, amount and due date, and the check that holds the details.
+                           "number": invoice.get("number") or None, "amount": invoice.get("amount"),
+                           "currency": invoice.get("currency") or None, "dueDate": invoice.get("dueDate") or None,
+                           "checkId": (row.result or {}).get("id"),
                            "signs": [s["label"] for s in categories.detected(row.result)
                                      if categories.SEVERITY_RANK[s["severity"]] >= categories.SEVERITY_RANK["MEDIUM"]][:5]})
     return {

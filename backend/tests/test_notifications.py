@@ -134,3 +134,24 @@ def test_a_new_channel_needs_no_change_in_the_core(db):
     rec = Recorder()
     raise_alert(db, legacy("high", 90, PAYEE), channels=[rec], now=datetime(2026, 11, 1))
     assert len(rec.seen) == 1 and rec.seen[0].invoice_id == "INV2-1" and count(db) == 0
+
+
+def test_an_alert_carries_what_it_is_about_and_which_check_to_open(db):
+    from app.db import Base
+    from app.models import Check
+    from app.notifications import router
+
+    Base.metadata.create_all(db.get_bind())  # the fixture made the tables known before `checks` was imported
+
+    result = legacy("high", 90, PAYEE)
+    result["invoice"] = {"number": "0042", "supplier": {"name": "Acme Ltd", "email": "a@acme.test"}, "amount": 120.5,
+                         "currency": "USD", "dueDate": "2026-11-20"}
+    db.add(Check(id="chk-1", paypal_invoice_id="INV2-1", supplier_name="Acme Ltd", supplier_email="a@acme.test", number="0042",
+                 amount=120.5, currency="USD", checked_at=__import__("datetime").datetime(2026, 11, 1), result=result))
+    raise_alert(db, result)
+    row = db.scalars(__import__("sqlalchemy").select(router.Notification)).one()
+
+    item = router.to_dict(row, router._invoice_context(db, {"INV2-1"}))
+    assert item["invoice"] == {"checkId": "chk-1", "number": "0042", "supplierName": "Acme Ltd", "amount": 120.5,
+                               "currency": "USD", "dueDate": "2026-11-20"}
+    assert router.to_dict(row)["invoice"] is None  # no stored check: the field is there, empty
