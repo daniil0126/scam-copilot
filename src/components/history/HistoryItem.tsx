@@ -13,7 +13,7 @@ import { ArrowDownUp, Check, ChevronRight, Filter, Search } from "lucide-react"
 import type { HistoryEntry, RiskLevel, UserSettings } from "../../api/types.js"
 import { LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
 
-// Rejestracja lżejszego modułu AG Grid
+// Only the row model module is registered: a lighter bundle.
 ModuleRegistry.registerModules([ClientSideRowModelModule])
 
 type SortMode = "date-desc" | "price-desc" | "price-asc"
@@ -39,12 +39,14 @@ const gridParams = {
     wrapperBorder: false,
     wrapperBorderRadius: 0,
     rowBorder: { style: "solid", width: 1, color: "var(--border)" },
+    // A quiet hover: the same tint everywhere in the row, with no separate colour for any part of it.
+    rowHoverColor: "color-mix(in srgb, var(--border) 45%, transparent)",
 } as const
 
 const lightTheme = themeQuartz.withPart(colorSchemeLight).withParams(gridParams)
 const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(gridParams)
 
-// Poprawione formatowanie kwoty w statystykach na styl angielski (np. $2.5k)
+// Amounts in the statistics are formatted the English way, for example $2.5k.
 function computeStats(data: HistoryEntry[]) {
     let highRiskCount = 0
     let flaggedSum = 0
@@ -71,57 +73,55 @@ function LevelCell({ data }: ICellRendererParams<HistoryEntry>) {
     const meta = LEVEL_META[data.level]
     const Icon = meta.icon
     return (
-        <div className="flex items-center justify-center h-full">
-            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${meta.soft} ${meta.text}`}>
-                <Icon size={18} aria-hidden />
+        <div className="flex h-full items-center justify-center">
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${meta.soft} ${meta.text}`}>
+                <Icon size={17} aria-hidden />
+                <span className="sr-only">{meta.label}</span>
             </span>
         </div>
     )
 }
 
+// Two lines: the supplier (wrapping to a second line before it is cut off) and when it was checked.
 function SupplierCell({ data }: ICellRendererParams<HistoryEntry>) {
     if (!data) return null
+    const name = data.invoice.supplier.name.trim() || (data.invoice.number ? `Invoice #${data.invoice.number}` : "Unknown supplier")
     return (
-        <div className="flex flex-col justify-center h-full py-1 min-w-0 pr-2">
-            <span className="block truncate text-sm font-semibold text-[var(--text)]">
-                {data.invoice.supplier.name}
+        <div className="flex h-full min-w-0 flex-col justify-center py-1 pr-2">
+            <span className="line-clamp-2 break-words text-sm font-semibold leading-[18px] text-[var(--text)] [overflow-wrap:anywhere]">
+                {name}
             </span>
-            <span className="block truncate text-xs text-[var(--muted)]">
+            <span className="mt-0.5 block truncate text-[13px] leading-[18px] text-[var(--muted)]">
                 {formatDateTime(data.checkedAt)}
             </span>
         </div>
     )
 }
 
+// The amount, the risk and the arrow that says the row opens: one cell, so nothing can overlap.
 function AmountCell({ data }: ICellRendererParams<HistoryEntry>) {
     if (!data) return null
     const meta = LEVEL_META[data.level]
     return (
-        <div className="flex flex-col justify-center items-end h-full py-1 text-right">
-            <span className="block whitespace-nowrap text-sm font-semibold text-[var(--text)]">
-                {formatMoney(data.invoice.amount, data.invoice.currency)}
+        <div className="flex h-full items-center justify-end gap-1.5 pr-2">
+            <span className="min-w-0 text-right">
+                <span className="block whitespace-nowrap text-sm font-semibold tabular-nums leading-[18px] text-[var(--text)]">
+                    {formatMoney(data.invoice.amount, data.invoice.currency)}
+                </span>
+                <span className={`mt-0.5 block whitespace-nowrap text-[13px] font-medium leading-[18px] ${meta.text}`}>
+                    {meta.label}
+                </span>
             </span>
-            <span className={`block whitespace-nowrap text-xs font-medium ${meta.text}`}>
-                {meta.label}
-            </span>
+            <ChevronRight size={18} strokeWidth={2.25} className="shrink-0 text-[var(--muted)]" aria-hidden />
         </div>
     )
 }
 
-function ChevronCell() {
-    return (
-        <div className="flex items-center justify-center h-full pr-1">
-            {/* Poprawiona, widoczna strzałka */}
-            <ChevronRight size={22} strokeWidth={2.5} className="w-5 h-5 shrink-0 text-[var(--muted)]" aria-hidden />
-        </div>
-    )
-}
-
+// Three plain columns, none pinned: the supplier takes what the fixed two leave.
 const columnDefs: ColDef<HistoryEntry>[] = [
-    { width: 60, minWidth: 60, maxWidth: 60, pinned: "left", cellRenderer: LevelCell },
-    { flex: 2, minWidth: 130, cellRenderer: SupplierCell },
-    { flex: 1.2, minWidth: 100, cellRenderer: AmountCell },
-    { width: 48, minWidth: 48, maxWidth: 48, pinned: "right", cellRenderer: ChevronCell },
+    { width: 52, minWidth: 52, maxWidth: 52, cellRenderer: LevelCell, suppressMovable: true },
+    { flex: 1, minWidth: 90, cellRenderer: SupplierCell, suppressMovable: true },
+    { width: 124, minWidth: 124, maxWidth: 124, cellRenderer: AmountCell, suppressMovable: true },
 ]
 
 interface HistoryItemProps {
@@ -276,17 +276,16 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                     No invoices match your search or filters.
                 </div>
             ) : (
-                <div className="w-full h-[365px] overflow-hidden [&_.ag-row]:cursor-pointer">
+                <div className="h-[365px] w-full overflow-hidden [&_.ag-row]:cursor-pointer">
                     <AgGridReact<HistoryEntry>
                         theme={settings.theme === "dark" ? darkTheme : lightTheme}
                         rowData={rows}
                         columnDefs={columnDefs}
                         getRowId={params => params.data.id}
-                        rowHeight={64}
+                        rowHeight={68}
                         headerHeight={0}
                         suppressHorizontalScroll
                         suppressCellFocus
-                        autoSizeStrategy={{ type: 'fitGridWidth' }}
                         onRowClicked={event => {
                             if (event.data) onOpen(event.data.id)
                         }}
