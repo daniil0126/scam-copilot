@@ -16,6 +16,7 @@ def env(monkeypatch):
     monkeypatch.setenv("LLM_MODEL", FREE)
     monkeypatch.setattr(llm_openrouter, "ROUND_PAUSE", 0)
     llm_openrouter._verified.clear()
+    llm_openrouter._tools.clear()
     llm_openrouter._cooling.clear()
 
 
@@ -239,3 +240,140 @@ def test_a_model_closed_to_the_account_does_not_stop_the_others(monkeypatch):
         provider = OpenRouterProvider(transport(two_models(monkeypatch), chat=answer({FREE: 403, OTHER: "fine"})))
         assert await provider.complete("s", [{"role": "user", "content": "a"}]) == "fine"
     asyncio.run(run())
+
+
+# --- tool requests: `step` (plan 14) ---------------------------------------------------------------------------------
+
+TOOLS = [{"type": "function", "function": {"name": "list_invoices", "description": "List invoices.",
+                                           "parameters": {"type": "object", "properties": {}}}}]
+ASK = [{"role": "user", "content": "Which invoices exist?"}]
+M1, M2 = "a/first:free", "b/second:free"
+
+
+def tool_model(id=FREE, tools=True, **pricing):
+    return {**model(id, **pricing), "supported_parameters": ["temperature", "tools"] if tools else ["temperature"]}
+
+
+def tool_call(name="list_invoices", arguments='{"days": 7}', id="call_1"):
+    return {"id": id, "type": "function", "function": {"name": name, "arguments": arguments}}
+
+
+def reply_for(replies):
+    """A /chat/completions handler that answers per model id; a value is a message dict or a status code."""
+    def chat(request):
+        answer = replies[json.loads(request.content)["model"]]
+        if isinstance(answer, int):
+            return httpx.Response(answer, json={})
+        return httpx.Response(200, json={"choices": [{"message": answer}]})
+    return chat
+
+
+def test_a_tool_request_returns_the_calls_with_parsed_arguments():
+    async def run():
+        calls = []
+        chat = reply_for({FREE: {"content": None, "tool_calls": [tool_call(), tool_call("get_invoice", '{"invoice_id": "INV2-X"}', "call_2")]}})
+        provider = OpenRouterProvider(transport([tool_model()], chat, calls))
+        out = await provider.step("sys", ASK, TOOLS)
+        assert out == {"content": None, "tool_calls": [
+            {"id": "call_1", "name": "list_invoices", "arguments": {"days": 7}},
+            {"id": "call_2", "name": "get_invoice", "arguments": {"invoice_id": "INV2-X"}}]}
+        (request,) = [c[2] for c in chats(calls)]
+        body = json.loads(request.content)
+        assert body["tools"] == TOOLS and body["tool_choice"] == "auto" and body["messages"][0]["role"] == "system"
+        assert body["model"] == FREE and "models" not in body and "route" not in body
+    asyncio.run(run())
+
+
+def test_a_final_answer_without_calls_is_returned_as_content():
+    async def run():
+        provider = OpenRouterProvider(transport([tool_model()], reply_for({FREE: {"content": "  Two invoices.  "}})))
+        assert await provider.step("sys", ASK, TOOLS) == {"content": "Two invoices.", "tool_calls": []}
+    asyncio.run(run())
+
+
+def test_tool_results_go_back_to_the_model_as_they_are():
+    async def run():
+        calls = []
+        provider = OpenRouterProvider(transport([tool_model()], reply_for({FREE: {"content": "ok"}}), calls))
+        history = [*ASK, {"role": "assistant", "content": None, "tool_calls": [tool_call()]},
+                   {"role": "tool", "tool_call_id": "call_1", "content": "<tool_data>[]</tool_data>"}]
+        await provider.step("sys", history, TOOLS)
+        sent = json.loads(chats(calls)[0][2].content)["messages"]
+        assert sent[1:] == history
+    asyncio.run(run())
+
+
+def test_a_model_without_tool_support_is_skipped_and_the_next_one_answers(monkeypatch):
+    monkeypatch.setenv("LLM_MODEL", f"{M1},{M2}")
+
+    async def run():
+        calls = []
+        chat = reply_for({M1: {"content": "never asked"}, M2: {"content": None, "tool_calls": [tool_call()]}})
+        provider = OpenRouterProvider(transport([tool_model(M1, tools=False), tool_model(M2)], chat, calls))
+        out = await provider.step("sys", ASK, TOOLS)
+        assert out["tool_calls"][0]["name"] == "list_invoices"
+        assert [json.loads(c[2].content)["model"] for c in chats(calls)] == [M2]  # the first model got no request at all
+    asyncio.run(run())
+
+
+def test_without_any_model_that_takes_tools_nothing_is_asked_and_plain_chat_still_works():
+    async def run():
+        calls = []
+        provider = OpenRouterProvider(transport([tool_model(tools=False)], calls=calls))
+        with pytest.raises(RuntimeError, match="no tool support"):
+            await provider.step("sys", ASK, TOOLS)
+        assert chats(calls) == []
+        assert await provider.complete("sys", ASK) == "ok"  # the same model still serves `complete`
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("bad", [
+    {"content": None, "tool_calls": [tool_call(arguments="{not json")]},        # arguments that are not JSON
+    {"content": None, "tool_calls": [tool_call(arguments="[1, 2]")]},           # JSON, but not an object
+    {"content": None, "tool_calls": [{"id": "x", "function": {"arguments": "{}"}}]},  # no tool name
+    {"content": None, "tool_calls": [{"function": {"name": "list_invoices", "arguments": "{}"}}]},  # no id
+    {"content": "   "},                                                          # nothing at all
+])
+def test_an_unusable_reply_moves_on_to_the_next_model(monkeypatch, bad):
+    monkeypatch.setenv("LLM_MODEL", f"{M1},{M2}")
+
+    async def run():
+        chat = reply_for({M1: bad, M2: {"content": "fine"}})
+        provider = OpenRouterProvider(transport([tool_model(M1), tool_model(M2)], chat))
+        assert (await provider.step("sys", ASK, TOOLS))["content"] == "fine"
+    asyncio.run(run())
+
+
+def test_a_busy_model_is_cooled_and_the_next_one_is_used(monkeypatch):
+    monkeypatch.setenv("LLM_MODEL", f"{M1},{M2}")
+
+    async def run():
+        chat = reply_for({M1: 429, M2: {"content": "fine"}})
+        provider = OpenRouterProvider(transport([tool_model(M1), tool_model(M2)], chat))
+        assert (await provider.step("sys", ASK, TOOLS))["content"] == "fine"
+        assert M1 in llm_openrouter._cooling
+    asyncio.run(run())
+
+
+def test_a_tool_request_never_reaches_a_model_that_is_not_free():
+    async def run():
+        calls = []
+        provider = OpenRouterProvider(transport([tool_model(prompt="0.000001")], calls=calls))
+        with pytest.raises(RuntimeError, match="refused"):
+            await provider.step("sys", ASK, TOOLS)
+        assert chats(calls) == []
+    asyncio.run(run())
+
+
+def test_more_calls_than_the_limit_are_cut_and_a_request_without_tools_is_refused():
+    async def run():
+        many = [tool_call(id=f"c{i}") for i in range(llm_openrouter.MAX_TOOL_CALLS + 3)]
+        provider = OpenRouterProvider(transport([tool_model()], reply_for({FREE: {"content": None, "tool_calls": many}})))
+        assert len((await provider.step("sys", ASK, TOOLS))["tool_calls"]) == llm_openrouter.MAX_TOOL_CALLS
+        with pytest.raises(ValueError):
+            await provider.step("sys", ASK, [])
+    asyncio.run(run())
+
+
+def test_the_provider_is_recognised_as_able_to_use_tools():
+    assert llm.can_use_tools(OpenRouterProvider()) is True and llm.can_use_tools(object()) is False

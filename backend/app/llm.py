@@ -49,6 +49,17 @@ class LLMProvider(Protocol):
         """`messages` are {"role": "user" | "assistant", "content": str}. Returns the reply text."""
 
 
+class ToolProvider(LLMProvider, Protocol):
+    """A provider that can also run a turn with tools (plan 14). `complete` stays as it is."""
+
+    async def step(self, system: str, messages: list[dict], tools: list[dict]) -> dict:
+        """Returns `{"content": str | None, "tool_calls": [{"id", "name", "arguments": dict}]}`."""
+
+
+def can_use_tools(provider: object) -> bool:
+    return callable(getattr(provider, "step", None))
+
+
 PROVIDERS: dict[str, Callable[[], LLMProvider]] = {}
 
 
