@@ -91,3 +91,53 @@ def test_no_forbidden_paypal_endpoint_appears_in_the_code(word):
         for line in path.read_text(encoding="utf-8").splitlines():
             if "paypal_request" in line or "BASE_URL" in line:
                 assert word not in line, f"{path.name}: {line.strip()}"
+
+
+# --- the chat agent reads PayPal through two tools and nothing else (plan 14) ----------------------------------------
+
+WRITE_VERBS = ("create", "send", "cancel", "delete", "update", "record", "pay", "refund", "remind", "generate", "capture")
+
+
+def test_the_agent_tools_are_exactly_the_two_reads_everywhere():
+    from app import agent, paypal_mcp
+    names = {"list_invoices", "get_invoice"}
+    assert paypal_mcp.ALLOWED == names
+    assert {t["function"]["name"] for t in agent.PAYPAL_TOOLS} == names
+    # the one other function fetches nothing: it only picks which invoices already read are drawn as a table
+    assert {t["function"]["name"] for t in agent.TOOLS} == names | {"show_invoice_table"}
+    src = (APP / "agent.py").read_text(encoding="utf-8")
+    body = src[src.index("def _show_table"):src.index("def _dump")]
+    assert "paypal_mcp" not in body and "httpx" not in body  # no network from the display function
+    assert paypal_mcp.TOOLS_FLAG == "--tools=invoices.list,invoices.get"  # the server itself starts with only these two
+    for name in names:
+        assert not any(name.startswith(verb) for verb in WRITE_VERBS), name
+
+
+def test_the_paypal_token_reaches_the_tool_server_only_through_its_environment():
+    """Command-line arguments are visible in `ps`; the environment of the child is not."""
+    holders = [p.name for p in SOURCES if "PAYPAL_ACCESS_TOKEN" in p.read_text(encoding="utf-8")]
+    assert holders == ["paypal_mcp.py"]
+    src = (APP / "paypal_mcp.py").read_text(encoding="utf-8")
+    assert re.search(r"args=\[str\(ENTRY\), TOOLS_FLAG\]", src)  # nothing else on the command line
+    assert not re.search(r"(log|print)\w*\(.*(token|_token\()", src, re.I)
+
+
+def test_a_failing_tool_call_does_not_put_the_token_in_the_log(monkeypatch, caplog):
+    import asyncio
+    from contextlib import asynccontextmanager
+
+    from app import paypal_mcp
+
+    async def tools():
+        return [{"name": n, "description": "", "inputSchema": {"properties": {"page": {}}}} for n in paypal_mcp.ALLOWED]
+
+    @asynccontextmanager
+    async def broken():
+        raise RuntimeError("connection refused with PAYPAL_ACCESS_TOKEN=A21-SECRET-TOKEN")
+        yield
+
+    monkeypatch.setattr(paypal_mcp, "list_tools", tools)
+    monkeypatch.setattr(paypal_mcp, "_session", broken)
+    with caplog.at_level(logging.DEBUG), pytest.raises(paypal_mcp.McpUnavailable) as raised:
+        asyncio.run(paypal_mcp.call_tool("list_invoices", {}))
+    assert "A21-SECRET-TOKEN" not in caplog.text and "A21-SECRET-TOKEN" not in str(raised.value)

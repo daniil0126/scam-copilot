@@ -377,3 +377,22 @@ def test_more_calls_than_the_limit_are_cut_and_a_request_without_tools_is_refuse
 
 def test_the_provider_is_recognised_as_able_to_use_tools():
     assert llm.can_use_tools(OpenRouterProvider()) is True and llm.can_use_tools(object()) is False
+
+
+def test_a_reply_that_hit_the_token_limit_is_marked_and_a_tool_turn_gets_the_larger_budget():
+    async def run():
+        calls = []
+        chat = reply_for({FREE: {"content": "Invoices:\nINV2-AAAA"}})
+
+        def handler(request):
+            response = chat(request)
+            body = response.json()
+            body["choices"][0]["finish_reason"] = "length"
+            return httpx.Response(200, json=body)
+
+        provider = OpenRouterProvider(transport([tool_model()], handler, calls))
+        out = await provider.step("sys", ASK, TOOLS)
+        assert out["truncated"] is True and out["content"] == "Invoices:\nINV2-AAAA"
+        (request,) = [c[2] for c in chats(calls)]
+        assert json.loads(request.content)["max_tokens"] == 1500
+    asyncio.run(run())

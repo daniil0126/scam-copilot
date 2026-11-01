@@ -28,6 +28,7 @@ BASE_URL = "https://openrouter.ai/api/v1"
 PRICE_TTL = 3600
 TIMEOUT = 15  # per model: a model that has not answered by now is slower than trying the next one
 MAX_TOKENS = 700
+STEP_MAX_TOKENS = 1500  # a tool turn may have to list many invoices; a reply cut off mid-list helps nobody
 _lock = asyncio.Semaphore(2)  # free models have a low requests-per-minute limit
 _verified: dict[str, float] = {}  # model id -> time the zero price was confirmed
 _tools: dict[str, bool] = {}  # model id -> whether OpenRouter lists "tools" among its supported parameters (read with the price)
@@ -121,7 +122,7 @@ class OpenRouterProvider:
                 return _json_text(text) if json_output else text
         raise RuntimeError("No free model answered (" + "; ".join(dict.fromkeys(failures)) + ")")
 
-    async def _chat(self, model: str, body: dict, *, tools: bool = False) -> dict:
+    async def _chat(self, model: str, body: dict, *, tools: bool = False, max_tokens: int = MAX_TOKENS) -> dict:
         """One request to one model; returns the reply message. `tools=True` refuses a model without tool support."""
         async with _lock, httpx.AsyncClient(timeout=TIMEOUT, transport=self._transport) as client:
             await self._verify_free(client, model)
@@ -131,7 +132,7 @@ class OpenRouterProvider:
                 res = await client.post(
                     f"{BASE_URL}/chat/completions",
                     headers={"Authorization": f"Bearer {self._key}", "X-Title": "Scam Copilot"},
-                    json={"model": model, **body, "temperature": 0.2, "max_tokens": MAX_TOKENS},
+                    json={"model": model, **body, "temperature": 0.2, "max_tokens": max_tokens},
                 )
             except httpx.HTTPError as e:
                 raise _Busy(type(e).__name__) from e
@@ -140,9 +141,12 @@ class OpenRouterProvider:
         if res.status_code != 200:  # a bad key or a closed account will not be fixed by another model
             raise RuntimeError(f"OpenRouter answered {res.status_code}")  # the body is not logged: it can echo the prompt
         try:
-            return (res.json().get("choices") or [{}])[0].get("message") or {}
+            choice = (res.json().get("choices") or [{}])[0]
         except ValueError as e:
             raise _Busy("unreadable answer") from e
+        message = choice.get("message") or {}
+        # The model stopped because it ran out of tokens, not because it was done.
+        return {**message, "_truncated": True} if choice.get("finish_reason") == "length" else message
 
     async def _ask(self, model: str, system: str, messages: list[dict]) -> str:
         message = await self._chat(model, {"messages": [{"role": "system", "content": system}, *messages]})
@@ -151,7 +155,7 @@ class OpenRouterProvider:
             raise _Busy("empty answer")
         return text.strip()
 
-    async def step(self, system: str, messages: list[dict], tools: list[dict]) -> dict:
+    async def step(self, system: str, messages: list[dict], tools: list[dict], *, force: str | None = None) -> dict:
         """One turn of a tool-using conversation: `{"content": str | None, "tool_calls": [{"id", "name", "arguments": dict}]}`.
 
         `tools` are OpenAI-format function specs. `messages` may hold earlier assistant messages with `tool_calls` and
@@ -162,7 +166,8 @@ class OpenRouterProvider:
         """
         if not tools:
             raise ValueError("step needs at least one tool")
-        body = {"messages": [{"role": "system", "content": system}, *messages], "tools": tools, "tool_choice": "auto"}
+        body = {"messages": [{"role": "system", "content": system}, *messages], "tools": tools,
+                "tool_choice": {"type": "function", "function": {"name": force}} if force else "auto"}
         failures: list[str] = []
         for round_ in range(ROUNDS):
             if round_:
@@ -172,7 +177,7 @@ class OpenRouterProvider:
             ready = [m for m in self.models if _cooling.get(m, 0) <= now]
             for model in ready or self.models:
                 try:
-                    out = _parse_step(await self._chat(model, body, tools=True))
+                    out = _parse_step(await self._chat(model, body, tools=True, max_tokens=STEP_MAX_TOKENS))
                 except PaidModelRefused as e:
                     failures.append(f"{model}: refused")
                     log.warning("model skipped: %s", e)
@@ -212,7 +217,10 @@ def _parse_step(message: dict) -> dict:
         calls.append({"id": call_id, "name": name, "arguments": arguments})
     if not calls and content is None:
         raise _Busy("empty answer")
-    return {"content": content, "tool_calls": calls}
+    out = {"content": content, "tool_calls": calls}
+    if message.get("_truncated"):
+        out["truncated"] = True  # present only when true: the reply was cut off by the token limit
+    return out
 
 
 PROVIDERS["openrouter"] = OpenRouterProvider

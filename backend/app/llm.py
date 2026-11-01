@@ -52,8 +52,8 @@ class LLMProvider(Protocol):
 class ToolProvider(LLMProvider, Protocol):
     """A provider that can also run a turn with tools (plan 14). `complete` stays as it is."""
 
-    async def step(self, system: str, messages: list[dict], tools: list[dict]) -> dict:
-        """Returns `{"content": str | None, "tool_calls": [{"id", "name", "arguments": dict}]}`."""
+    async def step(self, system: str, messages: list[dict], tools: list[dict], *, force: str | None = None) -> dict:
+        """Returns `{"content": str | None, "tool_calls": [{"id", "name", "arguments": dict}]}`. `force` names a tool the model must call."""
 
 
 def can_use_tools(provider: object) -> bool:
