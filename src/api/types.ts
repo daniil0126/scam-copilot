@@ -22,10 +22,46 @@ export type DOMResonse = {
     url: string
 }
 
+// One step of the assistant while it answers: a turn of the model or a PayPal read. Real events, not the model's reasoning.
+export type TraceStep = {
+    id: string
+    kind: "model" | "tool" | "note"
+    label: string
+    detail?: string
+    state: "running" | "done" | "failed"
+}
+
+// An invoice named in an answer, described by the server from PayPal's data and the checks it has stored.
+export type InvoiceRef = {
+    id: string
+    number?: string
+    status?: string
+    amount?: string
+    currency?: string
+    created?: string
+    payerPage?: string
+    checkId?: string
+    supplier?: string
+    level?: RiskLevel
+}
+
+export type InvoiceTable = { rows: InvoiceRef[]; matched: number }
+
+export type ChatEvent =
+    | { type: "model"; id: string; state: TraceStep["state"]; first: boolean }
+    | { type: "tool"; id: string; name: string; local?: boolean; args: Record<string, string | number | boolean>; state: TraceStep["state"]; summary?: string | null; reason?: string | null }
+    | { type: "fallback" }
+    | { type: "answer"; reply: string; toolsUsed: string[]; invoices?: InvoiceRef[]; table?: InvoiceTable | null }
+    | { type: "error"; message: string }
+
 export type Message = {
     id: number
     role: "user" | "system"
     message: string
+    tools?: string[]  // PayPal reads the assistant made to answer, shown under its reply
+    trace?: TraceStep[]  // the steps it took, shown folded under the reply
+    invoices?: InvoiceRef[]  // invoices the reply names, so their ids can be shown as readable links
+    table?: InvoiceTable  // the list the assistant was asked for, drawn from the server's data instead of written by the model
 }
 
 export type TabId = "check" | "monitor" | "history" | "chat" | "settings"

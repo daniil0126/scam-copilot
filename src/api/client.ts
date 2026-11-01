@@ -1,6 +1,6 @@
 import { API_URL, ApiError, request } from "./httpClient.js"
 import type {
-    AlertSettings, AppNotification, BulkCheckResponse, ChatTurn, HistoryEntry, InboundEmailResponse, MonitoringState,
+    AlertSettings, AppNotification, BulkCheckResponse, ChatEvent, ChatTurn, HistoryEntry, InboundEmailResponse, MonitoringState,
     MonitoringStatus, MonitoringSummary, MonthlyReport, NotificationsPage, VerificationResult,
 } from "./types.js"
 
@@ -41,11 +41,42 @@ export const fetchHistory = () => request<HistoryEntry[]>("/checks")
 
 export const checkAllPayPalInvoices = () => request<BulkCheckResponse>("/checks/bulk", { method: "POST" })
 
-export const fetchAiStatus = () => request<{ enabled: boolean; provider: string | null }>("/ai/status")
+export const fetchAiStatus = () => request<{ enabled: boolean; provider: string | null; tools?: string[] }>("/ai/status")
 
 // `checkId` makes the server add that stored check as context for the question.
 export const sendChat = (messages: ChatTurn[], checkId?: string | null) =>
-    request<{ reply: string }>("/chat", { method: "POST", body: JSON.stringify({ messages, check_id: checkId ?? null }) })
+    request<{ reply: string; toolsUsed?: string[] }>("/chat", { method: "POST", body: JSON.stringify({ messages, check_id: checkId ?? null }) })
+
+// The same answer as sendChat, but the steps of the assistant arrive while it works (one JSON object per line).
+export async function sendChatStream(messages: ChatTurn[], checkId: string | null, onEvent: (event: ChatEvent) => void): Promise<void> {
+    let res: Response
+    try {
+        res = await fetch(`${API_URL}/chat/stream`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ messages, check_id: checkId }),
+        })
+    } catch {
+        throw new ApiError("Cannot reach the Scam Copilot server. Is the backend running?")
+    }
+    if (!res.ok || !res.body) {
+        const body = await res.json().catch(() => null)
+        throw new ApiError(typeof body?.detail === "string" ? body.detail : `Server error (${res.status}).`)
+    }
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffered = ""
+    for (;;) {
+        const { done, value } = await reader.read()
+        buffered += decoder.decode(value, { stream: !done })
+        const lines = buffered.split("\n")
+        buffered = done ? "" : (lines.pop() ?? "")
+        for (const line of lines) {
+            if (line.trim()) onEvent(JSON.parse(line) as ChatEvent)
+        }
+        if (done) break
+    }
+}
 
 // Background monitoring: the backend polls PayPal on its own; these only read its state and control it.
 export const fetchMonitoring = () => request<MonitoringStatus>("/monitoring")

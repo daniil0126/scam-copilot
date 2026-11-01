@@ -1,4 +1,3 @@
-import { useState } from "react"
 import type { MonitorSection } from "../../api/types.js"
 import AlertsView from "../alerts/AlertsView.js"
 import type { UnreadCount } from "../alerts/useUnreadCount.js"
@@ -17,11 +16,13 @@ type Props = {
     alerts: UnreadCount
     highlightSince: string
     onOpenCheck: (checkId: string) => void
+    // Owned by the parent, so that the tab can be rebuilt and still open on the section it was left on.
+    section: MonitorSection
+    onSectionChange: (section: MonitorSection) => void
 }
 
 // The Monitor tab: live state, the alerts the backend raised, and the monthly report.
-export default function MonitorTab({ monitoring, alerts, highlightSince, onOpenCheck }: Props) {
-    const [section, setSection] = useState<MonitorSection>("overview")
+export default function MonitorTab({ monitoring, alerts, highlightSince, onOpenCheck, section, onSectionChange }: Props) {
 
     return (
         <div>
@@ -33,7 +34,7 @@ export default function MonitorTab({ monitoring, alerts, highlightSince, onOpenC
                             key={id}
                             role="tab"
                             aria-selected={active}
-                            onClick={() => setSection(id)}
+                            onClick={() => onSectionChange(id)}
                             className={`flex-1 cursor-pointer rounded-md px-2 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--primary)] ${active
                                 ? "bg-[var(--primary-soft)] text-[var(--primary)]"
                                 : "text-[var(--muted)] hover:text-[var(--text)]"}`}
