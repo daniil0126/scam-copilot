@@ -8,7 +8,7 @@
 ## Monitoring Dashboard
 - [x] Статус мониторинга, время последней успешной синхронизации, всего инвойсов под мониторингом.
 - [x] Счётчики High, Critical, Potential Duplicates, Vendor Anomalies; лента последних событий обнаружения.
-- [ ] Управление: Pause / Resume, ручной Sync, настройка порогов алертов, список ошибок синхронизации, переход к карточке инвойса.
+- [ ] Управление: Pause / Resume, ручной Sync, настройка порогов алертов, список ошибок синхронизации, переход к карточке инвойса. Backend готов (`/monitoring/pause|resume|sync`, `/monitoring/settings`, `errors[]` в `GET /monitoring`); не сделан экран (Денис).
 - [x] Список уведомлений (план 10) в этом же разделе.
 
 ## Monthly Report
@@ -18,7 +18,7 @@
 - [x] Явная формулировка: «обнаруженные подозрительные признаки», а не «подтверждённое мошенничество».
 - [ ] Экспорт отчёта (CSV или печатная версия) по необходимости.
 
-**Статус (2026-11-01), backend:** `backend/app/reports/` (`models.py`, `service.py`, `router.py`): `GET/POST /reports/monthly`, `GET /monitoring/summary`; каждая проверка версии инвойса пишет строку в `analyses` (`monitor.py`). Все числа считаются SQL-агрегатами по `analyses` одного аккаунта. Управление (pause/resume/sync) и пороги алертов уже есть в `monitor.py` и `notifications/router.py`; экран строит Денис. Не сделано: экспорт отчёта (CSV или печатная версия, «по необходимости»), список ошибок синхронизации. Тесты `tests/test_reports.py` написаны, но не запускались (нет SQLAlchemy в среде разработки): `cd backend && pytest tests/test_reports.py`. Таблицы `analyses`, `analysis_signals`, `audit_reports` лежат в `reports/models.py`; перенос в `models.py` и миграцию согласовать с Даниилом.
+**Статус (2026-11-01), backend:** `backend/app/reports/` (`models.py`, `service.py`, `router.py`): `GET/POST /reports/monthly`, `GET /monitoring/summary`; каждая проверка версии инвойса пишет строку в `analyses` (`monitor.py`). Все числа считаются SQL-агрегатами по `analyses` одного аккаунта. Управление (pause/resume/sync) и пороги алертов уже есть в `monitor.py` и `notifications/router.py`; экран строит Денис. Не сделано: экспорт отчёта (CSV или печатная версия, «по необходимости»), список ошибок синхронизации. Тесты `tests/test_reports.py` проходят (302 passed в целом, 2026-11-01). Таблицы `analyses`, `analysis_signals`, `audit_reports` лежат в `reports/models.py`; перенос в `models.py` и миграцию согласовать с Даниилом.
 
 ## Тесты
 Фикстура с известным набором анализов, ожидаемые агрегаты сверены вручную; месяц без данных; отчёт одного аккаунта не содержит данных другого.

@@ -10,12 +10,12 @@
 | 4 | Валидация входа и размеры | ⚠️ | текст страницы ограничен (`MAX_TEXT`). `invoice_id` не проверяется: `CheckRequest.invoice_id: str` (`checks.py:23`) уходит в путь `/v2/invoicing/invoices/{invoice_id}` (`paypal.py:197`, `monitor.py:91`) | нет | ограничить `invoice_id` шаблоном `^INV2-[A-Z0-9-]{6,64}$` в `CheckRequest` и `get_invoice` (`paypal.py` Даниил, `checks.py` Адиль) |
 | 5 | SSRF: ссылки инвойса не открываем | ✅ | исходящие запросы только на `BASE_URL` PayPal и OpenRouter; ссылки из инвойса (`paymentLinks`, текст) нигде не запрашиваются | `test_security.py::test_outbound_hosts_are_only_paypal_and_openrouter` | пункт 4 закрывает остаток (подмена пути через `invoice_id`) |
 | 6 | Подпись webhook | ✅ | `webhooks.py` проверяет через `verify-webhook-signature` PayPal, id берётся только из события | `test_webhooks.py` | |
-| 7 | Секреты и токены не попадают в логи | ⚠️ | `security.scrub` и `install_log_scrubber` написаны, но **нигде не вызываются** | `test_security.py::test_scrubber_*` проверяют сам чистильщик | вызвать `install_log_scrubber()` при старте в `main.py` (Даниил) |
+| 7 | Секреты и токены не попадают в логи | ✅ | `security.install_log_scrubber()` вызывается в `main.py` (PR #9/#10) | `test_security.py::test_scrubber_*` (проверяют чистильщик, не логи приложения) | |
 | 8 | Минимум ПД в запросах к AI | ✅ | `ai_guard.py`, `llm.py` | `test_llm_injection.py` | |
-| 9 | Аудит-лог действий | ❓ | модель и запись есть (`audit_log.py`); подключение к подключению, паузе, ручному sync, смене порогов не проверялось | | проверить вызовы в `monitor.py` (pause/resume/sync) |
+| 9 | Аудит-лог действий | ⚠️ | `audit_log.record` вызывается при смене порогов (`notifications/router.py`) и создании отчёта (`reports/router.py`); `pause`, `resume`, `sync` в `monitor.py` ничего не пишут | нет | добавить `audit_log.record` в три обработчика `monitor.py` (Даниил) |
 | 10 | Никаких платежей, отмен, изменений инвойсов | ⚠️ | записывающие вызовы PayPal: проверка подписи webhook (только проверка), и два **sandbox-маршрута** `POST /sandbox/invoices` и `/sandbox/invoices/{id}/send`, создающие тестовые счета | `test_security.py::test_paypal_writes_are_only_the_known_ones` | убрать sandbox-маршруты из сборки для подачи или оставить под `PAYPAL_MODE=sandbox` (решение команды) |
 
 ## Что остаётся открытым
-- Пункты 4, 7 требуют правок в чужой зоне (`paypal.py`, `main.py`, `checks.py`): нужен issue или PR владельцу.
+- Пункт 4 требует правок в чужой зоне (`paypal.py`, `checks.py`): нужен issue или PR владельцу. Пункт 7 закрыт.
 - Пункты 2, 3 закрываются планом 02; после него добавить тест доступа к чужому аккаунту.
-- Пункт 9: проверить и дописать.
+- Пункт 9: дописать вызовы в `monitor.py`.

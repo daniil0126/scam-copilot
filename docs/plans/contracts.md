@@ -1,6 +1,6 @@
 # Контракты данных и API
 
-**Версия:** 0.6 (добавлен `POST /webhooks/paypal`). Ранее 0.5 (добавлены `source = "email"` и `POST /inbound/email`, см. раздел 8; на подтверждение командой в PR с пометкой `contract`). Далее без изменений, версия 0.4: (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
+**Версия:** 0.7 (описаны уже реализованные эндпоинты уведомлений и отчётов Руслана, таблицы `analyses`, `alert_settings`, `audit_log`). Ранее 0.6 (добавлен `POST /webhooks/paypal`). Ранее 0.5 (добавлены `source = "email"` и `POST /inbound/email`, см. раздел 8; на подтверждение командой в PR с пометкой `contract`). Далее без изменений, версия 0.4: (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
 
 Основано на текущем коде: `backend/app/paypal.py` (`to_invoice`), `scoring.py` (`score_invoice`), `checks.py` (`run_check`), `models.py` (`Check`), `src/api/types.ts`.
 
@@ -151,7 +151,8 @@ class HistoricalInvoice(BaseModel):
 | `analyses` | `id`, `(accountId, invoiceId, contentHash)`, `engineVersion`, `result` JSON (RiskResult), `analyzedAt`; строки не перезаписываются |
 | `vendors` | `(accountId, senderKey)`, агрегаты, `contactHistory` JSON |
 | `invoice_emails` | `rowId` PK, `messageKey` unique, `invoiceId`, `kind` (`new`/`updated`/`unknown`), `template`, `normalized` JSON (Invoice, `source = email`), `links` JSON (хост и признаки, без query), `receivedAt`; HTML письма не хранится. Реализовано в `models.py` (`InvoiceEmail`) |
-| `sync_checkpoints`, `sync_logs`, `jobs`, `notifications`, `audit_reports` | поля описаны в планах 08, 09, 10, 12 |
+| `analysis_signals`, `audit_reports`, `notifications`, `alert_settings`, `audit_log` | реализованы Русланом (`reports/models.py`, `notifications/models.py`, `audit_log.py`); `analyses` уже с unique `(account_id, invoice_id, content_hash, engine_version)`. Перенос в `models.py` и миграции не сделаны (согласовать с Даниилом) |
+| `sync_checkpoints`, `sync_logs`, `jobs` | поля описаны в планах 08, 09 |
 
 Идемпотентность: unique `(accountId, invoiceId, contentHash)` для версий и `(accountId, invoiceId, contentHash, engineVersion)` для анализов; уведомления unique `(accountId, invoiceId, contentHash, eventType)`.
 
@@ -181,8 +182,12 @@ class HistoricalInvoice(BaseModel):
 | `GET /monitoring` | дашборд | `{state, lastSuccessfulSyncAt, totalInvoices, highRisk, criticalRisk, potentialDuplicates, vendorAnomalies, recentEvents[], errors[]}` |
 | `POST /monitoring/pause`, `/resume`, `/sync` | управление | `{state}` / `{jobId}` |
 | `GET/PUT /monitoring/settings` | пороги алертов | `{alertThreshold, categories{...}}` |
-| `GET /notifications`, `POST /notifications/{id}/read` | алерты | `{items: [Notification], unread}` |
-| `GET /reports/monthly?month=YYYY-MM` | отчёт | `MonthlyReport` |
+| `GET /notifications?unreadOnly&limit&cursor`, `POST /notifications/{id}/read` | алерты (реализовано) | `{items: [Notification], unread, nextCursor}` |
+| | поле `invoice` в `Notification` (добавлено 2026-11-01, только добавление) | `{checkId, number, supplierName, amount, currency, dueDate} \| null` из последней сохранённой проверки счёта; `checkId` открывает проверку в History |
+| `GET /notifications/unread-count` | значок в расширении (реализовано) | `{unread}` |
+| `GET /reports/monthly?month=YYYY-MM` | последний сохранённый отчёт месяца или расчёт на лету (реализовано) | `MonthlyReport`, `saved: bool` |
+| `POST /reports/monthly` | сохранить новую версию отчёта (реализовано) | body `{month}` -> `MonthlyReport` с `version`, `createdAt`; `422` при неверном месяце |
+| `GET /monitoring/summary` | счётчики по последнему анализу каждого инвойса (реализовано) | `{invoices, high, critical, potentialDuplicates, vendorAnomalies, recentDetections[{invoiceId, riskLevel, detectedAt}]}` |
 
 ```python
 class InvoiceRow(BaseModel):
@@ -202,7 +207,7 @@ class Notification(BaseModel):
     detectedAt: datetime; signals: list[str]; read: bool; link: str
 ```
 
-`MonthlyReport` и вспомогательные поля уточняет Руслан в PR с пометкой `contract`; все числа считаются из `analyses`.
+`MonthlyReport` (реализовано, `backend/app/reports/service.py`): `{month, empty, wording, message?}` для пустого месяца, иначе `{month, empty:false, wording, analyses, invoices, byLevel, potentialDuplicates, vendorAnomalies, suspiciousLinks, topFlaggedSuppliers[{supplierEmail, supplierName, flaggedInvoices}], weeklyTrend[{weekStart, analyses, averageScore, highOrCritical}], manualReview[{invoiceId, riskLevel, riskScore, supplierName, signs[]}]}`; все числа считаются из `analyses`. Нужно подтверждение команды (PR с пометкой `contract`).
 
 ## 6. Фикстуры для Дениса, Адиля, Руслана
 
@@ -224,6 +229,7 @@ class Notification(BaseModel):
 |---|---|---|---|
 | 0.1 | 2026-10-30 | Первый черновик на основе текущего кода | Даниил |
 | 0.2 | 2026-10-30 | Q1: режимы Connected/Standalone, `accountId` nullable, `source` += `pdf`. Q3: PayPal OAuth, раздел 9 | Даниил |
+| 0.7 | 2026-11-01 | Документированы уже реализованные `GET /notifications` (курсор), `/notifications/unread-count`, `GET/POST /reports/monthly`, `GET /monitoring/summary`; форма `MonthlyReport`; таблицы `analysis_signals`, `alert_settings`, `audit_log`. Только описание кода, поведение не менялось | Даниил (черновик: Claude), код: Руслан |
 | 0.6 | 2026-10-31 | Новый эндпоинт `POST /webhooks/paypal`. Только добавление | Даниил (черновик: Claude) |
 | 0.5 | 2026-10-31 (дополнено в тот же день: `Finding.detail?`, `Finding.skipped?`, оба необязательные) | `Invoice.source` += `email`. Новый эндпоинт `POST /inbound/email` и таблица `invoice_emails` (письма PayPal плательщику: «Invoice from X», «X updated your invoice»). Только добавление | Даниил (черновик: Claude) |
 | 0.4 | 2026-10-30 | `Invoice.senderLegalName` (payer_page: «Invoice issued by X (doing business as Y)»). Только добавление поля | Даниил (черновик: Claude) |

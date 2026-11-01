@@ -17,6 +17,13 @@ Three ways to get an invoice into a check:
 - **Webhooks (own invoices, optional).** With `PAYPAL_WEBHOOK_ID` set, `POST /webhooks/paypal` takes PayPal's invoice events. The signature is verified with PayPal, only the invoice id is taken from the event, and the invoice is read from PayPal and goes through the same pipeline as polling, so a change shows up in seconds instead of at the next poll. Events are a hint, not data: they arrive in batches, out of order and with the invoice as of delivery time. The same version is stored once. Polling stays on for events that never arrive. Only the issuer's app receives these events; a payer gets none, which is why the payer side reads emails. Needs a public HTTPS address.
 - **Invoice emails.** PayPal emails the payer when an invoice is issued and again when it is changed. `POST /inbound/email` takes the HTML of such an email, reads it and checks it: where its links lead, and what changed since the earlier email of the same invoice (amount, due date, items). When the payer page of that invoice is checked afterwards, it is compared with the emails. That is how a note changed after sending is found: PayPal's update email leaves the note out. The endpoint is off unless `INBOUND_EMAIL_SECRET` is set. In the extension, open the email in the Developer Dashboard (Sandbox notifications) and press **Check this email**: only the email block is read, and only on that press. Set the same secret in Settings (stored in this browser only). The result says what it was checked from, groups the findings (needs attention / not checked / passed) and compares against the earlier email. Sending the same email again judges it afresh with the current rules; no second copy is stored.
 
+Around the checks, on the backend:
+
+- **Alerts.** Each stored invoice version can raise one in-app alert (critical or high risk, potential duplicate, vendor impersonation, suspicious payment link). `GET /notifications`, `GET /notifications/unread-count`, `GET/PUT /monitoring/settings` (threshold and categories). Wording is "signs found", never "fraud".
+- **Monthly report.** `GET/POST /reports/monthly?month=YYYY-MM` and `GET /monitoring/summary`, counted by SQL from the stored analyses; an empty month says so.
+- **AI guard.** Only minimised data goes to the model, invoice text is passed as data, and values in its answer that are not in the input are dropped. The model never changes the score. `backend/scripts/evaluate.py` measures Precision, Recall and FPR on the 59-case set in `backend/tests/dataset/`; the figures are not recorded yet.
+- **Security.** Secrets are scrubbed from logs; checklist in `docs/plans/security-checklist.md`.
+
 Either way the invoice is scored and every finding carries its evidence:
 
 - payment email changed, amount far from usual, same PayPal email under a new name;
@@ -43,7 +50,7 @@ The backend has an optional LLM layer (`backend/app/llm.py`): the invoice text i
 ```
 Chrome extension (React + TS) ──HTTP──> FastAPI backend ──REST──> PayPal Invoicing API v2 (sandbox)
   content script: invoice page text        normalization + scoring + SQLite history
-  side panel: result, History (AG Grid)
+  side panel: result, History (AG Grid), Monitor (live state, alerts, monthly report), Settings (alert rules)
 ```
 
 | Path | Purpose |
