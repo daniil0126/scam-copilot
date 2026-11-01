@@ -5,7 +5,8 @@ import Markdown, { type InvoiceLinks } from "./chat/Markdown.js";
 import TraceView from "./chat/TraceView.js";
 import InvoiceTable from "./chat/InvoiceTable.js";
 
-export default function MessageBox(message: Message & { links?: Omit<InvoiceLinks, "invoices"> }) {
+// `spaced`: the speaker changed since the previous message, so it gets more room above it than a message of the same speaker.
+export default function MessageBox(message: Message & { links?: Omit<InvoiceLinks, "invoices"> , spaced?: boolean }) {
     const isUser = message.role === "user"
     const [stepsOpen, setStepsOpen] = useState(false)
     const steps = message.trace ?? []
@@ -14,7 +15,7 @@ export default function MessageBox(message: Message & { links?: Omit<InvoiceLink
     // "Used list_invoices · 3 steps": what happened, before the answer, like the folded steps of other chat assistants.
     const summary = `${tools.length > 0 ? `Used ${tools.join(", ")}` : "Steps"} · ${steps.length} ${steps.length === 1 ? "step" : "steps"}${failed ? " · one failed" : ""}`
     return (
-        <div className={`shrink-0 ${message.table ? "w-full max-w-full overflow-clip" : "max-w-[96%]"} px-3.5 py-2.5 mt-2 rounded-2xl text-sm leading-relaxed ${isUser ? "self-end bg-[var(--primary)] text-white" : "self-start bg-[var(--card)] border border-[var(--border)] text-[var(--text)]"}`}>
+        <div className={`shrink-0 ${message.table ? "w-full max-w-full overflow-clip" : "max-w-[96%]"} px-3.5 py-2.5 ${message.spaced ? "mt-3" : ""} rounded-2xl text-sm leading-relaxed ${isUser ? "self-end bg-[var(--primary)] text-white" : "self-start bg-[var(--card)] border border-[var(--border)] text-[var(--text)]"}`}>
             {steps.length > 0 && (
                 <div className="mb-2 border-b border-[var(--border)] pb-2">
                     <button

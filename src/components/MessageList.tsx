@@ -19,8 +19,8 @@ export default function MessageList({messages, pending, pendingKey, opening, onO
     }, [messages.length, pendingKey])
 
     return (
-        <div ref={listRef} onScroll={e => { if (active) saved.current = e.currentTarget.scrollTop }} role="log" aria-label="Conversation" className="flex-1 flex flex-col w-full overflow-y-auto">
-            {messages.map(m => <MessageBox key={m.id} id={m.id} message={m.message} role={m.role} tools={m.tools} trace={m.trace} invoices={m.invoices} table={m.table} links={onOpenInvoice ? { opening: opening ?? null, onOpen: onOpenInvoice } : undefined} />)}
+        <div ref={listRef} onScroll={e => { if (active) saved.current = e.currentTarget.scrollTop }} role="log" aria-label="Conversation" className="flex-1 flex flex-col gap-2 w-full overflow-y-auto">
+            {messages.map((m, i) => <MessageBox key={m.id} spaced={i > 0 && messages[i - 1].role !== m.role} id={m.id} message={m.message} role={m.role} tools={m.tools} trace={m.trace} invoices={m.invoices} table={m.table} links={onOpenInvoice ? { opening: opening ?? null, onOpen: onOpenInvoice } : undefined} />)}
             {pending}
         </div>
     )

@@ -103,7 +103,7 @@ function AmountCell({ data }: ICellRendererParams<HistoryEntry>) {
     if (!data) return null
     const meta = LEVEL_META[data.level]
     return (
-        <div className="flex h-full items-center justify-end gap-1.5 pr-2">
+        <div className="flex h-full items-center justify-end gap-3 pr-3">
             <span className="min-w-0 text-right">
                 <span className="block whitespace-nowrap text-sm font-semibold tabular-nums leading-[18px] text-[var(--text)]">
                     {formatMoney(data.invoice.amount, data.invoice.currency)}
@@ -121,7 +121,7 @@ function AmountCell({ data }: ICellRendererParams<HistoryEntry>) {
 const columnDefs: ColDef<HistoryEntry>[] = [
     { width: 52, minWidth: 52, maxWidth: 52, cellRenderer: LevelCell, suppressMovable: true },
     { flex: 1, minWidth: 90, cellRenderer: SupplierCell, suppressMovable: true },
-    { width: 124, minWidth: 124, maxWidth: 124, cellRenderer: AmountCell, suppressMovable: true },
+    { width: 144, minWidth: 144, maxWidth: 144, cellRenderer: AmountCell, suppressMovable: true },
 ]
 
 interface HistoryItemProps {

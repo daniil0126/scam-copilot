@@ -13,7 +13,7 @@ function announcement(steps: TraceStep[], canReadPayPal: boolean): string {
 // this place and keeps the steps behind a "Show steps" button.
 export default function LiveTrace({ steps, canReadPayPal }: { steps: TraceStep[]; canReadPayPal: boolean }) {
     return (
-        <div className="mt-2 w-full max-w-[92%] shrink-0 self-start rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3.5 py-3 text-[var(--text)]">
+        <div className="mt-3 w-full max-w-[92%] shrink-0 self-start rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3.5 py-3 text-[var(--text)]">
             <p role="status" aria-atomic="true" className="sr-only">{announcement(steps, canReadPayPal)}</p>
             {steps.length === 0 ? (
                 <p className="flex items-center gap-2.5 text-sm">
