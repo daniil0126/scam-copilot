@@ -44,7 +44,7 @@ def risky(**kw):
 
 
 def test_everything_is_off_without_a_provider():
-    assert client.get("/ai/status").json() == {"enabled": False, "provider": None}
+    assert client.get("/ai/status").json() == {"enabled": False, "provider": None, "tools": []}
     assert client.post("/chat", json={"messages": [{"role": "user", "content": "hi"}]}).status_code == 503
     INVOICES["INV2-A"] = risky()
     assert "ai" not in check("INV2-A")
