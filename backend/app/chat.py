@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import llm
+from app import chat_agent, llm
 from app.db import get_db
 from app.models import Check
 
@@ -26,7 +26,7 @@ class ChatRequest(BaseModel):
 @router.get("/ai/status")
 def ai_status():
     provider = llm.get_provider()
-    return {"enabled": provider is not None, "provider": provider.name if provider else None}
+    return {"enabled": provider is not None, "provider": provider.name if provider else None, "tools": chat_agent.tool_names(provider)}
 
 
 @router.post("/chat")
@@ -35,13 +35,13 @@ async def chat(body: ChatRequest, db: Session = Depends(get_db)):
         raise HTTPException(422, "The last message must be from the user")
     check = db.get(Check, body.check_id) if body.check_id else None
     try:
-        reply = await llm.chat_reply([m.model_dump() for m in body.messages], check.result if check else None)
+        reply, tools_used = await chat_agent.answer([m.model_dump() for m in body.messages], check.result if check else None)
     except llm.LLMUnavailable:
         raise HTTPException(503, "The AI assistant is not configured on the server.")
     except Exception as e:  # only the type is logged: a provider's message can carry request details
         llm.log.warning("LLM chat failed: %s", type(e).__name__)
         raise HTTPException(502, "The AI assistant failed to answer. Try again.")
-    return {"reply": reply}
+    return {"reply": reply, **({"toolsUsed": tools_used} if tools_used else {})}  # toolsUsed only when a tool was used
 
 
 class ExplainRequest(BaseModel):
