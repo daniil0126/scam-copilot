@@ -239,15 +239,9 @@ def careful_answer(check: dict | None) -> str:
     return text
 
 
-async def chat_reply(messages: list[dict], check: dict | None = None) -> str:
-    """Answers the conversation. `check` is a stored check result used as context.
-
-    A reply that states fraud or safety as a fact is replaced by `careful_answer`; a value in it that is neither in the
-    invoice data nor in the conversation is replaced by a marker.
-    """
-    provider = get_provider()
-    if provider is None:
-        raise LLMUnavailable()
+def chat_inputs(messages: list[dict], check: dict | None = None) -> tuple[list[dict], str, str]:
+    """What a chat answer is built from: the trimmed history, the system prompt (with the check as context) and the
+    `source` text a reply is checked against."""
     history = [
         {"role": m["role"], "content": m["content"][:MAX_MESSAGE_CHARS]} for m in messages[-MAX_CHAT_MESSAGES:]
     ]
@@ -256,7 +250,22 @@ async def chat_reply(messages: list[dict], check: dict | None = None) -> str:
         block = build_context(check["invoice"], check)
         system += "\n\nThe invoice the user is asking about:\n" + block
         source += "\n" + block
-    reply = (await asyncio.wait_for(provider.complete(system, history), TIMEOUT)).strip()
+    return history, system, source
+
+
+def guard_chat_reply(reply: str, check: dict | None, source: str) -> str:
+    """A reply that states fraud or safety as a fact is replaced by `careful_answer`; a value in it that is not in `source`
+    (the conversation, the invoice data, and for the agent what the tools returned) is replaced by a marker."""
     if ai_guard.overclaims(reply):
         return careful_answer(check)
     return ai_guard.redact_ungrounded(reply, source)
+
+
+async def chat_reply(messages: list[dict], check: dict | None = None) -> str:
+    """Answers the conversation. `check` is a stored check result used as context."""
+    provider = get_provider()
+    if provider is None:
+        raise LLMUnavailable()
+    history, system, source = chat_inputs(messages, check)
+    reply = (await asyncio.wait_for(provider.complete(system, history), TIMEOUT)).strip()
+    return guard_chat_reply(reply, check, source)
