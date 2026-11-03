@@ -1,8 +1,16 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { AgGridReact } from "ag-grid-react"
+import type { ColDef, GridApi, ICellRendererParams } from "ag-grid-community"
 import { FileText, Loader2, RefreshCw, Save } from "lucide-react"
 import { fetchMonthlyReport, saveMonthlyReport } from "../../api/client.js"
 import type { AlertLevel, FullReport, MonthlyReport } from "../../api/types.js"
 import { ALERT_LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
+import { signalLabel } from "../../lib/signals.js"
+import GridToolbar from "../grid/GridToolbar.js"
+import { setupGrid } from "../grid/gridSetup.js"
+import { gridTheme } from "../grid/gridTheme.js"
+
+setupGrid()
 
 const LEVELS: AlertLevel[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 
@@ -32,6 +40,88 @@ function describe(row: Row): string {
     }
     const due = row.dueDate ? `due ${new Date(row.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""
     return [row.number && `Invoice #${row.number}`, money, due].filter(Boolean).join(" · ")
+}
+
+
+type GridContext = { onOpenCheck?: (checkId: string) => void }
+const RANK: Record<AlertLevel, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }
+
+function LevelCell({ data }: ICellRendererParams<Row>) {
+    if (!data) return null
+    const meta = ALERT_LEVEL_META[data.riskLevel]
+    return (
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${meta.soft} ${meta.text}`}>
+            <meta.icon size={12} aria-hidden /> {meta.label}
+        </span>
+    )
+}
+
+function ScoreCell({ value }: ICellRendererParams<Row, number>) {
+    const score = value ?? 0
+    return (
+        <span className="flex h-full items-center gap-2">
+            <span aria-hidden className="h-1.5 w-12 overflow-hidden rounded-full bg-[var(--border)]">
+                <span className="block h-full rounded-full bg-[var(--danger)]" style={{ width: `${Math.min(score, 100)}%` }} />
+            </span>
+            <span className="tabular-nums">{score}</span>
+        </span>
+    )
+}
+
+function OpenCell({ data, context }: ICellRendererParams<Row, unknown, GridContext>) {
+    const open = context.onOpenCheck
+    if (!open || !data?.checkId) return null
+    const checkId = data.checkId
+    return (
+        <button
+            onClick={() => open(checkId)}
+            className="cursor-pointer rounded-md px-2 py-1 text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+        >
+            Open check
+        </button>
+    )
+}
+
+const reviewColumns: ColDef<Row>[] = [
+    {
+        headerName: "Level", field: "riskLevel", width: 112, cellRenderer: LevelCell, filter: "agTextColumnFilter",
+        filterValueGetter: p => (p.data ? ALERT_LEVEL_META[p.data.riskLevel].label : ""),
+        comparator: (a: AlertLevel, b: AlertLevel) => RANK[a] - RANK[b],
+        valueFormatter: p => ALERT_LEVEL_META[p.value as AlertLevel].label,
+    },
+    { headerName: "Supplier", colId: "supplier", flex: 1, minWidth: 120, filter: "agTextColumnFilter", valueGetter: p => p.data?.supplierName ?? p.data?.invoiceId ?? "" },
+    { headerName: "Score", field: "riskScore", width: 110, sort: "desc", filter: "agNumberColumnFilter", cellRenderer: ScoreCell },
+    {
+        headerName: "Amount", colId: "amount", width: 100, type: "rightAligned", filter: "agNumberColumnFilter",
+        valueGetter: p => (typeof p.data?.amount === "number" ? p.data.amount : null),
+        valueFormatter: p => (p.data ? (describe(p.data).split(" · ").find(part => !part.startsWith("Invoice #") && !part.startsWith("due ")) ?? "") : ""),
+    },
+    { headerName: "Due", field: "dueDate", width: 100, valueFormatter: p => (p.value ? new Date(p.value as string).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—") },
+    { headerName: "Signs", colId: "signs", flex: 1, minWidth: 220, filter: "agTextColumnFilter", valueGetter: p => p.data?.signs.map(signalLabel).join("; ") ?? "" },
+    { headerName: "", colId: "open", width: 110, sortable: false, filter: false, cellRenderer: OpenCell, suppressHeaderMenuButton: true },
+]
+
+function ManualReviewGrid({ rows, onOpenCheck }: { rows: Row[]; onOpenCheck?: (checkId: string) => void }) {
+    const [api, setApi] = useState<GridApi<Row> | null>(null)
+    const defaultColDef = useMemo<ColDef<Row>>(() => ({ sortable: true, resizable: true, suppressMovable: true }), [])
+    return (
+        <>
+            <GridToolbar api={api} total={rows.length} exportName="manual-review" label="Filter invoices…" />
+            <div className="mt-2 w-full overflow-hidden rounded-lg border border-[var(--border)]" style={{ height: Math.min(300, 34 + 42 * rows.length + 18) }}>
+                <AgGridReact<Row>
+                    theme={gridTheme}
+                    rowData={rows}
+                    columnDefs={reviewColumns}
+                    defaultColDef={defaultColDef}
+                    context={{ onOpenCheck } satisfies GridContext}
+                    getRowId={p => p.data.invoiceId}
+                    rowHeight={42}
+                    headerHeight={34}
+                    onGridReady={e => setApi(e.api)}
+                />
+            </div>
+        </>
+    )
 }
 
 function Body({ report, onOpenCheck }: { report: FullReport; onOpenCheck?: (checkId: string) => void }) {
@@ -105,35 +195,7 @@ function Body({ report, onOpenCheck }: { report: FullReport; onOpenCheck?: (chec
             {report.manualReview.length > 0 && (
                 <>
                     <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Worth a manual look</h3>
-                    <ul className="mt-2 flex flex-col gap-1.5">
-                        {report.manualReview.map(row => {
-                            const meta = ALERT_LEVEL_META[row.riskLevel]
-                            return (
-                                <li key={row.invoiceId} className="rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-xs">
-                                    <p className="flex items-baseline justify-between gap-2">
-                                        <span className="min-w-0 truncate font-semibold">{row.supplierName ?? row.invoiceId}</span>
-                                        <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${meta.soft} ${meta.text}`}>
-                                            <meta.icon size={12} aria-hidden /> {meta.label} · {row.riskScore}
-                                        </span>
-                                    </p>
-                                    {describe(row) && <p className="mt-0.5 text-[var(--text)]">{describe(row)}</p>}
-                                    {row.signs.length > 0 && <p className="mt-1 [overflow-wrap:anywhere]">{row.signs.join("; ")}</p>}
-                                    <p className="mt-1 flex items-center justify-between gap-2">
-                                        {/* The PayPal id stays for a deeper comparison, but as a reference, not the headline. */}
-                                        <span className="min-w-0 truncate text-[11px] text-[var(--muted)]" title={row.invoiceId}>Ref. {row.invoiceId}</span>
-                                        {onOpenCheck && row.checkId && (
-                                            <button
-                                                onClick={() => onOpenCheck(row.checkId!)}
-                                                className="shrink-0 cursor-pointer rounded-md px-2 py-1 text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-                                            >
-                                                Open check
-                                            </button>
-                                        )}
-                                    </p>
-                                </li>
-                            )
-                        })}
-                    </ul>
+                    <ManualReviewGrid rows={report.manualReview} onOpenCheck={onOpenCheck} />
                 </>
             )}
         </>

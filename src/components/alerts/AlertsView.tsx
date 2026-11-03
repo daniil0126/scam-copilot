@@ -150,7 +150,7 @@ export default function AlertsView({ reloadKey, onRead, onOpenCheck }: Props) {
             {items && items.length > 0 && (
                 <>
                     <GridToolbar api={api} total={items.length} exportName="alerts" label="Filter alerts…" />
-                    <div className="mt-2 h-[300px] w-full overflow-hidden rounded-lg border border-[var(--border)] [&_.ag-row]:cursor-pointer">
+                    <div className="mt-2 w-full overflow-hidden rounded-lg border border-[var(--border)] [&_.ag-row]:cursor-pointer" style={{ height: Math.min(300, 34 + 42 * items.length + 18) }}>
                         <AgGridReact<AppNotification>
                             theme={gridTheme}
                             rowData={items}
