@@ -396,3 +396,63 @@ def test_a_filter_that_matches_nothing_tells_the_model_how_many_were_read_so_it_
     told = json.loads(provider.seen[2][1][-1]["content"])
     assert told["matched"] == 0 and told["invoices_read_in_total"] == 5 and "without them" in told["note"]
     assert body["table"]["matched"] == 5  # the second call replaced the empty table
+
+
+# --- one question, one direct query (filters run in code, the model never reads the whole account) ---
+
+def paged(items):
+    """A fake list that honours `page` and `page_size` like PayPal does."""
+    async def fake_call(name, args):
+        mcp_calls.append((name, args))
+        size, page = args.get("page_size", 10), args.get("page", 1)
+        return {"items": items[(page - 1) * size: page * size]}
+    mcp_calls = []
+    return fake_call, mcp_calls
+
+
+def test_a_filtered_question_needs_one_read_and_one_answer_and_no_forced_second_step(mcp, use):
+    mcp.reply = {"items": many(30)}
+    provider = use(ToolProvider(call("list_invoices", {"sort": "amount_desc", "limit": 1}), text(f"The biggest is {'INV2-001D-AAAA-BBBB-CCCC'}.")))
+    body = ask("какой самый большой инвойс").json()
+    assert provider.forced == [None, None] and len(provider.seen) == 2  # a plan and an answer
+    assert mcp.calls == [("list_invoices", {"page": 1, "page_size": 100})]  # the filters never go to PayPal
+    told = json.loads(provider.seen[1][1][-1]["content"])
+    assert told["matched"] == 1 and told["invoices"][0]["amount"] == "129.00" and told["invoices_read_in_total"] == 30
+    assert [i["id"] for i in body["invoices"]] == ["INV2-001D-AAAA-BBBB-CCCC"] and body.get("table") is None
+
+
+def test_the_seller_is_found_by_name_from_the_stored_checks_with_its_risk_and_signs(mcp, use):
+    from app.db import SessionLocal
+    from app.models import Check
+    mcp.reply = {"items": many(120)}  # more than one page of the real server: the code must find it anyway
+    target = "INV2-0070-AAAA-BBBB-CCCC"
+    result = {"level": "high", "findings": [
+        {"id": "phone", "label": "Phone number in invoice text", "severity": "high"},
+        {"id": "x", "label": "Supplier confirmed", "severity": "ok"}]}
+    with SessionLocal() as db:
+        db.add(Check(id="c-1", paypal_invoice_id=target, supplier_name="Secure Shield Renewals", supplier_email="", number="0105",
+                     amount=499.0, currency="USD", result=result))
+        db.commit()
+    provider = use(ToolProvider(call("list_invoices", {"query": "secure shield", "sort": "newest", "limit": 1}), text("Found it.")))
+    ask("расскажи про последний счёт от Secure Shield Renewals")
+    told = json.loads(provider.seen[1][1][-1]["content"])
+    assert told["matched"] == 1
+    assert told["invoices"][0] == {**told["invoices"][0], "id": target, "seller": "Secure Shield Renewals", "risk_level": "high",
+                                   "signs_found": ["Phone number in invoice text"]}
+
+
+def test_every_page_is_read_for_a_filtered_question(monkeypatch, use):
+    fake_call, calls = paged(many(230))
+    monkeypatch.setattr(paypal_mcp, "call_tool", fake_call)
+    monkeypatch.setattr(paypal_mcp, "available", lambda: True)
+    use(ToolProvider(call("list_invoices", {"limit": 10}), text("Ten.")))
+    table = ask("show 10").json()["table"]
+    assert [c[1]["page"] for c in calls] == [1, 2, 3] and table["matched"] == 10 and len(table["rows"]) == 10
+
+
+def test_nothing_matched_is_said_to_the_model_as_data_not_as_an_error(mcp, use):
+    mcp.reply = {"items": many(5)}
+    provider = use(ToolProvider(call("list_invoices", {"query": "nobody"}), text("No such invoice.")))
+    ask("find nobody")
+    told = json.loads(provider.seen[1][1][-1]["content"])
+    assert told["matched"] == 0 and "do not guess" in told["note"] and "error" not in told

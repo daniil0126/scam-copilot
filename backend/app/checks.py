@@ -56,7 +56,8 @@ async def run_check(
         select(Check).where(Check.paypal_invoice_id.not_in(ignore | {invoice_id}))
         .order_by(desc(Check.checked_at)).limit(1)
     )
-    previous = db.scalars(latest.where(Check.supplier_name == supplier["name"])).first()
+    # A blank name or email is "not shown", not a supplier: matching on it would "confirm" one unknown against another.
+    previous = db.scalars(latest.where(Check.supplier_name == supplier["name"])).first() if supplier["name"] else None
     known_by_email = (
         db.scalars(latest.where(Check.supplier_email == supplier["email"])).first() if supplier["email"] else None
     )
@@ -87,7 +88,24 @@ async def run_check(
 
 @router.post("")
 async def create_check(body: CheckRequest, db: Session = Depends(get_db)):
-    return await run_check(db, body.invoice_id, await get_invoice(body.invoice_id), use_ai=True)
+    """Rules only, so the answer is quick; the AI explanation is a separate call (`POST /checks/{id}/explain`)."""
+    return await run_check(db, body.invoice_id, await get_invoice(body.invoice_id))
+
+
+@router.post("/{check_id}/explain")
+async def explain_check(check_id: str, db: Session = Depends(get_db)):
+    """Adds the AI explanation to a stored check and returns the whole result. It can take as long as the model does
+    (up to LLM_TIMEOUT_SECONDS), which is why a check does not wait for it. A check that already has one, or that AI is
+    off or not needed for (a LOW result), comes back unchanged."""
+    check = db.get(Check, check_id)
+    if check is None:
+        raise HTTPException(404, "Check not found.")
+    result = dict(check.result)
+    if "ai" not in result and (analysis := await llm.analyse_invoice(result["invoice"], result)):
+        llm.apply_analysis(result, analysis)
+        check.result = result  # a new dict: an in-place change would not be seen as one
+        db.commit()
+    return result
 
 
 class PageCheckRequest(BaseModel):
@@ -108,7 +126,7 @@ async def create_page_check(body: PageCheckRequest, db: Session = Depends(get_db
     extra = (
         page_findings(inv.model_dump(mode="json"), [{**e.normalized, "kind": e.kind} for e in emails]) if emails else None
     )
-    return await run_check(db, inv.id, legacy_invoice(inv), use_ai=True, extra=extra)
+    return await run_check(db, inv.id, legacy_invoice(inv), extra=extra)
 
 
 @router.post("/bulk")

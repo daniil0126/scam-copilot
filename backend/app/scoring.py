@@ -20,8 +20,8 @@ RECOMMENDATIONS = {
 
 def level_for(score: int, findings: list[dict]) -> str:
     level = "high" if score >= 60 else "medium" if score >= 30 else "low"
-    if level == "low" and any(f["severity"] == "high" for f in findings):
-        level = "medium"  # one serious red flag is never "low risk"
+    if level == "low" and any(f["severity"] == "high" or f["id"] == "identity" for f in findings):
+        level = "medium"  # one serious red flag, or an invoice that does not say who sent it, is never "low risk"
     return level
 
 
@@ -52,7 +52,15 @@ def score_invoice(invoice: dict, previous: Check | None, known_by_email: Check |
         evidence.append(text)
         points += pts
 
-    if previous is None and known_by_email is None:
+    def skip(fid, label, text):
+        findings.append({"id": fid, "label": label, "severity": "ok", "detail": text, "skipped": True})
+
+    anonymous = not supplier["name"].strip() and not supplier["email"].strip()
+    if anonymous:
+        # Nothing to compare with the history: say so, instead of letting an empty seller pass as "no problems".
+        add("identity", "Seller not identified", "medium", 20,
+            "The invoice does not show who issued it (no business name and no PayPal email), so it could not be compared with your history.")
+    elif previous is None and known_by_email is None:
         add("supplier", "New supplier", "medium", 15, "This supplier has no earlier checks in your history.")
     else:
         prev = previous or known_by_email
@@ -103,9 +111,12 @@ def score_invoice(invoice: dict, previous: Check | None, known_by_email: Check |
                 f"The sender is named \"{supplier['name']}\" but their PayPal email"
                 f"{' (' + supplier['email'] + ')' if supplier['email'] else ''} does not belong to that brand.")
             break
-    if previous is None and known_by_email is None and invoice["amount"] >= 300:
+    if not anonymous and previous is None and known_by_email is None and invoice["amount"] >= 300:
         add("amount_new", "Large amount from unknown sender", "medium", 15,
             f"A first-time sender is asking for {invoice['amount']:.2f} {invoice['currency']}.")
+
+    if not invoice["amount"]:
+        skip("amount_read", "Amount not read", "The invoice amount was not available, so amounts were not checked.")
 
     due = invoice["dueDate"]
     if not due:

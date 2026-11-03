@@ -127,3 +127,19 @@ def test_page_check_scores_a_payer_page_and_rejects_other_text():
 
     assert client.post("/checks/page", json={"url": f["url"], "text": "hello"}).status_code == 422
     assert client.post("/checks/page", json={"url": f["url"], "text": "x" * 20_001}).status_code == 422
+
+
+def test_an_invoice_that_does_not_say_who_sent_it_is_never_low_risk_and_says_why():
+    INVOICES["INV2-ANON"] = make(name="", email="")
+    result = check("INV2-ANON")
+    assert result["level"] == "medium"
+    (finding,) = [f for f in result["findings"] if f["id"] == "identity"]
+    assert finding["label"] == "Seller not identified" and "who issued it" in finding["detail"]
+    assert not any(f["id"] in ("supplier", "amount_new") for f in result["findings"])  # no "new supplier" on top of it
+
+
+def test_two_anonymous_invoices_are_not_each_others_history():
+    INVOICES["INV2-ANON1"], INVOICES["INV2-ANON2"] = make(name="", email=""), make(name="", email="")
+    check("INV2-ANON1")
+    second = check("INV2-ANON2")
+    assert not any(f["label"] == "Supplier confirmed" for f in second["findings"]) and second["level"] == "medium"

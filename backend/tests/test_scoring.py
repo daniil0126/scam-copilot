@@ -104,3 +104,4 @@ def test_a_field_the_source_does_not_show_is_not_a_difference():
 def test_findings_carry_their_explanation():
     result = score_invoice(invoice(amount=140.0), past(), None)
     assert all(f["detail"] for f in result["findings"])
+
