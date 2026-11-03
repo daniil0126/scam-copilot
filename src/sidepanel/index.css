@@ -50,6 +50,16 @@ body,
     font-family: Inter, system-ui, sans-serif;
 }
 
+/* Tables: a thin scrollbar in the theme's colours (the default one is a white native bar on the dark card) and no
+   horizontal scroll. */
+.sc-grid, .sc-grid * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) transparent;
+}
+:root[data-theme="dark"] .sc-grid,
+:host([data-theme="dark"]) .sc-grid { color-scheme: dark; }
+.sc-grid .ag-body-horizontal-scroll { display: none; }
+
 /* A row that has just appeared in a live list: a translucent flash, held for a moment, then faded out to the row's own
    background (not to transparent, which would flash the card behind it), like a fresh line in a log. */
 @keyframes sc-fresh {
