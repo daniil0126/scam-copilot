@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scam Copilot Privacy Policy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a plain reading page in the landing page's type and colours; a summary first, then numbered sections. */
+:root{--paper:#f4f6fa;--card:#fff;--ink:#172033;--muted:#566480;--line:#dde3ee;--blue:#2563eb;--blue-soft:#eaf1ff;--warn:#9a6208;--warn-soft:#fdf4e0;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0e1626;--card:#162033;--ink:#e6ebf5;--muted:#9aa8c3;--line:#25314a;--blue:#6f9bf5;--blue-soft:#1c2b4a;--warn:#f0b84a;--warn-soft:#33290f;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#0e1626;--card:#162033;--ink:#e6ebf5;--muted:#9aa8c3;--line:#25314a;--blue:#6f9bf5;--blue-soft:#1c2b4a;--warn:#f0b84a;--warn-soft:#33290f;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.65 var(--body)}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+main{max-width:760px;margin:0 auto;padding:40px 24px 80px}
+.back{font:500 14px var(--mono);text-decoration:none}
+h1,h2{font-family:var(--display);line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(36px,6vw,56px);font-weight:800;margin:20px 0 8px}
+h2{font-size:26px;font-weight:700;margin:48px 0 12px}
+.date{font:400 14px var(--mono);color:var(--muted)}
+.sum{background:var(--blue-soft);border-radius:14px;padding:22px 26px;margin:28px 0 0}
+.sum ul{margin:8px 0 0;padding-left:20px}.sum li{margin:6px 0}
+p{margin:0 0 14px}ul{padding-left:22px}li{margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:15.5px;margin:12px 0}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font:500 13px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.scroll{overflow-x:auto}
+code{font:500 14px var(--mono);background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+.todo{background:var(--warn-soft);color:var(--warn);font:500 14px var(--mono);padding:1px 7px;border-radius:4px}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="index.html">← Scam Copilot</a>
+<h1>Privacy Policy</h1>
+<div class="date">Last updated: 1 November 2026</div>
+
+<div class="sum">
+<b>In short</b>
+<ul>
+<li>Scam Copilot reads a PayPal page or email only when you press a button, and only on paypal.com.</li>
+<li>What it reads is sent to its server, checked against rules, and the result is saved so you can see it in History.</li>
+<li>It has no ads and no analytics, and it does not sell or share your data for marketing.</li>
+<li>It cannot pay, cancel or edit an invoice.</li>
+<li>It is a hackathon project tested on PayPal Sandbox. Do not use it with real invoices.</li>
+</ul>
+</div>
+
+<h2>1. Who we are</h2>
+<p>Scam Copilot is a Chrome extension and a backend service that check PayPal invoices for signs of fraud. It was made for the PayPal AI Hackathon. The operator of the service is the Scam Copilot team. Contact: <span class="todo">khan.daniil26@gmail.com</span>.</p>
+
+<h2>2. What we collect, and when</h2>
+<div class="scroll"><table>
+<thead><tr><th>Data</th><th>When</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>The visible text of the PayPal invoice page you have open (up to 20,000 characters) and its address</td><td>Only when you press <b>Check this PayPal invoice</b></td><td>To read supplier, amount, dates, items and note, and check them</td></tr>
+<tr><td>The block of a PayPal invoice email, as HTML</td><td>Only when you press <b>Check this email</b></td><td>To check where its links lead and what changed since the earlier email</td></tr>
+<tr><td>Invoices of the PayPal account connected to the backend</td><td>When the monitor syncs or a webhook arrives</td><td>To check new and changed invoices and raise alerts</td></tr>
+<tr><td>Questions you type in the chat</td><td>When you send them</td><td>To answer them about a checked invoice</td></tr>
+<tr><td>Extension settings: theme, notification switch, panel width, collapsed state</td><td>When you change them</td><td>To remember your choices</td></tr>
+</tbody></table></div>
+<p>We do not collect your PayPal password, card or bank details, your browsing history, or the content of any page outside paypal.com. The content script cannot run on other sites.</p>
+
+<h2>3. Where it is stored</h2>
+<ul>
+<li><b>In your browser.</b> Settings are kept in <code>chrome.storage.sync</code>, so Chrome may sync them across your devices. The optional secret for email checks is kept in <code>chrome.storage.local</code> and never syncs.</li>
+<li><b>On our server.</b> For each check we store the supplier name and email, invoice number, amount, currency, time, the findings and the explanation. For monitored invoices we also store each version of the invoice as PayPal returned it, alerts and monthly reports. For emails we store only the extracted fields, not the HTML. A record of actions (for example report created) is kept for audit.</li>
+</ul>
+
+<h2>4. Who else receives data</h2>
+<ul>
+<li><b>PayPal.</b> The backend reads invoices through PayPal’s Invoicing API with read-only calls. It does not pay, cancel or change anything.</li>
+<li><b>An AI model provider (optional, off unless the operator turns it on).</b> When the AI review or the chat is on, a reduced version of the invoice is sent to OpenRouter, using free models only: supplier name, amount, dates, the findings and the note. Before sending, email addresses keep only their first letter and domain, phone numbers are replaced, and query strings of links are removed. Invoice text is sent as quoted data, never as instructions. Free models can be rate limited, and their providers may use prompts for training, so do not use real invoices with it.</li>
+<li><b>Hosting.</b> The server runs at <span class="todo">Render</span>, which processes the data on our behalf.</li>
+</ul>
+<p>We do not sell data, do not use it for advertising or credit decisions, and do not share it with anyone else except as the law requires.</p>
+
+<h2>5. How the data is used</h2>
+<p>Only to run the checks you ask for, show them to you, send in-app alerts and build your monthly report. The language model explains a result and answers questions. It does not set the score, which comes from fixed rules. We use the data only for these features and for keeping the service secure.</p>
+
+<h2>6. Permissions the extension asks for</h2>
+<div class="scroll"><table>
+<thead><tr><th>Permission</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><code>storage</code></td><td>Remember your settings</td></tr>
+<tr><td><code>sidePanel</code></td><td>Show results in Chrome’s side panel</td></tr>
+<tr><td>Content script on <code>https://*.paypal.com/*</code></td><td>Read the invoice page or email you are looking at, when you press the button</td></tr>
+<tr><td>Access to the Scam Copilot server</td><td>Send what was read for checking and get the result back</td></tr>
+</tbody></table></div>
+
+<h2>7. Security</h2>
+<ul>
+<li>Data travels to the server over HTTPS. The server accepts requests only from the extension.</li>
+<li>Secrets such as API keys and tokens are kept out of logs. The server is not given PayPal live credentials.</li>
+<li>The chat can read two things from PayPal, the invoice list and a single invoice, and nothing else.</li>
+</ul>
+<p>No system is perfectly secure. Treat this as a prototype.</p>
+
+<h2>8. Keeping and deleting data</h2>
+<p>Checks and monitored invoices stay on the server until we delete them. To have your data deleted, write to <span class="todo">khan.daniil26@gmail.com</span> with the invoice number or the address you used, and we will delete it. Removing the extension deletes its settings from your browser.</p>
+
+<h2>9. Chrome Web Store limited use</h2>
+<p>The use of information received from Chrome APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements. We use the data only to provide the single purpose of the extension, checking PayPal invoices, and we do not transfer it to others, or use it for ads, or let people read it, except to provide the feature, for security, to comply with law, or with your consent.</p>
+
+<h2>10. Children</h2>
+<p>The service is not directed to children under 13 and we do not knowingly collect their data.</p>
+
+<h2>11. Changes</h2>
+<p>If this policy changes, we will update the date at the top and describe the change in the extension’s release notes.</p>
+</main>
+</body>
+</html>

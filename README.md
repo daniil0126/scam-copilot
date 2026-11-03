@@ -72,17 +72,19 @@ Chrome extension (React + TS) ──HTTP──> FastAPI backend ──REST──
 
 ## Run it
 
-Requirements: Node 20+, Python 3.11+, Chrome, and a free [PayPal Developer](https://developer.paypal.com/) sandbox app with the **Invoicing** feature enabled.
+Requirements: Node 20+, **Python 3.13** (developed on it; `backend/.python-version` pins it). 3.14 also installs and passes the tests on macOS, and every pinned package has a prebuilt Windows build for it; if `pip install` still tries to compile something, upgrade pip first (`python -m pip install -U pip`) or use 3.13, Chrome, and a free [PayPal Developer](https://developer.paypal.com/) sandbox app with the **Invoicing** feature enabled.
 
 ### 1. Backend
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python3.13 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env      # then fill PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET
 uvicorn app.main:app --port 8000
 ```
+
+On Windows (PowerShell) use `py -3.13 -m venv .venv`, `.venv\Scripts\activate` and `Copy-Item .env.example .env` instead of the `venv` and `cp` lines above.
 
 Optional in `backend/.env`: `PAYPAL_WEBHOOK_ID` turns on `POST /webhooks/paypal`; `INBOUND_EMAIL_SECRET` turns on `POST /inbound/email` (send it as the `X-Inbound-Secret` header); `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_MODEL` turn on the AI layer (see above). Use a separate OpenRouter key with a low credit limit.
 

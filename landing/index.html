@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scam Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: the hero is a real-looking invoice with a reviewer's red-pen annotations; the rest reads like an audit memo. */
+:root{
+  --paper:#f4f6fa; --card:#ffffff; --ink:#172033; --muted:#566480; --line:#dde3ee;
+  --navy:#17294b; --blue:#2563eb; --blue-soft:#eaf1ff; --red:#d93443; --red-soft:#fdecee; --green:#0b8a68; --amber:#9a6208;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0e1626; --card:#162033; --ink:#e6ebf5; --muted:#9aa8c3; --line:#25314a;
+  --navy:#0f1c36; --blue:#6f9bf5; --blue-soft:#1c2b4a; --red:#ff7a85; --red-soft:#3a1a22; --green:#35c9a0; --amber:#f0b84a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0e1626; --card:#162033; --ink:#e6ebf5; --muted:#9aa8c3; --line:#25314a;
+  --navy:#0f1c36; --blue:#6f9bf5; --blue-soft:#1c2b4a; --red:#ff7a85; --red-soft:#3a1a22; --green:#35c9a0; --amber:#f0b84a; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--body)}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05;letter-spacing:-.02em}
+nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.logo{display:flex;align-items:center;gap:10px;font:800 20px var(--display);text-decoration:none}
+.logo svg{width:28px;height:28px}
+nav .links{display:flex;gap:28px;font-size:15px}
+nav .links a{text-decoration:none;color:var(--muted)} nav .links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 24px;border-radius:10px;background:var(--navy);color:#fff;font:600 16px var(--body);text-decoration:none;border:2px solid var(--navy);transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px -8px var(--navy)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+:root[data-theme="dark"] .btn:not(.ghost){background:var(--blue);border-color:var(--blue);color:#0e1626}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn:not(.ghost){background:var(--blue);border-color:var(--blue);color:#0e1626}}
+/* hero */
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center;padding:48px 0 88px}
+.eyebrow{font:500 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--red)}
+.hero h1{font-size:clamp(44px,6.4vw,76px);font-weight:800;margin:14px 0 20px}
+.hero h1 mark{background:none;color:var(--red);box-shadow:inset 0 -.14em 0 var(--red-soft)}
+.hero p.lead{font-size:20px;color:var(--muted);max-width:30em;margin:0 0 32px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.fine{font-size:14px;color:var(--muted);margin-top:18px}
+/* invoice */
+.stage{position:relative;padding:12px 0 12px 12px}
+.inv{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px 28px 24px;box-shadow:0 30px 60px -30px rgba(23,41,75,.35);font-size:14px;transform:rotate(-1.2deg)}
+.inv .top{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px}
+.inv b{font-family:var(--display);font-size:20px}
+.inv .tag{font:500 12px var(--mono);color:var(--muted)}
+.inv table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.inv td{padding:7px 0;border-bottom:1px dashed var(--line)}
+.inv td:last-child{text-align:right}
+.inv .total td{font-weight:600;border:0;padding-top:12px;font-size:16px}
+.inv .note{margin-top:12px;padding:10px 12px;background:var(--paper);border-radius:6px;color:var(--muted)}
+.hl{background:var(--red-soft);color:var(--red);padding:1px 5px;border-radius:3px;font-weight:600;outline:2px solid var(--red);outline-offset:1px}
+.pin{position:absolute;display:flex;align-items:center;gap:8px;font:500 12.5px/1.3 var(--mono);color:var(--red);background:var(--card);border:1.5px solid var(--red);border-radius:6px;padding:6px 10px;box-shadow:0 6px 16px -8px rgba(217,52,67,.5);max-width:230px}
+.pin i{font-style:normal;display:grid;place-items:center;flex:none;width:20px;height:20px;border-radius:50%;background:var(--red);color:var(--card);font-weight:600}
+.p1{top:-6px;right:-10px}.p2{top:178px;left:-34px}.p3{bottom:46px;right:-18px}
+.verdict{position:absolute;left:-18px;bottom:-26px;background:var(--red);color:#fff;border-radius:10px;padding:12px 18px;display:flex;align-items:baseline;gap:10px;transform:rotate(-2deg);box-shadow:0 14px 26px -12px var(--red)}
+:root[data-theme="dark"] .verdict,:root[data-theme="dark"] .pin i{color:#2a0d12}
+.verdict strong{font:800 36px var(--display);line-height:1}
+.verdict span{font:500 13px var(--mono);text-transform:uppercase;letter-spacing:.05em}
+/* sections */
+section{padding:84px 0;border-top:1px solid var(--line)}
+.sec-h{display:grid;grid-template-columns:200px 1fr;gap:32px;margin-bottom:48px}
+.sec-h .eyebrow{color:var(--blue);padding-top:10px}
+.sec-h h2{font-size:clamp(32px,4.4vw,52px);font-weight:700;max-width:16em}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:26px}
+.card h3{font-size:22px;margin:14px 0 8px}
+.card p{margin:0;color:var(--muted);font-size:16px}
+.num{font:500 13px var(--mono);color:var(--blue);background:var(--blue-soft);padding:3px 9px;border-radius:99px}
+.list{display:grid;grid-template-columns:1fr 1fr;gap:0 48px}
+.row{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;padding:20px 0;border-bottom:1px solid var(--line)}
+.row .code{font:500 13px var(--mono);color:var(--red);padding-top:5px}
+.row h3{font-size:20px}
+.row p{grid-column:2;margin:0;color:var(--muted);font-size:15.5px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.ok li,.no li{margin:10px 0;color:var(--muted)}
+.ok,.no{padding-left:0;list-style:none;margin:16px 0 0}
+.ok li::before{content:"+";font:600 15px var(--mono);color:var(--green);margin-right:10px}
+.no li::before{content:"–";font:600 15px var(--mono);color:var(--amber);margin-right:10px}
+.final{text-align:center;padding:96px 0}
+.final h2{font-size:clamp(48px,9vw,120px);font-weight:800;max-width:9em;margin:0 auto 20px}
+.final p{color:var(--muted);max-width:32em;margin:0 auto 28px}
+.final .cta{justify-content:center}
+pre{display:inline-block;text-align:left;background:var(--navy);color:#dbe6ff;font:400 14px/1.7 var(--mono);padding:18px 22px;border-radius:10px;margin:34px auto 0;max-width:100%;overflow-x:auto}
+footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:64px}.sec-h{grid-template-columns:1fr;gap:8px}.three,.list,.split{grid-template-columns:1fr}nav .links{display:none}.p2{left:-6px}}
+@media(max-width:480px){.p1,.p3{right:-4px;max-width:190px}.inv{padding:20px 16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+.pin,.verdict{animation:pop .5s cubic-bezier(.2,.9,.3,1.3) backwards}.p2{animation-delay:.25s}.p3{animation-delay:.5s}.verdict{animation-delay:.8s}
+
+/* in-chrome panel */
+.chrome{display:grid;grid-template-columns:1fr 400px;gap:64px;align-items:center}
+.chrome h2{font-size:clamp(32px,4.4vw,52px);font-weight:700;margin:12px 0 18px;max-width:12em}
+.chrome p{color:var(--muted);max-width:30em;margin:0 0 14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(23,41,75,.4)}
+.pbar{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:var(--navy);color:#fff;font:600 15px var(--body)}
+.pbar small{font:400 12px var(--mono);opacity:.7}
+.tabs{display:flex;gap:4px;padding:10px 12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tabs span{padding:8px 12px;color:var(--muted);border-bottom:2px solid transparent}
+.tabs .on{color:var(--ink);border-color:var(--blue)}
+.pbody{padding:18px}
+.score{display:flex;align-items:center;gap:16px;padding:16px;border-radius:14px;background:var(--red-soft);border:1px solid var(--red)}
+.ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--red) 85%,var(--line) 0);display:grid;place-items:center;flex:none}
+.ring b{width:50px;height:50px;border-radius:50%;background:var(--card);display:grid;place-items:center;font:600 19px var(--mono);color:var(--red)}
+.score h3{font-size:19px;color:var(--red)}.score p{margin:2px 0 0;font-size:13.5px;color:var(--muted);line-height:1.4}
+.sig{margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--paper);border:1px solid var(--line);font-size:14px;line-height:1.45}
+.sig strong{display:flex;justify-content:space-between;gap:8px;font-weight:600;margin-bottom:3px}
+.sig em{font:500 11.5px var(--mono);font-style:normal;color:var(--red);background:var(--red-soft);padding:1px 7px;border-radius:99px;white-space:nowrap}
+.sig span{color:var(--muted)}
+.ai{margin-top:10px;padding:12px 14px;border-radius:12px;border:1px dashed var(--line);font-size:13.5px;color:var(--muted)}
+.ai b{color:var(--blue);font:500 11.5px var(--mono);display:block;margin-bottom:3px;letter-spacing:.04em}
+.final h2 span{color:var(--red)}
+@media(max-width:900px){.chrome{grid-template-columns:1fr;gap:40px}.panel{max-width:440px}}
+
+/* demo video */
+.video{position:relative;aspect-ratio:16/9;border-radius:16px;border:1px solid var(--line);background:var(--navy);overflow:hidden;display:grid;place-items:center;color:#fff;text-align:center;box-shadow:0 30px 60px -30px rgba(23,41,75,.4)}
+.video iframe,.video video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video .ph{padding:24px}
+.video .ph svg{width:72px;height:72px;margin-bottom:12px;opacity:.9}
+.video .ph b{display:block;font:700 22px var(--display)}
+.video .ph span{font:400 14px var(--mono);opacity:.75}
+/* install */
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:16px;counter-reset:st}
+.steps>li{counter-increment:st;display:grid;grid-template-columns:48px 1fr;gap:0 20px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}
+.steps>li::before{content:counter(st);width:40px;height:40px;border-radius:50%;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font:600 16px var(--mono)}
+.steps h3{font-size:21px;margin-bottom:6px}
+.steps p{margin:0 0 12px;color:var(--muted);font-size:16px}
+.steps p:last-child{margin-bottom:0}
+.steps code.i{font:500 14px var(--mono);background:var(--blue-soft);color:var(--ink);padding:1px 6px;border-radius:4px}
+.cmd{position:relative;margin:0 0 12px;background:var(--navy);color:#dbe6ff;border-radius:10px;padding:14px 56px 14px 16px;font:400 14px/1.7 var(--mono);overflow-x:auto;white-space:pre}
+.cmd button{position:absolute;top:8px;right:8px;min-height:32px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#dbe6ff;font:500 12px var(--mono);cursor:pointer}
+.cmd button:hover{background:rgba(255,255,255,.12)}
+.req{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px;padding:0;list-style:none}
+.req li{font:500 13.5px var(--mono);background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 14px;color:var(--muted)}
+@media(max-width:560px){.steps>li{grid-template-columns:1fr;gap:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav aria-label="Main">
+    <a class="logo" href="#top"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 4 7v8c0 7.5 5 13 12 15 7-2 12-7.500 12-15V7z" fill="var(--navy)"/><path d="m10.500 16 4 4 7.500-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Scam Copilot</a>
+    <div class="links"><a href="#how">How it works</a><a href="#finds">What it finds</a><a href="#limits">Honest limits</a><a href="#demo">Demo</a></div>
+    <a class="btn ghost" href="#install">Install</a>
+  </nav>
+
+  <header class="hero" id="top">
+    <div>
+      <div class="eyebrow">Chrome extension · PayPal invoices</div>
+      <h1>Read the invoice <mark>before</mark> you pay it.</h1>
+      <p class="lead">Fake invoices often arrive as genuine PayPal invoices from a stranger. Scam Copilot compares one with the supplier’s history and points at what looks wrong, with the evidence next to each sign.</p>
+      <div class="cta"><a class="btn" href="#install">Add to Chrome</a><a class="btn ghost" href="#how">See how a check works</a></div>
+      <p class="fine">Reads a page only when you press the button. Analysis only: it never pays, cancels or edits anything.</p>
+    </div>
+
+    <div class="stage" role="img" aria-label="Example invoice with three signs marked: a changed payment email, an amount far above the usual one, and a phone number in the note. Risk score 85, high.">
+      <div class="inv" aria-hidden="true">
+        <div class="top"><div><b>Premium Antivirus Renewal</b><div class="tag">Invoice INV2-K9QX · example</div></div><div class="tag">Due in 2 days</div></div>
+        <table>
+          <tr><td>Annual protection plan</td><td>$ 489.00</td></tr>
+          <tr><td>Pay to</td><td><span class="hl">billing@pr0tect-pay.co</span></td></tr>
+          <tr><td>Usual amount from this supplier</td><td>$ 54.00</td></tr>
+          <tr class="total"><td>Total due</td><td><span class="hl">$ 489.00</span></td></tr>
+        </table>
+        <div class="note">Auto-renewal confirmed. To cancel, call <span class="hl">+1 (888) 555-0142</span> today.</div>
+      </div>
+      <div class="pin p1"><i>1</i>Payment email changed since last invoice</div>
+      <div class="pin p2"><i>2</i>9× the usual amount</div>
+      <div class="pin p3"><i>3</i>Phone number in the note</div>
+      <div class="verdict"><strong>85</strong><span>High · signs found</span></div>
+    </div>
+  </header>
+</div>
+
+<section id="panel"><div class="wrap chrome">
+  <div>
+    <div class="eyebrow" style="color:var(--blue)">In Chrome</div>
+    <h2>One button. One list of evidence.</h2>
+    <p>The result opens in Chrome’s side panel, next to the invoice. Each sign says what was found and why, with the numbers from the supplier’s history.</p>
+    <p>An optional AI review explains it in plain words. The score itself always comes from rules.</p>
+  </div>
+  <aside class="panel" aria-label="Example result in the Scam Copilot side panel">
+    <div class="pbar">Scam Copilot <small>example</small></div>
+    <div class="tabs" aria-hidden="true"><span class="on">Check</span><span>History</span><span>Monitor</span><span>Settings</span></div>
+    <div class="pbody">
+      <div class="score"><div class="ring"><b>85</b></div><div><h3>High risk</h3><p>Premium Antivirus Renewal · $489.00</p></div></div>
+      <div class="sig"><strong>Payment email changed <em>+35</em></strong><span>Earlier invoices paid to billing@premium-av.com; this one to billing@pr0tect-pay.co.</span></div>
+      <div class="sig"><strong>Amount far from usual <em>+30</em></strong><span>$489.00 against about $54.00 in earlier checks of this supplier.</span></div>
+      <div class="sig"><strong>Phone number in the note <em>+20</em></strong><span>“call +1 (888) 555-0142 today”</span></div>
+      <div class="ai"><b>AI REVIEW · EXPLAINS, DOES NOT SCORE</b>This looks like a renewal you did not ask for. Do not call the number in the note.</div>
+    </div>
+  </aside>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="sec-h"><div class="eyebrow">How it works</div><h2>Three ways in. One list of evidence out.</h2></div>
+  <div class="three">
+    <article class="card"><span class="num">01</span><h3>The invoice page</h3><p>Open the invoice PayPal shows you as the payer and press <em>Check this PayPal invoice</em>. PayPal’s API hides invoices issued by others, so this is how a stranger’s invoice gets checked.</p></article>
+    <article class="card"><span class="num">02</span><h3>Your own account</h3><p>The backend reads the invoices of the connected PayPal account through the Invoicing API and watches them for changes, with webhooks where PayPal sends them.</p></article>
+    <article class="card"><span class="num">03</span><h3>The invoice email</h3><p>Open the email in the Developer Dashboard and press <em>Check this email</em>. Scam Copilot checks where its links lead and what changed since the earlier email.</p></article>
+  </div>
+</div></section>
+
+<section id="finds"><div class="wrap">
+  <div class="sec-h"><div class="eyebrow">What it finds</div><h2>Signs, not verdicts.</h2></div>
+  <div class="list">
+    <div class="row"><span class="code">PAY-01</span><h3>Payment email changed</h3><p>The supplier’s PayPal email differs from the earlier invoices.</p></div>
+    <div class="row"><span class="code">AMT-02</span><h3>Amount far from usual</h3><p>Compared with earlier checks of the same supplier.</p></div>
+    <div class="row"><span class="code">ID-03</span><h3>Same email, new name</h3><p>A known PayPal address now appears under a different business name.</p></div>
+    <div class="row"><span class="code">TXT-04</span><h3>Phone number or scam wording</h3><p>“Call to cancel” notes are the classic refund-scam hook.</p></div>
+    <div class="row"><span class="code">BRD-05</span><h3>Known brand, unrelated name</h3><p>A famous product name sold by a business that is not it.</p></div>
+    <div class="row"><span class="code">CHG-06</span><h3>Changed after sending</h3><p>The update email leaves the note out; the payer page shows it. The difference is flagged.</p></div>
+  </div>
+  <p style="color:var(--muted);margin:28px 0 0;max-width:42em">Every finding carries its evidence. One serious red flag never produces a low score. Missing data stays empty instead of being guessed.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-h"><div class="eyebrow">Built to be trusted</div><h2>A model explains. Rules decide.</h2></div>
+  <div class="split">
+    <div class="card"><h3>Rules set the score</h3><p>Each finding adds points; the total maps to low, medium or high. An optional language model can write the explanation and answer questions in the chat. It never changes the score, and anything in its answer that is not in the invoice is dropped.</p></div>
+    <div class="card"><h3>Your data stays narrow</h3><p>The content script runs only on paypal.com. Invoice text reaches the model as data, never as instructions. Secrets are scrubbed from logs. The chat can read two things from PayPal, the invoice list and one invoice, and nothing else.</p></div>
+  </div>
+</div></section>
+
+<section id="limits"><div class="wrap">
+  <div class="sec-h"><div class="eyebrow">Honest limits</div><h2>What a low score does not mean.</h2></div>
+  <div class="split">
+    <div class="card"><h3>What works today</h3><ul class="ok"><li>Payer pages, account invoices and invoice emails</li><li>History table of every check, and live monitoring with in-app alerts</li><li>A monthly report counted from stored checks</li></ul></div>
+    <div class="card"><h3>What does not, yet</h3><ul class="no"><li>Tested on PayPal Sandbox only, not on live accounts</li><li>Rules are tuned on demo scenarios, not on real fraud data</li><li>A low score is a heuristic, not a guarantee that an invoice is safe</li></ul></div>
+  </div>
+</div></section>
+
+<section id="demo"><div class="wrap">
+  <div class="sec-h"><div class="eyebrow">Demo</div><h2>Watch a check from start to finish.</h2></div>
+  <!-- When the video is ready, replace .ph with: <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="Scam Copilot demo" allowfullscreen></iframe> (or a <video controls src="demo.mp4">) -->
+  <div class="video" role="img" aria-label="Demo video placeholder"><div class="ph"><svg viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34" fill="none" stroke="currentColor" stroke-width="3"/><path d="M29 22v28l23-14z" fill="currentColor"/></svg><b>Demo video coming soon</b><span>Sandbox invoice · side panel · result</span></div></div>
+</div></section>
+
+<section id="install"><div class="wrap">
+  <div class="sec-h"><div class="eyebrow">Install</div><h2>Running in about ten minutes.</h2></div>
+  <ul class="req" aria-label="Requirements"><li>Chrome</li><li>Node 20+</li><li>Python 3.11+</li><li>PayPal Developer account (free)</li></ul>
+  <ol class="steps">
+    <li><div><h3>Get the code</h3><div class="cmd"><button type="button" aria-label="Copy command">Copy</button>git clone https://github.com/daniil0126/scam-copilot.git
+cd scam-copilot</div></div></li>
+    <li><div><h3>Create a PayPal Sandbox app</h3><p>In the <a href="https://developer.paypal.com/">PayPal Developer</a> dashboard open <b>Apps &amp; Credentials</b>, switch to <b>Sandbox</b>, create an app with the <b>Invoicing</b> feature on, and copy its Client ID and Secret. Use Sandbox only; never put live credentials in a demo.</p></div></li>
+    <li><div><h3>Start the backend</h3><div class="cmd"><button type="button" aria-label="Copy command">Copy</button>cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --port 8000</div><p>Before the last line, fill <code class="i">PAYPAL_CLIENT_ID</code> and <code class="i">PAYPAL_CLIENT_SECRET</code> in <code class="i">backend/.env</code>. Then <code class="i">http://localhost:8000/health</code> should answer <code class="i">{"status": "ok"}</code>.</p></div></li>
+    <li><div><h3>Build the extension</h3><div class="cmd"><button type="button" aria-label="Copy command">Copy</button>cd ..
+npm ci
+npm run build</div></div></li>
+    <li><div><h3>Load it in Chrome</h3><p>Open <code class="i">chrome://extensions</code>, turn on <b>Developer mode</b>, press <b>Load unpacked</b> and choose the <code class="i">dist/</code> folder. Click the Scam Copilot icon to open the side panel.</p></div></li>
+    <li><div><h3>Check an invoice</h3><p>In the sandbox, send an invoice from a business account to a personal account and open it as the payer (<code class="i">sandbox.paypal.com/invoice/p/#…</code>). Press <b>Check this PayPal invoice</b> in the side panel.</p><p>To get demo invoices fast, run <code class="i">python scripts/scenarios.py --links</code> in <code class="i">backend/</code>.</p></div></li>
+  </ol>
+  <p style="color:var(--muted);margin:24px 0 0;max-width:42em">Optional: <code class="i">LLM_PROVIDER</code>, <code class="i">LLM_API_KEY</code> and <code class="i">LLM_MODEL</code> in <code class="i">.env</code> turn on the AI review and the chat. Without them everything runs on the rules alone. Full setup, including webhooks and email checks, is in the <a href="https://github.com/daniil0126/scam-copilot#run-it">README</a>.</p>
+</div></section>
+
+<section class="final" id="start"><div class="wrap">
+  <h2>Look twice. <span>Pay once.</span></h2>
+  <p>Built for the PayPal AI Hackathon. Open source, free to run on your own PayPal Sandbox.</p>
+  <div class="cta"><a class="btn" href="https://github.com/daniil0126/scam-copilot">Get it on GitHub</a><a class="btn ghost" href="#how">How a check works</a></div>
+</div></section>
+
+<div class="wrap"><footer><span>Scam Copilot · PayPal AI Hackathon entry</span><span><a href="privacy.html">Privacy Policy</a> · Sandbox only. Signs found are not proof of fraud.</span></footer></div>
+<script>
+document.querySelectorAll('.cmd button').forEach(function(b){b.addEventListener('click',function(){
+  var t=b.nextSibling.textContent;
+  var done=function(l){b.textContent=l;setTimeout(function(){b.textContent='Copy'},1600)};
+  try{navigator.clipboard.writeText(t).then(function(){done('Copied')},function(){done('Select text')})}catch(e){done('Select text')}
+})});
+</script>
+</body>
+</html>
