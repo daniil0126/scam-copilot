@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { AgGridReact } from "ag-grid-react"
 import type { ColDef, GridApi, GridReadyEvent, ICellRendererParams } from "ag-grid-community"
-import { Download, Search } from "lucide-react"
 import type { MonitoringEvent, RiskLevel } from "../../api/types.js"
 import { LEVEL_META } from "../../lib/risk.js"
-import { csvFileName, csvSafe } from "../grid/csv.js"
+import GridToolbar from "../grid/GridToolbar.js"
 import { setupGrid } from "../grid/gridSetup.js"
 import { gridTheme } from "../grid/gridTheme.js"
 import { eventKey, money } from "./monitoringMeta.js"
@@ -53,19 +52,14 @@ const columnDefs: ColDef<MonitoringEvent>[] = [
 // The latest events of the monitor as an AG Grid table. New events are added to the grid with a transaction, not by
 // rebuilding the data, so the table keeps its sorting, filter and scroll position while it fills by itself.
 export default function MonitorEventsGrid({ events, highlightSince }: { events: MonitoringEvent[]; highlightSince: string }) {
-    const api = useRef<GridApi<MonitoringEvent> | null>(null)
+    const [api, setApi] = useState<GridApi<MonitoringEvent> | null>(null)
     const known = useRef(new Map<string, string>())  // row id -> serialized row, to tell a changed row from a same one
     const since = useRef(highlightSince)
     useEffect(() => { since.current = highlightSince }, [highlightSince])
-    const [ready, setReady] = useState(false)
-    const [query, setQuery] = useState("")
-    const [shown, setShown] = useState(events.length)
-
-    const count = useCallback(() => setShown(api.current?.getDisplayedRowCount() ?? 0), [])
 
     useEffect(() => {
-        const grid = api.current
-        if (!grid || !ready) return
+        const grid = api
+        if (!grid) return
         const next = new Map(events.map(e => [eventKey(e), e]))
         const add: MonitoringEvent[] = []
         const update: MonitoringEvent[] = []
@@ -80,37 +74,14 @@ export default function MonitorEventsGrid({ events, highlightSince }: { events: 
         const first = known.current.size === next.size && add.length === next.size
         const result = grid.applyTransaction({ add, update, remove, addIndex: 0 })
         if (!first && result?.add.length && !reducedMotion()) grid.flashCells({ rowNodes: result.add, flashDuration: 1200, fadeDuration: 1500 })
-        count()
-    }, [events, ready, count])
+    }, [events, api])
 
-    const onReady = (e: GridReadyEvent<MonitoringEvent>) => { api.current = e.api; setReady(true) }
-    const exportCsv = () => api.current?.exportDataAsCsv({
-        fileName: csvFileName("monitor-events"),
-        processCellCallback: p => csvSafe(p.formatValue ? p.formatValue(p.value) : p.value),
-    })
+    const onReady = (e: GridReadyEvent<MonitoringEvent>) => setApi(e.api)
     const defaultColDef = useMemo<ColDef<MonitoringEvent>>(() => ({ sortable: true, resizable: true, suppressMovable: true }), [])
 
     return (
         <div>
-            <div className="mt-2 flex items-center gap-2">
-                <label className="relative min-w-0 flex-1">
-                    <span className="sr-only">Filter events</span>
-                    <Search size={14} aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
-                    <input
-                        value={query}
-                        onChange={e => { setQuery(e.target.value); api.current?.setGridOption("quickFilterText", e.target.value); count() }}
-                        placeholder="Filter events…"
-                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] py-1.5 pl-8 pr-2 text-xs text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                </label>
-                <span className="shrink-0 text-xs tabular-nums text-[var(--muted)]" aria-live="polite">{shown} of {events.length}</span>
-                <button
-                    onClick={exportCsv}
-                    className="inline-flex min-h-8 shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-[var(--border)] px-2.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
-                >
-                    <Download size={13} aria-hidden /> CSV
-                </button>
-            </div>
+            <GridToolbar api={api} total={events.length} exportName="monitor-events" label="Filter events…" />
             <div className="mt-2 h-[300px] w-full overflow-hidden rounded-lg border border-[var(--border)]">
                 <AgGridReact<MonitoringEvent>
                     theme={gridTheme}
@@ -123,7 +94,6 @@ export default function MonitorEventsGrid({ events, highlightSince }: { events: 
                     animateRows={!reducedMotion()}
                     rowClassRules={{ "sc-fresh": p => !!p.data && Date.parse(p.data.detectedAt) > Date.parse(since.current) }}
                     onGridReady={onReady}
-                    onFilterChanged={count}
                     noRowsOverlayComponent={() => <span className="text-sm text-[var(--muted)]">No events match the filter.</span>}
                 />
             </div>

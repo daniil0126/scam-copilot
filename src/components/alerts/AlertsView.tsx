@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useState } from "react"
-import { BellOff, ChevronDown, Loader2 } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { AgGridReact } from "ag-grid-react"
+import type { ColDef, GridApi, ICellRendererParams } from "ag-grid-community"
+import { BellOff, Loader2 } from "lucide-react"
 import { fetchNotifications, markNotificationRead } from "../../api/client.js"
 import type { AppNotification } from "../../api/types.js"
 import { ALERT_LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
 import { signalLabel } from "../../lib/signals.js"
+import GridToolbar from "../grid/GridToolbar.js"
+import { setupGrid } from "../grid/gridSetup.js"
+import { gridTheme } from "../grid/gridTheme.js"
+
+setupGrid()
 
 const PAGE = 20
 
@@ -29,6 +36,39 @@ function describe(item: AppNotification): string {
     return [invoice.supplierName ?? "Unknown sender", invoice.number && `#${invoice.number}`, money].filter(Boolean).join(" · ")
 }
 
+
+const RANK: Record<AppNotification["riskLevel"], number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }
+
+function LevelCell({ data }: ICellRendererParams<AppNotification>) {
+    if (!data) return null
+    const risk = ALERT_LEVEL_META[data.riskLevel]
+    return (
+        <span className="inline-flex items-center gap-1.5">
+            <span aria-label={data.read ? undefined : "Unread"} className={`h-2 w-2 shrink-0 rounded-full ${data.read ? "" : "bg-[var(--primary)]"}`} />
+            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${risk.soft} ${risk.text}`}>
+                <risk.icon size={12} aria-hidden /> {risk.label}
+            </span>
+        </span>
+    )
+}
+
+const columnDefs: ColDef<AppNotification>[] = [
+    {
+        headerName: "Level", field: "riskLevel", width: 150, cellRenderer: LevelCell, filter: "agTextColumnFilter",
+        filterValueGetter: p => (p.data ? ALERT_LEVEL_META[p.data.riskLevel].label : ""),
+        comparator: (a: AppNotification["riskLevel"], b: AppNotification["riskLevel"]) => RANK[a] - RANK[b],
+        valueFormatter: p => ALERT_LEVEL_META[p.value as AppNotification["riskLevel"]].label,
+    },
+    { headerName: "Supplier", colId: "supplier", flex: 1, minWidth: 120, filter: "agTextColumnFilter", valueGetter: p => p.data?.invoice?.supplierName ?? "Unknown sender", tooltipValueGetter: p => p.data?.title ?? "" },
+    {
+        headerName: "Amount", colId: "amount", width: 100, type: "rightAligned", filter: "agNumberColumnFilter",
+        valueGetter: p => p.data?.invoice?.amount ?? null,
+        valueFormatter: p => (p.data?.invoice ? describe(p.data).split(" · ").at(-1) ?? "" : ""),
+    },
+    { headerName: "Detected", field: "detectedAt", width: 150, sort: "desc", valueFormatter: p => formatDateTime(p.value as string) },
+    { headerName: "Signs", colId: "signals", flex: 1, minWidth: 220, filter: "agTextColumnFilter", valueGetter: p => p.data?.signals.map(signalLabel).join("; ") ?? "" },
+]
+
 export default function AlertsView({ reloadKey, onRead, onOpenCheck }: Props) {
     const [items, setItems] = useState<AppNotification[] | null>(null)
     const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -36,6 +76,8 @@ export default function AlertsView({ reloadKey, onRead, onOpenCheck }: Props) {
     const [error, setError] = useState<string | null>(null)
     const [loadingMore, setLoadingMore] = useState(false)
     const [openId, setOpenId] = useState<string | null>(null)
+    const [api, setApi] = useState<GridApi<AppNotification> | null>(null)
+    const defaultColDef = useMemo<ColDef<AppNotification>>(() => ({ sortable: true, resizable: true, suppressMovable: true }), [])
 
     useEffect(() => {
         let cancelled = false
@@ -78,6 +120,8 @@ export default function AlertsView({ reloadKey, onRead, onOpenCheck }: Props) {
         }
     }, [onRead])
 
+    const selected = items?.find(n => n.id === openId) ?? null
+
     return (
         <section aria-label="Alerts" className="p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -104,62 +148,47 @@ export default function AlertsView({ reloadKey, onRead, onOpenCheck }: Props) {
             )}
 
             {items && items.length > 0 && (
-                <ul className="flex flex-col gap-2">
-                    {items.map(item => {
-                        const risk = ALERT_LEVEL_META[item.riskLevel]
-                        const expanded = openId === item.id
-                        return (
-                            <li key={item.id} className="rounded-lg border border-[var(--border)] bg-[var(--card)]">
+                <>
+                    <GridToolbar api={api} total={items.length} exportName="alerts" label="Filter alerts…" />
+                    <div className="mt-2 h-[300px] w-full overflow-hidden rounded-lg border border-[var(--border)] [&_.ag-row]:cursor-pointer">
+                        <AgGridReact<AppNotification>
+                            theme={gridTheme}
+                            rowData={items}
+                            columnDefs={columnDefs}
+                            defaultColDef={defaultColDef}
+                            getRowId={p => p.data.id}
+                            rowHeight={42}
+                            headerHeight={34}
+                            tooltipShowDelay={400}
+                            rowClassRules={{ "font-bold": p => !!p.data && !p.data.read }}
+                            onGridReady={e => setApi(e.api)}
+                            onRowClicked={e => { if (e.data) void open(e.data) }}
+                            onCellKeyDown={e => {
+                                const key = (e.event as KeyboardEvent | null)?.key
+                                if (e.data && (key === "Enter" || key === " ")) void open(e.data)
+                            }}
+                        />
+                    </div>
+                    {selected && (
+                        <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-xs leading-snug">
+                            <p className="font-semibold [overflow-wrap:anywhere]">{selected.title}</p>
+                            <p className="mt-1 text-[var(--muted)] [overflow-wrap:anywhere]">{describe(selected)}</p>
+                            <p className="mt-1 [overflow-wrap:anywhere]">{selected.message}</p>
+                            {selected.invoice ? (
                                 <button
-                                    aria-expanded={expanded}
-                                    onClick={() => void open(item)}
-                                    className="flex w-full cursor-pointer gap-3 p-2.5 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--primary)]"
+                                    onClick={() => onOpenCheck(selected.invoice!.checkId)}
+                                    className="mt-2 min-h-8 cursor-pointer rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
                                 >
-                                    <span aria-hidden className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${risk.soft} ${risk.text}`}>
-                                        <risk.icon size={15} />
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span className="flex items-baseline justify-between gap-2">
-                                            <span className={`flex min-w-0 items-start gap-1.5 text-sm ${item.read ? "font-medium" : "font-bold"}`}>
-                                                {!item.read && <span aria-label="Unread" className="h-2 w-2 shrink-0 rounded-full bg-[var(--primary)]" />}
-                                                <span className="line-clamp-2 break-words" title={item.title}>{item.title}</span>
-                                            </span>
-                                            <time dateTime={item.detectedAt} className="shrink-0 text-xs tabular-nums text-[var(--muted)]">{formatDateTime(item.detectedAt)}</time>
-                                        </span>
-                                        <span className="mt-0.5 line-clamp-2 break-words text-xs text-[var(--muted)]" title={item.invoiceId}>{describe(item)}</span>
-                                        <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${risk.soft} ${risk.text}`}>
-                                                <risk.icon size={12} aria-hidden /> {risk.label}
-                                            </span>
-                                            {item.signals.slice(0, 2).map(signal => (
-                                                <span key={signal} className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--muted)]">{signalLabel(signal)}</span>
-                                            ))}
-                                            {item.signals.length > 2 && <span className="text-xs text-[var(--muted)]">+{item.signals.length - 2}</span>}
-                                        </span>
-                                    </span>
-                                    <ChevronDown size={14} aria-hidden className={`mt-1 shrink-0 text-[var(--muted)] transition-transform motion-reduce:transition-none ${expanded ? "rotate-180" : ""}`} />
+                                    Open this check
                                 </button>
-                                {expanded && (
-                                    <div className="border-t border-[var(--border)] px-3 py-2.5 text-xs leading-snug">
-                                        <p className="[overflow-wrap:anywhere]">{item.message}</p>
-                                        {item.invoice ? (
-                                            <button
-                                                onClick={() => onOpenCheck(item.invoice!.checkId)}
-                                                className="mt-2 min-h-8 cursor-pointer rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
-                                            >
-                                                Open this check
-                                            </button>
-                                        ) : (
-                                            <p className="mt-2 text-[var(--muted)] [overflow-wrap:anywhere]">
-                                                No stored check for this invoice (PayPal id {item.invoiceId}). If the backend was updated, restart it.
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                            </li>
-                        )
-                    })}
-                </ul>
+                            ) : (
+                                <p className="mt-2 text-[var(--muted)] [overflow-wrap:anywhere]">
+                                    No stored check for this invoice (PayPal id {selected.invoiceId}). If the backend was updated, restart it.
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </>
             )}
 
             {nextCursor && (
