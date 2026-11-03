@@ -22,6 +22,7 @@ Around the checks, on the backend:
 - **Alerts.** Each stored invoice version can raise one in-app alert (critical or high risk, potential duplicate, vendor impersonation, suspicious payment link). `GET /notifications`, `GET /notifications/unread-count`, `GET/PUT /monitoring/settings` (threshold and categories). Wording is "signs found", never "fraud".
 - **Monthly report.** `GET/POST /reports/monthly?month=YYYY-MM` and `GET /monitoring/summary`, counted by SQL from the stored analyses; an empty month says so.
 - **AI guard.** Only minimised data goes to the model, invoice text is passed as data, and values in its answer that are not in the input are dropped. The model never changes the score. `backend/scripts/evaluate.py` measures Precision, Recall and FPR on the 59-case set in `backend/tests/dataset/`; the figures are not recorded yet.
+- **Tables (AG Grid Community).** Monitor events (new rows appear by themselves and flash), Alerts, the report's "worth a manual look" list and History are AG Grid tables: sort, column filters, a quick filter and CSV export of what is shown (cells that start with `=`, `+`, `-` or `@` are quoted against spreadsheet formulas). Community edition only, no Enterprise features.
 - **Security.** Secrets are scrubbed from logs; checklist in `docs/plans/security-checklist.md`.
 
 Either way the invoice is scored and every finding carries its evidence:
