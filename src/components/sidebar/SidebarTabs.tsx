@@ -34,8 +34,9 @@ export default function SidebarTabs({ tab, onChange, badges }: Props) {
                         {label}
                         {badge && badge.count > 0 && (
                             <span
+                                key={badge.count}
                                 aria-label={`${badge.count} new${badge.urgent ? ", some high risk" : ""}`}
-                                className={`ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold tabular-nums text-white ${badge.urgent ? "bg-[var(--danger)]" : "bg-[var(--primary)]"}`}
+                                className={`sc-badge-pop ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold tabular-nums text-white ${badge.urgent ? "bg-[var(--danger)]" : "bg-[var(--primary)]"}`}
                             >
                                 {badge.count > 9 ? "9+" : badge.count}
                             </span>

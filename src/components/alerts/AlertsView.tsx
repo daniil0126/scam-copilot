@@ -120,13 +120,13 @@ export default function AlertsView({ reloadKey, onRead, onOpenCheck }: Props) {
                                     </span>
                                     <span className="min-w-0 flex-1">
                                         <span className="flex items-baseline justify-between gap-2">
-                                            <span className={`flex min-w-0 items-center gap-1.5 text-sm ${item.read ? "font-medium" : "font-bold"}`}>
+                                            <span className={`flex min-w-0 items-start gap-1.5 text-sm ${item.read ? "font-medium" : "font-bold"}`}>
                                                 {!item.read && <span aria-label="Unread" className="h-2 w-2 shrink-0 rounded-full bg-[var(--primary)]" />}
-                                                <span className="truncate">{item.title}</span>
+                                                <span className="line-clamp-2 break-words" title={item.title}>{item.title}</span>
                                             </span>
                                             <time dateTime={item.detectedAt} className="shrink-0 text-xs tabular-nums text-[var(--muted)]">{formatDateTime(item.detectedAt)}</time>
                                         </span>
-                                        <span className="mt-0.5 block truncate text-xs text-[var(--muted)]" title={item.invoiceId}>{describe(item)}</span>
+                                        <span className="mt-0.5 line-clamp-2 break-words text-xs text-[var(--muted)]" title={item.invoiceId}>{describe(item)}</span>
                                         <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                             <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${risk.soft} ${risk.text}`}>
                                                 <risk.icon size={12} aria-hidden /> {risk.label}

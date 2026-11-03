@@ -7,6 +7,10 @@ import type {
 export const checkPayPalInvoice = (invoiceId: string) =>
     request<VerificationResult>("/checks", { method: "POST", body: JSON.stringify({ invoice_id: invoiceId }) })
 
+// The AI explanation of a stored check. Slow (a model call), so it is asked for after the check is already on screen.
+export const explainCheck = (checkId: string) =>
+    request<VerificationResult>(`/checks/${encodeURIComponent(checkId)}/explain`, { method: "POST" }, "This check was not found.")
+
 // For invoices PayPal's API will not return (not ours): the backend reads the text of the payer page.
 export const checkPayerPage = (url: string, text: string) =>
     request<VerificationResult>("/checks/page", { method: "POST", body: JSON.stringify({ url, text }) })

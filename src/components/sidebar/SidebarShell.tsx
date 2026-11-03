@@ -12,6 +12,8 @@ import ChatTab from "../chat/ChatTab.js"
 import HistoryView from "../history/HistoryView.js"
 import MonitorTab from "../monitoring/MonitorTab.js"
 import { useUnreadCount } from "../alerts/useUnreadCount.js"
+import { useAlertArrival } from "../alerts/useAlertArrival.js"
+import AlertToast from "../alerts/AlertToast.js"
 import { eventKey } from "../monitoring/monitoringMeta.js"
 import MonitorStatusChip from "../monitoring/MonitorStatusChip.js"
 import { useMonitoring } from "../monitoring/useMonitoring.js"
@@ -93,6 +95,13 @@ export default function SidebarShell({ store, fill = false }: Props) {
             : { count: unseen.length, urgent: unseen.some(e => e.riskLevel === "high") },
     } : {}
 
+    const arrival = useAlertArrival(alerts.unread, alerts.error === null, settings.notifications)
+    const openArrival = () => {
+        arrival.dismiss()
+        setMonitorSection("alerts")
+        changeTab("monitor")
+    }
+
     const panelRef = useRef<HTMLElement>(null)
     const restoreFocusTo = useRef<Element | null>(null)
     const wasExpanded = useRef(false)
@@ -142,6 +151,9 @@ export default function SidebarShell({ store, fill = false }: Props) {
                     onOpenSettings={() => changeTab("settings")}
                     onClose={fill ? undefined : () => store.set(false)} />
                 <SidebarTabs tab={tab} onChange={changeTab} badges={badges} />
+                {/* A new key remounts the overlay, which plays the flash again for each arrival. */}
+                {arrival.flashKey > 0 && <div key={arrival.flashKey} aria-hidden className="sc-alert-flash pointer-events-none absolute inset-0 z-20" />}
+                {arrival.arrival && <AlertToast alert={arrival.arrival} onOpen={openArrival} onDismiss={arrival.dismiss} />}
                 <main ref={mainRef} role="tabpanel" className="min-h-0 flex-1 overflow-y-auto">
                     {/* Kept mounted so the analysis result survives tab switches. */}
                     <div hidden={tab !== "check"}><CheckTab onOpenHistory={() => changeTab("history")} onShownChange={setShownCheckId} /></div>

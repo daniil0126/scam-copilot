@@ -6,7 +6,8 @@
     "description": "Checks PayPal invoices for signs of fraud before you pay.",
     "permissions": [
         "storage",
-        "sidePanel"
+        "sidePanel",
+        "alarms"
     ],
     "side_panel": {
         "default_path": "index.html"

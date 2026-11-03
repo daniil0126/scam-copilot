@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronDown, Sparkles } from "lucide-react"
+import { ChevronDown, Loader2, Sparkles } from "lucide-react"
 import type { VerificationResult } from "../../api/types.js"
 import { LEVEL_META, alertTitle } from "../../lib/risk.js"
 import RiskSummary from "./RiskSummary.js"
@@ -7,14 +7,16 @@ import ComparisonTable from "./ComparisonTable.js"
 import RecommendationCard from "./RecommendationCard.js"
 import VerificationActions from "./VerificationActions.js"
 import { groupFindings } from "../../lib/groupResult.js"
+import DataCoverage from "./DataCoverage.js"
 
-export default function VerificationView({ result }: { result: VerificationResult }) {
+export default function VerificationView({ result, explaining = false }: { result: VerificationResult; explaining?: boolean }) {
     const [alertOpen, setAlertOpen] = useState(true)
     const [diffOpen, setDiffOpen] = useState(true)
     const [detailsOpen, setDetailsOpen] = useState(false)
 
     const meta = LEVEL_META[result.level]
-    const { title, subtitle } = alertTitle(result.level, groupFindings(result.findings).flagged.length)
+    const { flagged } = groupFindings(result.findings)
+    const { title, subtitle } = alertTitle(result.level, flagged.length, flagged.map(f => f.label))
     const Icon = meta.icon
 
     return (
@@ -34,6 +36,8 @@ export default function VerificationView({ result }: { result: VerificationResul
                 </button>
             </section>
 
+            <DataCoverage invoice={result.invoice} />
+
             {alertOpen && <RiskSummary result={result} />}
 
             {result.comparison.length > 0 && (
@@ -47,6 +51,13 @@ export default function VerificationView({ result }: { result: VerificationResul
                         <ChevronDown size={16} className={`text-[var(--muted)] transition-transform ${diffOpen ? "rotate-180" : ""}`} aria-hidden />
                     </button>
                     {diffOpen && <ComparisonTable rows={result.comparison} />}
+                </section>
+            )}
+
+            {explaining && !result.ai && (
+                <section role="status" aria-label="AI review" className="flex items-center gap-2 rounded-xl border border-dashed border-[var(--border)] p-3 text-xs text-[var(--muted)]">
+                    <Loader2 size={14} className="motion-safe:animate-spin" aria-hidden />
+                    Writing the AI explanation. The rule-based result above is already final.
                 </section>
             )}
 

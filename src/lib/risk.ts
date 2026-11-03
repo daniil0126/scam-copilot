@@ -33,11 +33,14 @@ export const SEVERITY_TEXT: Record<FindingSeverity, string> = {
 }
 
 // `signCount` counts only the signs to look at: passed and not-checked findings are not "risks found".
-export function alertTitle(level: RiskLevel, signCount: number): { title: string, subtitle: string } {
+// `reasons` are the labels of those signs: the header says what they are, so a level never stands without its cause.
+export function alertTitle(level: RiskLevel, signCount: number, reasons: string[] = []): { title: string, subtitle: string } {
     if (level === "low") return { title: "No obvious issues", subtitle: "Only the available signals were checked" }
+    const count = signCount === 1 ? "1 sign to look at" : `${signCount} signs to look at`
+    const named = reasons.slice(0, 2).join(" · ") + (reasons.length > 2 ? ` · +${reasons.length - 2}` : "")
     return {
         title: level === "high" ? "Several signs of a suspicious invoice" : "Some signs need attention",
-        subtitle: signCount === 1 ? "1 sign to look at" : `${signCount} signs to look at`,
+        subtitle: named || count,
     }
 }
 

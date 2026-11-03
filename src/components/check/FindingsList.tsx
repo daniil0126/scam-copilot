@@ -21,7 +21,7 @@ function FlaggedItem({ finding }: { finding: Finding }) {
     if (!finding.detail) return <li>{head}</li>
     return (
         <li>
-            <details open={high} className="group">
+            <details open className="group">
                 <summary className="flex cursor-pointer list-none items-start gap-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] [&::-webkit-details-marker]:hidden">
                     <span className="flex-1">{head}</span>
                     <ChevronDown size={14} className="mt-1 shrink-0 text-[var(--muted)] transition-transform group-open:rotate-180" aria-label="Show why" />

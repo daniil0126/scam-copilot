@@ -126,7 +126,7 @@ export type VerificationResult = {
     recommendation: string
     evidence: string[]
     // Present only when the server has an LLM configured and it answered.
-    ai?: { summary: string; provider: string }
+    ai?: { summary: string; provider: string; status?: "OK" | "UNAVAILABLE" }
 }
 
 export type HistoryEntry = VerificationResult
