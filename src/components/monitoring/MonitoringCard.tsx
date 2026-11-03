@@ -1,29 +1,13 @@
-import { useState } from "react"
-import { Activity, AlertTriangle, ChevronDown, FilePenLine, FilePlus2, Loader2, Pause, Play, RefreshCw } from "lucide-react"
+import { Activity, AlertTriangle, Loader2, Pause, Play, RefreshCw } from "lucide-react"
 import type { Monitoring } from "./useMonitoring.js"
-import { STATE_META, eventKey } from "./monitoringMeta.js"
-import { LEVEL_META, formatMoney } from "../../lib/risk.js"
-
-const COLLAPSED_EVENTS = 4
-const SHOWN_SIGNALS = 2
+import MonitorEventsGrid from "./MonitorEventsGrid.js"
+import { STATE_META } from "./monitoringMeta.js"
 
 const clock = (iso: string | null, seconds = false) =>
     iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...(seconds && { second: "2-digit" }) }) : "never"
 
-function money(amount: string | null, currency: string | null): string {
-    const value = Number(amount)
-    if (amount === null || Number.isNaN(value)) return "Amount unknown"
-    try {
-        return currency ? formatMoney(value, currency) : value.toFixed(2)
-    } catch {
-        return `${amount} ${currency ?? ""}`.trim()  // an unknown currency code
-    }
-}
-
 // `highlightSince`: events detected after this moment are marked as new.
 export default function MonitoringCard({ status, summary, error, busy, sync, toggle, highlightSince }: Monitoring & { highlightSince: string }) {
-    const [showAll, setShowAll] = useState(false)
-
     if (!status) {
         return error
             ? <p role="alert" className="m-3 rounded-lg bg-[var(--danger-soft)] px-3 py-2 text-sm font-medium text-[var(--danger)]">{error}</p>
@@ -34,8 +18,6 @@ export default function MonitoringCard({ status, summary, error, busy, sync, tog
     const paused = status.state === "PAUSED"
     const live = status.state === "ACTIVE"
     const highRisk = status.highRisk + status.criticalRisk
-    const events = showAll ? status.recentEvents : status.recentEvents.slice(0, COLLAPSED_EVENTS)
-    const hidden = status.recentEvents.length - COLLAPSED_EVENTS
     const spoken = `Monitoring ${paused ? "paused" : live ? "live" : "has a problem"}. ${status.totalInvoices} invoices, ${highRisk} high risk.`
 
     const button = "inline-flex min-h-8 flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] cursor-pointer"
@@ -123,60 +105,7 @@ export default function MonitoringCard({ status, summary, error, busy, sync, tog
                         {paused ? "Monitoring is paused." : "Waiting for the first invoice…"}
                     </p>
                 ) : (
-                    <ul className="mt-2 flex flex-col gap-2">
-                        {events.map(event => {
-                            const risk = event.riskLevel ? LEVEL_META[event.riskLevel] : null
-                            const isNew = event.eventType === "NEW_INVOICE"
-                            const Icon = isNew ? FilePlus2 : FilePenLine
-                            // The row flashes once when it is added (CSS animation on mount); the "New" label stays, so the mark survives reduced motion.
-                            const fresh = Date.parse(event.detectedAt) > Date.parse(highlightSince)
-                            return (
-                                <li key={eventKey(event)} className={`flex gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2.5 ${fresh ? "sc-fresh" : ""}`}>
-                                    <span aria-hidden className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${risk ? `${risk.soft} ${risk.text}` : "bg-[var(--border)] text-[var(--muted)]"}`}>
-                                        <Icon size={15} />
-                                    </span>
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-baseline justify-between gap-2">
-                                            <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
-                                                <span className="truncate">{event.senderName ?? "Unknown sender"}</span>
-                                                {fresh && <span className="shrink-0 rounded border border-[var(--primary)]/40 bg-[var(--primary-soft)] px-1.5 text-xs font-bold text-[var(--primary)]">New</span>}
-                                            </p>
-                                            <time dateTime={event.detectedAt} className="shrink-0 text-xs tabular-nums text-[var(--muted)]">{clock(event.detectedAt)}</time>
-                                        </div>
-                                        <p className="text-xs text-[var(--muted)]">
-                                            {isNew ? "New invoice" : "Invoice updated"}
-                                            {event.invoiceNumber && ` · #${event.invoiceNumber}`} · <span className="tabular-nums">{money(event.amount, event.currency)}</span>
-                                        </p>
-                                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                            {risk && (
-                                                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${risk.soft} ${risk.text}`}>
-                                                    <risk.icon size={12} aria-hidden /> {risk.label}
-                                                </span>
-                                            )}
-                                            {event.signals.slice(0, SHOWN_SIGNALS).map(signal => (
-                                                <span key={signal} className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--muted)]">{signal}</span>
-                                            ))}
-                                            {event.signals.length > SHOWN_SIGNALS && (
-                                                <span className="text-xs text-[var(--muted)]" title={event.signals.slice(SHOWN_SIGNALS).join(", ")}>
-                                                    +{event.signals.length - SHOWN_SIGNALS}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </li>
-                            )
-                        })}
-                    </ul>
-                )}
-                {hidden > 0 && (
-                    <button
-                        aria-expanded={showAll}
-                        onClick={() => setShowAll(v => !v)}
-                        className="mt-2 inline-flex min-h-8 w-full cursor-pointer items-center justify-center gap-1 rounded-lg text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
-                    >
-                        {showAll ? "Show less" : `Show ${hidden} more`}
-                        <ChevronDown size={14} aria-hidden className={`transition-transform motion-reduce:transition-none ${showAll ? "rotate-180" : ""}`} />
-                    </button>
+                    <MonitorEventsGrid events={status.recentEvents} highlightSince={highlightSince} />
                 )}
             </div>
         </section>

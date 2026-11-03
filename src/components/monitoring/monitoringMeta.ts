@@ -1,4 +1,5 @@
 import type { MonitoringEvent, MonitoringState } from "../../api/types.js"
+import { formatMoney } from "../../lib/risk.js"
 
 // Full class names only: Tailwind cannot detect names built from fragments.
 export const STATE_META: Record<MonitoringState, { label: string; dot: string; pill: string }> = {
@@ -8,3 +9,13 @@ export const STATE_META: Record<MonitoringState, { label: string; dot: string; p
 }
 
 export const eventKey = (e: MonitoringEvent | undefined) => (e ? `${e.invoiceId}@${e.detectedAt}` : "")
+
+export function money(amount: string | null, currency: string | null): string {
+    const value = Number(amount)
+    if (amount === null || Number.isNaN(value)) return "Amount unknown"
+    try {
+        return currency ? formatMoney(value, currency) : value.toFixed(2)
+    } catch {
+        return `${amount} ${currency ?? ""}`.trim()  // an unknown currency code
+    }
+}
