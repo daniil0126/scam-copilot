@@ -89,7 +89,7 @@ async def receive_email(request: Request, ai: bool = False, db: Session = Depend
         .order_by(InvoiceEmail.row_id.desc()).limit(1)
     ).first()
     extra = assess_email(mail, normalized, previous.normalized if previous else None)
-    check = await run_check(db, invoice.id, legacy_invoice(invoice), use_ai=ai, extra=extra)
+    check = await run_check(db, invoice.id, legacy_invoice(invoice), use_ai=ai, extra=extra, normalized=invoice)
     return {
         "stored": not duplicate, "duplicate": duplicate, "kind": mail["kind"], "template": mail["template"],
         "invoiceId": invoice.id, "invoice": normalized, "links": _links(mail), "check": check,
