@@ -7,15 +7,44 @@ Fake invoices are a common scam: a genuine PayPal invoice, sent by a stranger, t
 > Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/).
 > A low score is not a guarantee that an invoice is safe. The score is a heuristic, not a calibrated probability of fraud.
 
-## Try it (hosted copy, no build)
+## For judges: try it in 3 minutes
 
-A copy of the backend runs on Render, on the **PayPal Sandbox only**, so you can try the extension without installing anything but the extension itself.
+**You need:** Chrome on a computer. No PayPal account, no keys, nothing to build. Everything runs on the PayPal **Sandbox** (test data only, no real money). A hosted copy of the backend is already running, so you only install the extension. Prefer to watch first? The demo video is on the Devpost page.
 
-1. Download `scam-copilot-extension.zip` from the [latest release](https://github.com/daniil0126/scam-copilot/releases/latest) and unzip it.
-2. In Chrome open `chrome://extensions`, turn on **Developer mode**, press **Load unpacked** and pick the unzipped folder. Pin the extension and click its icon: the side panel opens.
-3. Open one of the demo invoices (links are in the *Testing instructions* of the Devpost submission) and press **Check this PayPal invoice**.
+### 1. Install the extension (1 minute)
 
-The hosted backend sleeps when idle on Render's free plan: the first call after a pause can take up to a minute (open `<hosted url>/health` once to wake it). It shows the account's own Sandbox invoices; nothing here touches real money. To run everything yourself instead, follow the sections below.
+1. Download **`scam-copilot-extension.zip`** from the [latest release](https://github.com/daniil0126/scam-copilot/releases/latest) and unzip it.
+2. In Chrome open `chrome://extensions`, switch on **Developer mode** (top right) and press **Load unpacked**. Pick the unzipped folder.
+3. Click the puzzle icon, pin **Scam Copilot**, and click it. A side panel opens on the right.
+
+### 2. Check a fake invoice (1 minute)
+
+Open one of these Sandbox invoices (they open as the payer sees them, no login needed; if PayPal asks for one anyway, use the Sandbox payer login from the *Testing instructions* on Devpost). Then press **Check this PayPal invoice** in the side panel.
+
+| Open this invoice | What it is | You should see |
+|---|---|---|
+| [Premium Antivirus Renewal, $499.00](https://www.sandbox.paypal.com/invoice/p/#6UG939HEGWFZWFTF) | "Your subscription was renewed, call this number to cancel." | **High risk**: phone number in the text, new supplier, scam wording |
+| [Tech Care Renewals, $529.99](https://www.sandbox.paypal.com/invoice/p/#6URS8X9WNB7GTPEZ) | The same trick from another name | **High risk** |
+| [Quick Fix IT Support, $340.00](https://www.sandbox.paypal.com/invoice/p/#Y8KMTSCY23AS6LPK) | An unknown supplier, harmless wording | **Medium** |
+| [Blue Harbor Plumbing, $180.00](https://www.sandbox.paypal.com/invoice/p/#XQXU6CGKXDB46K3H) | An ordinary invoice | **Low** |
+
+Open a finding to read its **evidence**: what was found and where. The rules decide the risk level; the AI only explains it in plain words and never changes the score. The wording is always "signs found", never "fraud".
+
+### 3. Look around (1 minute)
+
+- **Monitor.** The backend watches the demo account in the background. *Overview* shows the live state, *Alerts* lists the risky invoices (open one and press **Open this check**), *Report* is the monthly report with a list "worth a manual look".
+- **History.** Every check, with filter, sort and CSV export (AG Grid tables).
+- **Chat.** Ask "Which invoices are waiting for payment?" or "Show the last 10 invoices". The chat reads live invoices through the **PayPal Agent Toolkit** (read-only, Sandbox only) and shows which tool it used.
+
+### Good to know
+
+- **The first request can be slow.** The hosted backend sleeps when nobody uses it; the first call can take up to a minute. If you see "Cannot reach the Scam Copilot server", wait half a minute, open <https://scam-copilot-api.onrender.com/health> once (it answers `{"status":"ok"}`) and try again.
+- **Chat answers take 10 to 15 seconds.** The AI runs on free models.
+- **Everyone shares one demo account**, so History also shows the checks of other visitors.
+- **"Check this email" is shown in the demo video.** PayPal's Sandbox invoice emails appear only in the Developer Dashboard of the account owner, so they cannot be opened from outside. The button reads such an email and checks where its links lead and what changed since the earlier email of the same invoice; the path is covered by the backend tests and by `POST /inbound/email`.
+- **Limits.** Sandbox only; never tested with live PayPal accounts. A low score does not prove an invoice is safe. See *Known limitations* below.
+
+Want to run everything yourself? See *Run it* below.
 
 ## What it does
 
@@ -50,11 +79,11 @@ The backend has an optional LLM layer (`backend/app/llm.py`): the invoice text i
 
 `LLM_PROVIDER=openrouter` (`backend/app/llm_openrouter.py`) uses OpenRouter and **free models only**: `LLM_MODEL` must end in `:free` (several can be listed, comma-separated: when one is rate-limited, failing or withdrawn, the next is tried, and each is price-checked on its own), and before the first call OpenRouter must list the model with a zero price. If either fails, or the price cannot be read, the provider refuses to start and checks run on rules alone. Free models can be rate limited by their host at any time, and the free tier may use prompts for training, so do not send real invoices through it.
 
-**Reading PayPal from the chat.** With a model that supports tool calls, the chat can read the connected Sandbox account through the [PayPal Agent Toolkit](https://github.com/paypal/agent-toolkit) (`@paypal/mcp`, started per call with `--tools=invoices.list,invoices.get`). Exactly two read-only tools are available, `list_invoices` and `get_invoice`; a test fails if any other name appears. The model gets a few fields with emails masked and phone numbers removed, inside a `<tool_data>` block it is told to treat as data, and its answer goes through the same checks as any chat answer. The reply says which tools were used. It sees only invoices the connected account issued, not those a payer received. If Node, the keys or a tool-capable model are missing, or PayPal fails, the chat answers as before without tools. Setup: Node 20+, then `cd backend/mcp && npm ci --ignore-scripts` (versions are pinned by the lockfile).
+**Reading PayPal from the chat.** With a model that supports tool calls, the chat can read the connected Sandbox account through the [PayPal Agent Toolkit](https://github.com/paypal/agent-toolkit) (`@paypal/mcp`, started once with `--tools=invoices.list,invoices.get` and kept running for the next questions (restarted if it fails)). Exactly two read-only tools are available, `list_invoices` and `get_invoice`; a test fails if any other name appears. The model gets a few fields with emails masked and phone numbers removed, inside a `<tool_data>` block it is told to treat as data, and its answer goes through the same checks as any chat answer. The reply says which tools were used. It sees only invoices the connected account issued, not those a payer received. If Node, the keys or a tool-capable model are missing, or PayPal fails, the chat answers as before without tools. Setup: Node 20+, then `cd backend/mcp && npm ci --ignore-scripts` (versions are pinned by the lockfile).
 
 <!-- TODO(AI): the effect of the model on an evaluation set is not measured yet. In one live check it flagged a planted "ignore previous instructions" line, but it also invented a doubtful finding, and its findings can still raise the risk level. -->
 
-### How scoring works
+### The default scorer (v1)
 
 [`backend/app/scoring.py`](backend/app/scoring.py) compares an invoice with the earlier checks of the same supplier (matched by name and by PayPal email) and looks at the invoice text. Each finding adds points; the total maps to `low`, `medium` or `high`. One serious red flag never yields `low`. Missing data is not guessed: a field the page or the API did not show stays empty.
 
@@ -144,7 +173,7 @@ npx tsc -b
 - **Whose invoices the API can see.** The Invoicing API works from the side of the account that issued the invoices. With the credentials of one sandbox app it returns that account's invoices only; an invoice issued by someone else answers `403`. Checking those goes through the payer page text instead.
 - **No user sign-in with PayPal for reading invoices.** We tried Log in with PayPal in the sandbox: it rejects the invoicing scope (`invalid scope`), and a user token granted with `openid email` gets `403` on the invoice list. Letting arbitrary users connect their own accounts would need PayPal's partner access, which its documentation describes as available to select partners only. Not built.
 - **The payer page is read as displayed.** The parser was built on three real sandbox pages. It does not show the issuer's phone number, and often not the issuer's email, so rules that depend on them cannot fire on that path. Paid, cancelled and non-USD invoices have not been seen yet.
-- **Webhooks are not used yet.** In our Sandbox tests PayPal sent invoice events only to the app of the account that issues the invoice, never to the recipient. An event carries the invoice as it is when delivered, not as it was at the event, and events can arrive out of order. There is no event for sending. The monitor polls instead.
+- **Webhooks are a hint, not data.** In our Sandbox tests PayPal sent invoice events only to the app of the account that issues the invoice, never to the recipient, so a payer gets none. An event carries the invoice as it is when delivered, not as it was at the event, events arrive in batches and out of order, and there is no event for sending. The backend therefore treats an event as a signal, reads the invoice again, stores each version once, and keeps polling as the fallback.
 - **Invoice emails.** Sandbox emails are not delivered to a mailbox, only shown in the Developer Dashboard, so the email path is tested on saved emails; the layout of real PayPal emails is not tested. The update email omits the seller's note, and no email shows the issuer's email or phone. A forwarded email loses its sender authentication, so only its content and links are judged.
 - **Sandbox only.** The project has not been tested against live PayPal accounts.
 - **Rule-based baseline.** The rules are hand-tuned on demo scenarios, not on real fraud data.
