@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { AgGridReact } from "ag-grid-react"
 import type { ColDef, GridApi, ICellRendererParams } from "ag-grid-community"
-import { FileText, Loader2, RefreshCw, Save } from "lucide-react"
+import { ChevronLeft, ChevronRight, FileText, Loader2, RefreshCw, Save } from "lucide-react"
 import { fetchMonthlyReport, saveMonthlyReport } from "../../api/client.js"
 import type { AlertLevel, FullReport, MonthlyReport } from "../../api/types.js"
 import { ALERT_LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
@@ -15,6 +15,13 @@ setupGrid()
 const LEVELS: AlertLevel[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/
+
+const monthLabel = (m: string) => new Date(`${m}-01T12:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+const shiftMonth = (m: string, by: number) => {
+    const d = new Date(`${m}-01T12:00:00`)
+    d.setMonth(d.getMonth() + by)
+    return d.toISOString().slice(0, 7)
+}
 
 const currentMonth = () => new Date().toISOString().slice(0, 7)
 
@@ -46,25 +53,26 @@ function describe(row: Row): string {
 type GridContext = { onOpenCheck?: (checkId: string) => void }
 const RANK: Record<AlertLevel, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }
 
+const SHORT_LEVEL: Record<AlertLevel, string> = { CRITICAL: "Critical", HIGH: "High", MEDIUM: "Medium", LOW: "Low" }
+
 function LevelCell({ data }: ICellRendererParams<Row>) {
     if (!data) return null
     const meta = ALERT_LEVEL_META[data.riskLevel]
     return (
-        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${meta.soft} ${meta.text}`}>
-            <meta.icon size={12} aria-hidden /> {meta.label}
+        <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-0.5 text-xs font-semibold ${meta.soft} ${meta.text}`} aria-label={meta.label}>
+            <meta.icon size={12} aria-hidden /> {SHORT_LEVEL[data.riskLevel]}
         </span>
     )
 }
 
-function ScoreCell({ value }: ICellRendererParams<Row, number>) {
-    const score = value ?? 0
+// Supplier, and under it what identifies the invoice: number, amount, due date.
+function SupplierCell({ data }: ICellRendererParams<Row>) {
+    if (!data) return null
     return (
-        <span className="flex h-full items-center gap-2">
-            <span aria-hidden className="h-1.5 w-12 overflow-hidden rounded-full bg-[var(--border)]">
-                <span className="block h-full rounded-full bg-[var(--danger)]" style={{ width: `${Math.min(score, 100)}%` }} />
-            </span>
-            <span className="tabular-nums">{score}</span>
-        </span>
+        <div className="flex h-full flex-col justify-center gap-0.5 py-1 leading-tight" title={data.signs.map(signalLabel).join("\n")}>
+            <span className="line-clamp-2 break-words text-[13px] font-medium text-[var(--text)]">{data.supplierName ?? data.invoiceId}</span>
+            <span className="truncate text-[11px] text-[var(--muted)]">{describe(data) || "No invoice details"}</span>
+        </div>
     )
 }
 
@@ -75,39 +83,43 @@ function OpenCell({ data, context }: ICellRendererParams<Row, unknown, GridConte
     return (
         <button
             onClick={() => open(checkId)}
-            className="cursor-pointer rounded-md px-2 py-1 text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+            aria-label={`Open the check of ${data.supplierName ?? data.invoiceId}`}
+            className="inline-flex cursor-pointer items-center gap-0.5 rounded-md px-1.5 py-1 text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
         >
-            Open check
+            Open <ChevronRight size={12} aria-hidden />
         </button>
     )
 }
 
+// Level, supplier and the button: they fit the narrow panel without a horizontal scroll. The rest are hidden columns
+// that still sort and feed the search box; the signs are in the supplier tooltip.
 const reviewColumns: ColDef<Row>[] = [
     {
-        headerName: "Level", field: "riskLevel", width: 112, cellRenderer: LevelCell, filter: "agTextColumnFilter",
+        headerName: "Level", field: "riskLevel", width: 104, cellRenderer: LevelCell, cellStyle: { paddingInline: 6, overflow: "visible" },
+        filter: "agTextColumnFilter",
         filterValueGetter: p => (p.data ? ALERT_LEVEL_META[p.data.riskLevel].label : ""),
         comparator: (a: AlertLevel, b: AlertLevel) => RANK[a] - RANK[b],
         valueFormatter: p => ALERT_LEVEL_META[p.value as AlertLevel].label,
     },
-    { headerName: "Supplier", colId: "supplier", flex: 1, minWidth: 120, filter: "agTextColumnFilter", valueGetter: p => p.data?.supplierName ?? p.data?.invoiceId ?? "" },
-    { headerName: "Score", field: "riskScore", width: 110, sort: "desc", filter: "agNumberColumnFilter", cellRenderer: ScoreCell },
+    { headerName: "Supplier", colId: "supplier", flex: 1, minWidth: 110, cellRenderer: SupplierCell, cellStyle: { paddingInline: 6, lineHeight: 1.2 }, filter: "agTextColumnFilter", valueGetter: p => p.data?.supplierName ?? p.data?.invoiceId ?? "" },
+    { headerName: "", colId: "open", width: 76, sortable: false, filter: false, cellRenderer: OpenCell, cellStyle: { paddingInline: 2 }, suppressHeaderMenuButton: true },
+    { headerName: "Score", field: "riskScore", hide: true, sort: "desc", filter: "agNumberColumnFilter" },
     {
-        headerName: "Amount", colId: "amount", width: 100, type: "rightAligned", filter: "agNumberColumnFilter",
+        headerName: "Amount", colId: "amount", hide: true, type: "rightAligned", filter: "agNumberColumnFilter",
         valueGetter: p => (typeof p.data?.amount === "number" ? p.data.amount : null),
         valueFormatter: p => (p.data ? (describe(p.data).split(" · ").find(part => !part.startsWith("Invoice #") && !part.startsWith("due ")) ?? "") : ""),
     },
-    { headerName: "Due", field: "dueDate", width: 100, valueFormatter: p => (p.value ? new Date(p.value as string).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—") },
-    { headerName: "Signs", colId: "signs", flex: 1, minWidth: 220, filter: "agTextColumnFilter", valueGetter: p => p.data?.signs.map(signalLabel).join("; ") ?? "" },
-    { headerName: "", colId: "open", width: 110, sortable: false, filter: false, cellRenderer: OpenCell, suppressHeaderMenuButton: true },
+    { headerName: "Due", field: "dueDate", hide: true, valueFormatter: p => (p.value ? new Date(p.value as string).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—") },
+    { headerName: "Signs", colId: "signs", hide: true, filter: "agTextColumnFilter", valueGetter: p => p.data?.signs.map(signalLabel).join("; ") ?? "" },
 ]
 
 function ManualReviewGrid({ rows, onOpenCheck }: { rows: Row[]; onOpenCheck?: (checkId: string) => void }) {
     const [api, setApi] = useState<GridApi<Row> | null>(null)
-    const defaultColDef = useMemo<ColDef<Row>>(() => ({ sortable: true, resizable: true, suppressMovable: true }), [])
+    const defaultColDef = useMemo<ColDef<Row>>(() => ({ sortable: true, resizable: false, suppressMovable: true, suppressHeaderFilterButton: true }), [])
     return (
         <>
             <GridToolbar api={api} total={rows.length} exportName="manual-review" label="Filter invoices…" />
-            <div className="mt-2 w-full overflow-hidden rounded-lg border border-[var(--border)]" style={{ height: Math.min(300, 34 + 42 * rows.length + 18) }}>
+            <div className="sc-grid mt-2 w-full overflow-hidden rounded-lg border border-[var(--border)]" style={{ height: Math.min(340, 32 + 58 * rows.length + 4) }}>
                 <AgGridReact<Row>
                     theme={gridTheme}
                     rowData={rows}
@@ -115,8 +127,10 @@ function ManualReviewGrid({ rows, onOpenCheck }: { rows: Row[]; onOpenCheck?: (c
                     defaultColDef={defaultColDef}
                     context={{ onOpenCheck } satisfies GridContext}
                     getRowId={p => p.data.invoiceId}
-                    rowHeight={42}
-                    headerHeight={34}
+                    rowHeight={58}
+                    headerHeight={32}
+                    tooltipShowDelay={400}
+                    includeHiddenColumnsInQuickFilter
                     onGridReady={e => setApi(e.api)}
                 />
             </div>
@@ -129,7 +143,15 @@ function Body({ report, onOpenCheck }: { report: FullReport; onOpenCheck?: (chec
     const peak = Math.max(...report.weeklyTrend.map(w => w.analyses), 1)
     return (
         <>
-            <dl className="mt-3 grid grid-cols-2 gap-2">
+            {report.manualReview.length > 0 && (
+                <>
+                    <h3 className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Worth a manual look: start here</h3>
+                    <ManualReviewGrid rows={report.manualReview} onOpenCheck={onOpenCheck} />
+                </>
+            )}
+
+            <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Totals</h3>
+            <dl className="mt-2 grid grid-cols-2 gap-2">
                 <Tile label="Checks run" value={report.analyses} />
                 <Tile label="Invoices" value={report.invoices} />
                 <Tile label="Possible duplicates" value={report.potentialDuplicates} warn={report.potentialDuplicates > 0} />
@@ -166,8 +188,8 @@ function Body({ report, onOpenCheck }: { report: FullReport; onOpenCheck?: (chec
                                 <span className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--border)]">
                                     <span className="block h-full rounded-full bg-[var(--primary)]" style={{ width: `${(week.analyses / peak) * 100}%` }} />
                                 </span>
-                                <span className="w-24 shrink-0 text-right tabular-nums text-[var(--muted)]">
-                                    {week.analyses} checks, {week.highOrCritical} high+
+                                <span className="w-36 shrink-0 text-right tabular-nums text-[var(--muted)]">
+                                    {week.analyses} checks · {week.highOrCritical} high or critical
                                 </span>
                             </li>
                         ))}
@@ -192,12 +214,6 @@ function Body({ report, onOpenCheck }: { report: FullReport; onOpenCheck?: (chec
                 </>
             )}
 
-            {report.manualReview.length > 0 && (
-                <>
-                    <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Worth a manual look</h3>
-                    <ManualReviewGrid rows={report.manualReview} onOpenCheck={onOpenCheck} />
-                </>
-            )}
         </>
     )
 }
@@ -208,21 +224,32 @@ export default function MonthlyReportView({ onOpenCheck }: { onOpenCheck?: (chec
     const [error, setError] = useState<string | null>(null)
     const [busy, setBusy] = useState<"load" | "save" | null>("load")
     const [reloadKey, setReloadKey] = useState(0)
+    const [saved, setSaved] = useState(false)  // "Saved as vN" is shown only right after pressing the button
 
     useEffect(() => {
         if (!MONTH.test(month)) return  // a half-typed month is not asked for
         let cancelled = false
         fetchMonthlyReport(month)
             .then(next => { if (!cancelled) { setReport(next); setError(null) } })
-            .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : "Could not load the report.") })
+            .catch(e => { if (!cancelled) { setReport(null); setError(e instanceof Error ? e.message : "Could not load the report.") } })
             .finally(() => { if (!cancelled) setBusy(null) })
         return () => { cancelled = true }
     }, [month, reloadKey])
+
+    const goTo = (next: string) => {
+        if (next === month || next > currentMonth()) return
+        setReport(null)  // the old month's numbers must not stay under the new month's name
+        setError(null)
+        setSaved(false)
+        setBusy("load")
+        setMonth(next)
+    }
 
     const save = async () => {
         setBusy("save")
         try {
             setReport(await saveMonthlyReport(month))
+            setSaved(true)
             setError(null)
         } catch (e) {
             setError(e instanceof Error ? e.message : "Could not save the report.")
@@ -242,38 +269,62 @@ export default function MonthlyReportView({ onOpenCheck }: { onOpenCheck?: (chec
                     </span>
                     <div className="min-w-0 flex-1">
                         <h2 className="text-sm font-bold leading-tight">Monthly report</h2>
-                        <p className="truncate text-xs text-[var(--muted)]">
-                            {report?.saved ? `Saved v${report.version ?? 1}${report.createdAt ? `, ${formatDateTime(report.createdAt)}` : ""}` : "Not saved yet"}
-                        </p>
+                        <p className="text-xs leading-snug text-[var(--muted)]">What the checks found this month, and which invoices to look at first.</p>
                     </div>
-                    <input
-                        type="month"
-                        aria-label="Report month"
-                        value={month}
-                        max={currentMonth()}
-                        onChange={e => { if (MONTH.test(e.target.value)) setBusy("load"); setMonth(e.target.value) }}
-                        className="w-32 shrink-0 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-xs focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-                    />
                 </header>
 
-                <div className="mt-3 flex gap-2">
-                    <button className={`${button} border border-[var(--border)] hover:bg-[var(--primary-soft)]`} disabled={busy !== null} onClick={() => { setBusy("load"); setReloadKey(k => k + 1) }}>
-                        {busy === "load" ? <Loader2 size={14} aria-hidden className="motion-safe:animate-spin" /> : <RefreshCw size={14} aria-hidden />} Refresh
+                <div className="mt-3 flex items-center justify-between rounded-lg bg-[var(--bg)] p-1">
+                    <button aria-label="Previous month" onClick={() => goTo(shiftMonth(month, -1))} className="cursor-pointer rounded-md p-2 hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]">
+                        <ChevronLeft size={16} aria-hidden />
                     </button>
-                    <button className={`${button} bg-[var(--primary)] text-white hover:opacity-90`} disabled={busy !== null} onClick={() => void save()}>
-                        {busy === "save" ? <Loader2 size={14} aria-hidden className="motion-safe:animate-spin" /> : <Save size={14} aria-hidden />} Save version
+                    <span className="text-sm font-semibold" aria-live="polite">{monthLabel(month)}</span>
+                    <button aria-label="Next month" disabled={month >= currentMonth()} onClick={() => goTo(shiftMonth(month, 1))} className="cursor-pointer rounded-md p-2 hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-30">
+                        <ChevronRight size={16} aria-hidden />
                     </button>
                 </div>
 
+                {report && !report.empty && (
+                    <p className="mt-3 text-sm">
+                        <strong>{report.analyses}</strong> {report.analyses === 1 ? "check" : "checks"}, <strong className={report.manualReview.length > 0 ? "text-[var(--danger)]" : ""}>{report.manualReview.length}</strong> to look at manually.
+                    </p>
+                )}
+
                 {error && <p role="alert" className="mt-3 rounded-lg bg-[var(--danger-soft)] px-3 py-2 text-xs font-medium text-[var(--danger)]">{error}</p>}
 
-                {!report && !error && <p role="status" className="p-8 text-center text-sm text-[var(--muted)]">Loading report…</p>}
+                {!report && !error && (
+                    <div role="status" aria-label="Loading report" className="mt-3 animate-pulse motion-reduce:animate-none">
+                        <div className="h-16 rounded-lg bg-[var(--bg)]" />
+                        <div className="mt-2 h-16 rounded-lg bg-[var(--bg)]" />
+                    </div>
+                )}
+                {!report && error && (
+                    <button className={`${button} mt-3 w-full border border-[var(--border)] hover:bg-[var(--primary-soft)]`} onClick={() => { setError(null); setBusy("load"); setReloadKey(k => k + 1) }}>
+                        <RefreshCw size={14} aria-hidden /> Try again
+                    </button>
+                )}
 
-                {report?.empty && <p className="p-6 text-center text-sm text-[var(--muted)]">{report.message}</p>}
+                {report?.empty && <p className="p-6 text-center text-sm text-[var(--muted)]">{report.message || `No checks in ${monthLabel(month)}.`} Checks you run on the Check tab and invoices found by the monitor appear here.</p>}
 
                 {report && !report.empty && <Body report={report} onOpenCheck={onOpenCheck} />}
 
-                {report && <p className="mt-4 text-[11px] leading-snug text-[var(--muted)]">{report.wording}</p>}
+                {report && !report.empty && (
+                    <div className="mt-4 border-t border-[var(--border)] pt-3">
+                        <p className="text-xs text-[var(--muted)]">
+                            {report.saved ? `Snapshot v${report.version ?? 1} saved${report.createdAt ? `, ${formatDateTime(report.createdAt)}` : ""}.` : "Not saved."} The numbers above are live; a snapshot freezes them as they are now.
+                        </p>
+                        <div className="mt-2 flex gap-2">
+                            <button className={`${button} bg-[var(--primary)] text-white hover:opacity-90`} disabled={busy !== null} onClick={() => void save()}>
+                                {busy === "save" ? <Loader2 size={14} aria-hidden className="motion-safe:animate-spin" /> : <Save size={14} aria-hidden />} Save snapshot
+                            </button>
+                            <button aria-label="Refresh the report" className={`${button} flex-none border border-[var(--border)] hover:bg-[var(--primary-soft)]`} disabled={busy !== null} onClick={() => { setSaved(false); setBusy("load"); setReloadKey(k => k + 1) }}>
+                                {busy === "load" ? <Loader2 size={14} aria-hidden className="motion-safe:animate-spin" /> : <RefreshCw size={14} aria-hidden />} Refresh
+                            </button>
+                        </div>
+                        {saved && <p role="status" className="mt-2 text-xs font-medium text-[var(--success)]">Saved as v{report.version ?? 1}.</p>}
+                    </div>
+                )}
+
+                {report && <p className="mt-3 text-[11px] leading-snug text-[var(--muted)]">{report.wording}</p>}
             </div>
         </section>
     )
