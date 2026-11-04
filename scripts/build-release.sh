@@ -1,8 +1,8 @@
 #!/bin/sh
 # Builds the extension zip for the judges, pointed at the hosted backend. Does not touch ./dist (your local build).
 #
-#   API_URL=https://scam-copilot-api.onrender.com ACCESS_TOKEN=<same as on the host> INBOUND_SECRET=<INBOUND_EMAIL_SECRET on the host> sh scripts/build-release.sh
-# INBOUND_SECRET is optional: with it "Check this email" works without typing the secret into Settings.
+#   API_URL=https://scam-copilot-api.onrender.com ACCESS_TOKEN=<same as on the host> sh scripts/build-release.sh
+# "Check this email" needs no secret: the backend accepts the extension by its origin.
 #
 # Output: release/scam-copilot-extension.zip (Load unpacked after unzipping, or attach it to a GitHub Release).
 set -eu
@@ -12,7 +12,7 @@ API_URL="${API_URL%/}"
 OUT="$(pwd)/release/extension"
 
 rm -rf release && mkdir -p release
-export VITE_API_URL="$API_URL" VITE_ACCESS_TOKEN="$ACCESS_TOKEN" VITE_INBOUND_SECRET="${INBOUND_SECRET:-}"
+export VITE_API_URL="$API_URL" VITE_ACCESS_TOKEN="$ACCESS_TOKEN"
 npx tsc -b
 npx vite build --outDir "$OUT" --emptyOutDir
 npx vite build -c vite.content.config.ts --outDir "$OUT"

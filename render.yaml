@@ -29,6 +29,3 @@ services:
         sync: false
       - key: LLM_MODEL
         value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,google/gemma-4-31b-it:free,cohere/north-mini-code:free
-      # Secret for "Check this email" (header X-Inbound-Secret); the same value goes into the extension's Settings.
-      - key: INBOUND_EMAIL_SECRET
-        sync: false

@@ -50,11 +50,7 @@ export default function PageCheckCard({ onResult }: Props) {
         setBusy("email")
         setError(null)
         try {
-            const secret = await loadInboundSecret()
-            if (!secret) {
-                setError("Set the inbound secret in Settings first.")
-                return
-            }
+            const secret = await loadInboundSecret()  // optional: the server accepts the extension without one
             const { html, error: readError } = await getPageEmail()
             if (readError) {
                 setError(`Could not read the email from this page: ${readError}`)

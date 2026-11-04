@@ -1,7 +1,8 @@
 """Receives PayPal invoice notification emails (forwarded by the payer's mail filter, or posted by hand) and stores them.
 
-Off unless INBOUND_EMAIL_SECRET is set. The secret is checked before anything is read: without it anyone could post
-made-up emails and poison the history. The body is the HTML of the email (`Content-Type: text/html`), parsed and
+Who may post: the extension itself (the browser puts its own `Origin: chrome-extension://<PROJECT_ID>` on the call and a
+web page cannot claim that origin), or anyone who sends INBOUND_EMAIL_SECRET in `X-Inbound-Secret` (a mail filter that
+forwards emails). Without one of the two nothing is read: anyone could post made-up emails and poison the history. The body is the HTML of the email (`Content-Type: text/html`), parsed and
 never rendered. Each email is also checked (rules on its links and on what changed since the earlier email of the same
 invoice) and the result goes to History like any other check. Only extracted fields are stored, and links lose their query strings (tracking and customer ids).
 """
@@ -40,13 +41,21 @@ def _links(mail: dict) -> list[dict]:
              "textMismatch": l["textMismatch"]} for l in mail["links"]]
 
 
-@router.post("/email")
-async def receive_email(request: Request, ai: bool = False, db: Session = Depends(get_db)):
+def _authorize(request: Request) -> None:
+    """The extension needs no secret (so "Check this email" works out of the box); every other caller needs INBOUND_EMAIL_SECRET."""
+    project_id = os.getenv("PROJECT_ID")
+    if project_id and request.headers.get("origin") == f"chrome-extension://{project_id}":
+        return
     secret = os.getenv("INBOUND_EMAIL_SECRET")
     if not secret:
         raise HTTPException(503, "Inbound email is not enabled.")
     if not hmac.compare_digest((request.headers.get("x-inbound-secret") or "").encode(), secret.encode()):
         raise HTTPException(401, "Wrong or missing secret.")
+
+
+@router.post("/email")
+async def receive_email(request: Request, ai: bool = False, db: Session = Depends(get_db)):
+    _authorize(request)
     if int(request.headers.get("content-length") or 0) > MAX_HTML * 4:  # bytes, UTF-8: a generous margin over characters
         raise HTTPException(413, "Email is too large.")
     html = (await request.body()).decode("utf-8", errors="replace")

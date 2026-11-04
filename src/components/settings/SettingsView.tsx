@@ -85,7 +85,7 @@ export default function SettingsView({ settings, onChange }: Props) {
 
             <Section title="Email checks">
                 <label className="block text-sm text-[var(--text)]">
-                    Inbound secret
+                    Inbound secret (optional)
                     <input
                         type="password"
                         autoComplete="off"
@@ -95,7 +95,7 @@ export default function SettingsView({ settings, onChange }: Props) {
                     />
                 </label>
                 <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
-                    Must match INBOUND_EMAIL_SECRET on the server. Stored only in this browser.
+                    Email checks work without it. Fill it only if the server asks for one (INBOUND_EMAIL_SECRET). Stored only in this browser.
                 </p>
             </Section>
 

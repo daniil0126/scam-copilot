@@ -38,6 +38,21 @@ def test_off_without_a_configured_secret(monkeypatch):
     assert post(mail("0068_new")).status_code == 503 and not rows()
 
 
+def test_the_extension_needs_no_secret_even_when_none_is_configured(monkeypatch):
+    monkeypatch.delenv("INBOUND_EMAIL_SECRET")
+    monkeypatch.setenv("PROJECT_ID", "extid")
+    r = post(mail("0068_new"), {"Content-Type": "text/html", "Origin": "chrome-extension://extid"})
+    assert r.status_code == 200 and rows()
+
+
+def test_another_origin_is_not_the_extension(monkeypatch):
+    monkeypatch.setenv("PROJECT_ID", "extid")
+    for origin in ("https://evil.example", "chrome-extension://other"):
+        r = post(mail("0068_new"), {"Content-Type": "text/html", "Origin": origin})
+        assert r.status_code == 401
+    assert not rows()
+
+
 @pytest.mark.parametrize("headers", [{"Content-Type": "text/html"}, {**HEAD, "X-Inbound-Secret": "wrong"}, {**HEAD, "X-Inbound-Secret": ""}])
 def test_wrong_or_missing_secret_stores_nothing(headers):
     assert post(mail("0068_new"), headers).status_code == 401 and not rows()

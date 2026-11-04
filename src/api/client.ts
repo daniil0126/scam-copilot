@@ -18,8 +18,8 @@ export const checkPayerPage = (url: string, text: string) =>
 
 // Called from the side panel, not the content script: the backend's CORS allows only the extension's own origin.
 const INBOUND_ERRORS: Record<number, string> = {
-    503: "Email checks are turned off on the server (INBOUND_EMAIL_SECRET is not set).",
-    401: "The inbound secret is wrong. Check it in Settings.",
+    503: "Email checks are off on the server (PROJECT_ID is not set there).",
+    401: "The server did not accept this extension for email checks. Check that PROJECT_ID on the server is this extension's ID, or the inbound secret in Settings.",
     413: "This email is too large to check.",
 }
 
@@ -28,7 +28,7 @@ export async function postInboundEmail(html: string, secret: string): Promise<In
     try {
         res = await fetch(`${API_URL}/inbound/email`, {
             method: "POST",
-            headers: { "content-type": "text/html", "x-inbound-secret": secret, ...accessHeaders() },
+            headers: { "content-type": "text/html", ...(secret ? { "x-inbound-secret": secret } : {}), ...accessHeaders() },
             body: html,
         })
     } catch {
