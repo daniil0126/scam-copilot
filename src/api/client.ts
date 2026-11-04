@@ -1,3 +1,4 @@
+import { accessHeaders } from "./config.js"
 import { API_URL, ApiError, request } from "./httpClient.js"
 import type {
     AlertSettings, AppNotification, BulkCheckResponse, ChatEvent, ChatTurn, HistoryEntry, InboundEmailResponse, MonitoringState,
@@ -27,7 +28,7 @@ export async function postInboundEmail(html: string, secret: string): Promise<In
     try {
         res = await fetch(`${API_URL}/inbound/email`, {
             method: "POST",
-            headers: { "content-type": "text/html", "x-inbound-secret": secret },
+            headers: { "content-type": "text/html", "x-inbound-secret": secret, ...accessHeaders() },
             body: html,
         })
     } catch {
@@ -57,7 +58,7 @@ export async function sendChatStream(messages: ChatTurn[], checkId: string | nul
     try {
         res = await fetch(`${API_URL}/chat/stream`, {
             method: "POST",
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", ...accessHeaders() },
             body: JSON.stringify({ messages, check_id: checkId }),
         })
     } catch {

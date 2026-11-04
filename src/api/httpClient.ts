@@ -1,4 +1,6 @@
-export const API_URL = "http://localhost:8000"
+import { API_URL, accessHeaders } from "./config.js"
+
+export { API_URL }
 
 export class ApiError extends Error {}
 
@@ -10,7 +12,7 @@ export async function request<T>(path: string, init?: RequestInit, notFound = IN
     try {
         res = await fetch(`${API_URL}${path}`, {
             ...init,
-            headers: { "content-type": "application/json", ...init?.headers },
+            headers: { "content-type": "application/json", ...accessHeaders(), ...init?.headers },
         })
     } catch {
         throw new ApiError("Cannot reach the Scam Copilot server. Is the backend running?")

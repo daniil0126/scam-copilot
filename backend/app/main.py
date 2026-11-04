@@ -2,6 +2,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from app.chat import router as chat_router
+from app.access import install_access_token
 from app.checks import router as checks_router
 from app.db import Base, engine
 from app.inbound import router as inbound_router
@@ -21,6 +22,8 @@ app = FastAPI(lifespan=lifespan)
 load_dotenv()
 install_log_scrubber()  # secrets never reach the logs (docs/plans/security-checklist.md, item 7)
 PROJECT_ID = os.getenv('PROJECT_ID')
+
+install_access_token(app)  # before CORS, so CORS stays outermost; no-op without ACCESS_TOKEN
 
 app.add_middleware(CORSMiddleware, allow_origins=[f"chrome-extension://{PROJECT_ID}"], allow_methods=["*"], allow_headers=["*"])
 

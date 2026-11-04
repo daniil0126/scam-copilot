@@ -7,6 +7,16 @@ Fake invoices are a common scam: a genuine PayPal invoice, sent by a stranger, t
 > Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/).
 > A low score is not a guarantee that an invoice is safe. The score is a heuristic, not a calibrated probability of fraud.
 
+## Try it (hosted copy, no build)
+
+A copy of the backend runs on Render, on the **PayPal Sandbox only**, so you can try the extension without installing anything but the extension itself.
+
+1. Download `scam-copilot-extension.zip` from the [latest release](https://github.com/daniil0126/scam-copilot/releases/latest) and unzip it.
+2. In Chrome open `chrome://extensions`, turn on **Developer mode**, press **Load unpacked** and pick the unzipped folder. Pin the extension and click its icon: the side panel opens.
+3. Open one of the demo invoices (links are in the *Testing instructions* of the Devpost submission) and press **Check this PayPal invoice**.
+
+The hosted backend sleeps when idle on Render's free plan: the first call after a pause can take up to a minute (open `<hosted url>/health` once to wake it). It shows the account's own Sandbox invoices; nothing here touches real money. To run everything yourself instead, follow the sections below.
+
 ## What it does
 
 Three ways to get an invoice into a check:
@@ -219,6 +229,16 @@ The numbers in `rules/config.py` are calibrated on `tests/dataset/cases.json` (s
 `docs/plans/engine-comparison.md` and `docs/plans/calibration-sweep.md` when it exists), not on production
 traffic. They are a starting point, not a final answer: a new labelled batch should be run through
 `scripts/compare_engines.py` before they are considered final.
+
+## Hosting a copy (maintainers)
+
+`render.yaml` is a Render Blueprint for the backend (Docker, `backend/Dockerfile`; Node is included because the PayPal Agent Toolkit is a Node program).
+
+1. On Render choose *New → Blueprint*, point it at this repository, and fill the secrets it asks for: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (Sandbox app keys), `ACCESS_TOKEN` (any long random string; every call must send it in `X-Access-Token`), `INBOUND_EMAIL_SECRET`, and optionally `LLM_API_KEY` (a free-tier OpenRouter key). Leave `LLM_PROVIDER` empty to run on the rules alone.
+2. Wait for `https://<service>.onrender.com/health` to answer `{"status":"ok"}`. The database is rebuilt from PayPal's last 30 days on every fresh start (the free plan has no persistent disk).
+3. Build the extension for it: `API_URL=https://<service>.onrender.com ACCESS_TOKEN=<same value> INBOUND_SECRET=<same as INBOUND_EMAIL_SECRET> sh scripts/build-release.sh`. The zip lands in `release/scam-copilot-extension.zip`; attach it to a GitHub Release.
+
+The token is inside the zip, so it keeps strangers and scanners off the API; it is not a user login. Rotate the Sandbox keys and the token when judging ends.
 
 ## License
 
