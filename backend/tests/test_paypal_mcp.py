@@ -119,3 +119,111 @@ def test_paypal_error_json_is_a_tool_error(fake):
     fake(FakeSession(reply='{"ok": false, "status": 404, "message": "The specified resource does not exist."}'))
     with pytest.raises(paypal_mcp.McpToolError, match="404"):
         run(paypal_mcp.call_tool("get_invoice", {"invoice_id": "NOPE"}))
+
+
+# --- one process for many calls ---------------------------------------------------------------------------------------
+
+@pytest.fixture
+def counting(monkeypatch):
+    """A fake `_session` that counts how often it is entered and left, one FakeSession per start."""
+    log = SimpleNamespace(started=0, stopped=0, sessions=[])
+    factory = {"make": lambda: FakeSession()}
+
+    @asynccontextmanager
+    async def _session():
+        log.started += 1
+        session = factory["make"]()
+        log.sessions.append(session)
+        try:
+            yield session
+        finally:
+            log.stopped += 1
+    monkeypatch.setattr(paypal_mcp, "_session", _session)
+    monkeypatch.setattr(paypal_mcp, "available", lambda: True)
+    monkeypatch.setattr(paypal_mcp, "_tools_cache", None)
+    monkeypatch.setattr(paypal_mcp, "PERSIST", True)
+    log.factory = factory
+    return log
+
+
+def test_one_process_serves_several_calls(counting):
+    async def go():
+        for _ in range(3):
+            await paypal_mcp.call_tool("list_invoices", {})
+        await paypal_mcp.call_tool("get_invoice", {"invoice_id": "INV2-1"})
+        await paypal_mcp.close()
+    run(go())
+    assert counting.started == 1 and counting.stopped == 1
+    assert len(counting.sessions[0].calls) == 4
+
+
+def test_without_persistence_every_call_starts_its_own(counting, monkeypatch):
+    monkeypatch.setattr(paypal_mcp, "PERSIST", False)
+    async def go():
+        for _ in range(2):
+            await paypal_mcp.call_tool("list_invoices", {})
+    run(go())
+    assert counting.started == 3 and counting.stopped == 3  # the tool list, then one per call
+
+
+def test_a_dead_process_is_replaced_and_the_call_succeeds(counting):
+    class Dying(FakeSession):
+        async def call_tool(self, name, args):
+            raise BrokenPipeError("the process is gone")
+    made = iter([Dying(), FakeSession()])
+    counting.factory["make"] = lambda: next(made, FakeSession())
+    async def go():
+        # the first session lists the tools, then dies on the call; the second serves it
+        return await paypal_mcp.call_tool("list_invoices", {})
+    assert run(go()) == {"items": []}
+    assert counting.started == 2
+
+
+def test_a_process_that_keeps_failing_ends_in_unavailable(counting):
+    class Dying(FakeSession):
+        async def call_tool(self, name, args):
+            raise BrokenPipeError("gone")
+    counting.factory["make"] = lambda: Dying()
+    with pytest.raises(McpUnavailable):
+        run(paypal_mcp.call_tool("list_invoices", {}))
+    assert counting.started == 2  # tried once more on a fresh one, not forever
+
+
+def test_a_timeout_drops_the_session_and_is_not_retried(counting, monkeypatch):
+    counting.factory["make"] = lambda: FakeSession(delay=1)
+    monkeypatch.setattr(paypal_mcp, "CALL_TIMEOUT", 0.05)
+    async def go():
+        with pytest.raises(McpUnavailable):
+            await paypal_mcp.call_tool("list_invoices", {})
+        counting.factory["make"] = lambda: FakeSession()
+        return await paypal_mcp.call_tool("list_invoices", {})  # a clean session after the timeout
+    assert run(go()) == {"items": []}
+    assert counting.started == 2
+
+
+def test_an_old_session_is_restarted(counting, monkeypatch):
+    monkeypatch.setattr(paypal_mcp, "SESSION_TTL", 0)
+    async def go():
+        await paypal_mcp.call_tool("list_invoices", {})
+        await paypal_mcp.call_tool("list_invoices", {})
+    run(go())
+    assert counting.started >= 2
+
+
+def test_calls_at_the_same_time_share_one_start(counting):
+    async def go():
+        await asyncio.gather(*[paypal_mcp.call_tool("list_invoices", {}) for _ in range(4)])
+        await paypal_mcp.close()
+    run(go())
+    assert counting.started == 1
+
+
+def test_warm_starts_the_process_and_never_raises(counting, monkeypatch):
+    async def go():
+        await paypal_mcp.warm()
+        await paypal_mcp.close()
+    run(go())
+    assert counting.started == 1
+    counting.factory["make"] = lambda: FakeSession(tools=())
+    monkeypatch.setattr(paypal_mcp, "_tools_cache", None)
+    run(paypal_mcp.warm())  # a toolkit without the tools: logged, not raised

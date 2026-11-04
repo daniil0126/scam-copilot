@@ -20,7 +20,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app import audit_log, paypal
+from app import audit_log, paypal, paypal_mcp
 from app.checks import run_check
 from app.db import SessionLocal, get_db
 from app.models import Check, InvoiceVersion, MonitoredInvoice, SyncState
@@ -211,6 +211,7 @@ async def _loop() -> None:
 async def lifespan(app):
     """Starts polling when PayPal credentials are set and the interval is above zero."""
     task = None
+    warm = asyncio.create_task(paypal_mcp.warm())  # the chat's toolkit process is ready before the first question
     if INTERVAL > 0 and paypal.PAYPAL_CLIENT_ID and paypal.PAYPAL_CLIENT_SECRET:
         with SessionLocal() as db:
             log.info("started, every %ds, state %s", INTERVAL, _state(db, account_id()).state)
@@ -220,6 +221,8 @@ async def lifespan(app):
     yield
     if task:
         task.cancel()
+    warm.cancel()
+    await paypal_mcp.close()
 
 
 RECENT_EVENTS = 20
