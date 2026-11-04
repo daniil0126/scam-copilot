@@ -7,7 +7,8 @@
     "permissions": [
         "storage",
         "sidePanel",
-        "alarms"
+        "alarms",
+        "scripting"
     ],
     "side_panel": {
         "default_path": "index.html"
@@ -23,7 +24,7 @@
         "service_worker": "service_worker.js",
         "type": "module"
     },
-    "host_permissions": ["http://localhost:8000/*"],
+    "host_permissions": ["http://localhost:8000/*", "https://*.paypal.com/*"],
     "action": {
         "default_title": "Scam Copilot"
     }

@@ -17,11 +17,11 @@ npx tsc -b
 npx vite build --outDir "$OUT" --emptyOutDir
 npx vite build -c vite.content.config.ts --outDir "$OUT"
 
-# The manifest may call only the hosted backend (a build for localhost keeps http://localhost:8000/*).
+# The manifest may call only the hosted backend (a build for localhost keeps http://localhost:8000/*); the PayPal pages stay.
 API_URL="$API_URL" node -e '
 const fs = require("fs"); const f = process.argv[1];
 const m = JSON.parse(fs.readFileSync(f, "utf8"));
-m.host_permissions = [process.env.API_URL + "/*"];
+m.host_permissions = m.host_permissions.filter(h => !h.startsWith("http://localhost")).concat([process.env.API_URL + "/*"]);
 fs.writeFileSync(f, JSON.stringify(m, null, 4));
 ' "$OUT/manifest.json"
 
