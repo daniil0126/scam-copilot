@@ -284,7 +284,7 @@ async def explain_check(check_id: str, db: Session = Depends(get_db)):
     if check is None:
         raise HTTPException(404, "Check not found.")
     result = dict(check.result)
-    if "ai" not in result and (analysis := await llm.analyse_invoice(result["invoice"], result)):
+    if result.get("ai", {}).get("status", "UNAVAILABLE") == "UNAVAILABLE" and (analysis := await llm.analyse_invoice(result["invoice"], result)):
         llm.apply_analysis(result, analysis)
         check.result = result  # a new dict: an in-place change would not be seen as one
         db.commit()
