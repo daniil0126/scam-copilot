@@ -12,8 +12,11 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-# `/health` is what the host pings; `/webhooks/paypal` is called by PayPal and is verified by PayPal's own signature.
-OPEN_PATHS = {"/health", "/webhooks/paypal"}
+# `/health` is what the host pings; `/webhooks/paypal` is called by PayPal and is verified by PayPal's own signature;
+# `/` and `/app/...` are the web copy of the panel (static files). It gets the token from `/app/config.js`, so the
+# page itself is open and every API call it makes is not.
+OPEN_PATHS = {"/health", "/webhooks/paypal", "/", "/app"}
+OPEN_PREFIXES = ("/app/",)
 
 
 def install_access_token(app: FastAPI, token: str | None = None) -> bool:
@@ -24,7 +27,7 @@ def install_access_token(app: FastAPI, token: str | None = None) -> bool:
 
     @app.middleware("http")
     async def require_access_token(request: Request, call_next):
-        if request.method == "OPTIONS" or request.url.path in OPEN_PATHS:
+        if request.method == "OPTIONS" or request.url.path in OPEN_PATHS or request.url.path.startswith(OPEN_PREFIXES):
             return await call_next(request)
         given = request.headers.get("x-access-token", "")
         if not hmac.compare_digest(given.encode(), token.encode()):

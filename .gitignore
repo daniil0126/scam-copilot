@@ -50,3 +50,5 @@ htmlcov
 .env.*
 !.env.example
 release
+dist-web
+backend/web

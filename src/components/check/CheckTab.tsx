@@ -4,6 +4,8 @@ import type { CheckSource, VerificationResult } from "../../api/types.js"
 import { explainCheck } from "../../api/client.js"
 import VerificationView from "./VerificationView.js"
 import PageCheckCard from "./PageCheckCard.js"
+import DemoInvoicePicker from "./DemoInvoicePicker.js"
+import { isExtension } from "../../api/config.js"
 import SourceBar from "./SourceBar.js"
 
 type Shown = { result: VerificationResult; source?: CheckSource }
@@ -49,7 +51,7 @@ export default function CheckTab({ onOpenHistory, onShownChange }: Props) {
 
     return (
         <div>
-            <PageCheckCard onOpenHistory={onOpenHistory} onResult={show} />
+            {isExtension ? <PageCheckCard onOpenHistory={onOpenHistory} onResult={show} /> : <DemoInvoicePicker onResult={show} />}
 
             {shown ? (
                 <div ref={resultRef} tabIndex={-1} role="region" aria-label="Check result" className="outline-none">
@@ -59,7 +61,7 @@ export default function CheckTab({ onOpenHistory, onShownChange }: Props) {
             ) : (
                 <div className="flex flex-col items-center gap-2 p-10 text-center text-[var(--muted)]">
                     <ScanSearch size={32} aria-hidden />
-                    <p className="text-sm">Open a PayPal invoice and press the button above to check it.</p>
+                    <p className="text-sm">{isExtension ? "Open a PayPal invoice and press the button above to check it." : "Pick an invoice above to check it."}</p>
                 </div>
             )}
         </div>

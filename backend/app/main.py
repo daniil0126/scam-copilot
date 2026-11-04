@@ -11,6 +11,7 @@ from app.monitor import lifespan, router as monitor_router
 from app.notifications.router import router as notifications_router
 from app.reports.router import router as reports_router
 from app.security import install_log_scrubber
+from app.web import install_web
 from app.webhooks import router as webhooks_router
 from app.paypal import router as paypal_router
 from app.stubs import ENABLED as STUBS_ENABLED, router as stubs_router
@@ -42,3 +43,6 @@ if STUBS_ENABLED:
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+install_web(app)  # the web copy of the panel under /app/, only when it has been built

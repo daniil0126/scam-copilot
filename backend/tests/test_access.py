@@ -56,3 +56,15 @@ def test_preflight_and_cors_headers_on_a_refusal():
     refused = c.get("/secret", headers=origin)
     assert refused.status_code == 401
     assert refused.headers.get("access-control-allow-origin") == "chrome-extension://x"
+
+
+def test_the_web_page_is_open_but_the_api_behind_it_is_not():
+    app, _ = make_app("s3cret")
+
+    @app.get("/app/index.html")
+    def page():
+        return {"page": 1}
+
+    c = TestClient(app)
+    assert c.get("/app/index.html").status_code == 200
+    assert c.get("/secret").status_code == 401

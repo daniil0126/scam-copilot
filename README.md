@@ -9,26 +9,31 @@ Fake invoices are a common scam: a genuine PayPal invoice, sent by a stranger, t
 
 ## For judges: try it in 3 minutes
 
-**You need:** Chrome on a computer. No PayPal account, no keys, nothing to build. Everything runs on the PayPal **Sandbox** (test data only, no real money). A hosted copy of the backend is already running, so you only install the extension. Prefer to watch first? The demo video is on the Devpost page.
+**You need:** Chrome (or any modern browser) on a computer. No PayPal account, no keys, nothing to build. Everything runs on the PayPal **Sandbox** (test data only, no real money). A hosted copy of the backend is already running. Prefer to watch first? The demo video is on the Devpost page.
 
-### 1. Install the extension (1 minute)
+There are two ways in. The web copy needs nothing installed; the extension is the real product and reads the PayPal page you have open.
+
+### 1. Fastest: open the web copy (30 seconds)
+
+Open **<https://scam-copilot-api.onrender.com/>**. It is the same side panel as in the extension, in a browser tab. In the **Check** tab pick an invoice of the demo account and the check runs on it (the web copy cannot read a PayPal page; only the extension can). Try these:
+
+| Pick this invoice | What it is | You should see |
+|---|---|---|
+| Premium Antivirus Renewal, $499.00 | "Your subscription was renewed, call this number to cancel." | **High risk**: phone number in the text, new supplier, scam wording |
+| Tech Care Renewals, $529.99 | The same trick from another name | **High risk** |
+| Quick Fix IT Support, $340.00 | An unknown supplier, harmless wording | **Medium** |
+| Blue Harbor Plumbing, $180.00 | An ordinary invoice | **Low** |
+
+Open a finding to read its **evidence**: what was found and where. The rules decide the risk level; the AI only explains it in plain words and never changes the score. The wording is always "signs found", never "fraud".
+
+### 2. The real thing: install the extension (1 minute)
 
 1. Download **`scam-copilot-extension.zip`** from the [latest release](https://github.com/daniil0126/scam-copilot/releases/latest) and unzip it.
 2. In Chrome open `chrome://extensions`, switch on **Developer mode** (top right) and press **Load unpacked**. Pick the unzipped folder.
 3. Click the puzzle icon, pin **Scam Copilot**, and click it. A side panel opens on the right.
+4. Open one of these Sandbox invoices as the payer sees them ([Premium Antivirus Renewal](https://www.sandbox.paypal.com/invoice/p/#6UG939HEGWFZWFTF), [Tech Care Renewals](https://www.sandbox.paypal.com/invoice/p/#6URS8X9WNB7GTPEZ), [Quick Fix IT Support](https://www.sandbox.paypal.com/invoice/p/#Y8KMTSCY23AS6LPK), [Blue Harbor Plumbing](https://www.sandbox.paypal.com/invoice/p/#XQXU6CGKXDB46K3H)) and press **Check this PayPal invoice**. The pages open without a login; if PayPal asks for one anyway, use the Sandbox payer login from the *Testing instructions* on Devpost.
 
-### 2. Check a fake invoice (1 minute)
-
-Open one of these Sandbox invoices (they open as the payer sees them, no login needed; if PayPal asks for one anyway, use the Sandbox payer login from the *Testing instructions* on Devpost). Then press **Check this PayPal invoice** in the side panel.
-
-| Open this invoice | What it is | You should see |
-|---|---|---|
-| [Premium Antivirus Renewal, $499.00](https://www.sandbox.paypal.com/invoice/p/#6UG939HEGWFZWFTF) | "Your subscription was renewed, call this number to cancel." | **High risk**: phone number in the text, new supplier, scam wording |
-| [Tech Care Renewals, $529.99](https://www.sandbox.paypal.com/invoice/p/#6URS8X9WNB7GTPEZ) | The same trick from another name | **High risk** |
-| [Quick Fix IT Support, $340.00](https://www.sandbox.paypal.com/invoice/p/#Y8KMTSCY23AS6LPK) | An unknown supplier, harmless wording | **Medium** |
-| [Blue Harbor Plumbing, $180.00](https://www.sandbox.paypal.com/invoice/p/#XQXU6CGKXDB46K3H) | An ordinary invoice | **Low** |
-
-Open a finding to read its **evidence**: what was found and where. The rules decide the risk level; the AI only explains it in plain words and never changes the score. The wording is always "signs found", never "fraud".
+The extension reads the open page only when you press the button, so it also works on invoices from other senders, which PayPal's API never shows.
 
 ### 3. Look around (1 minute)
 
@@ -39,7 +44,7 @@ Open a finding to read its **evidence**: what was found and where. The rules dec
 ### Good to know
 
 - **The first request can be slow.** The hosted backend sleeps when nobody uses it; the first call can take up to a minute. If you see "Cannot reach the Scam Copilot server", wait half a minute, open <https://scam-copilot-api.onrender.com/health> once (it answers `{"status":"ok"}`) and try again.
-- **Chat answers take 10 to 15 seconds.** The AI runs on free models.
+- **Chat answers take about 5 to 15 seconds.** The AI runs on free models.
 - **Everyone shares one demo account**, so History also shows the checks of other visitors.
 - **"Check this email" is shown in the demo video.** PayPal's Sandbox invoice emails appear only in the Developer Dashboard of the account owner, so they cannot be opened from outside. The button reads such an email and checks where its links lead and what changed since the earlier email of the same invoice; the path is covered by the backend tests and by `POST /inbound/email`.
 - **Limits.** Sandbox only; never tested with live PayPal accounts. A low score does not prove an invoice is safe. See *Known limitations* below.
@@ -261,13 +266,13 @@ traffic. They are a starting point, not a final answer: a new labelled batch sho
 
 ## Hosting a copy (maintainers)
 
-`render.yaml` is a Render Blueprint for the backend (Docker, `backend/Dockerfile`; Node is included because the PayPal Agent Toolkit is a Node program).
+`render.yaml` is a Render Blueprint for the backend and the web copy: one Docker web service, built from `backend/Dockerfile` with the repository root as context. The image holds the backend, the PayPal Agent Toolkit (a Node program) and the web build of the panel (`npm run build:web`), which the backend serves at `/` and `/app/`.
 
-1. On Render choose *New → Blueprint*, point it at this repository, and fill the secrets it asks for: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (Sandbox app keys), `ACCESS_TOKEN` (any long random string; every call must send it in `X-Access-Token`), and optionally `LLM_API_KEY` (a free-tier OpenRouter key). Leave `LLM_PROVIDER` empty to run on the rules alone.
-2. Wait for `https://<service>.onrender.com/health` to answer `{"status":"ok"}`. The database is rebuilt from PayPal's last 30 days on every fresh start (the free plan has no persistent disk).
+1. On Render choose *New → Blueprint*, point it at this repository, and fill the secrets it asks for: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (Sandbox app keys), `ACCESS_TOKEN` (any long random string; every API call must send it in `X-Access-Token`) and optionally `LLM_API_KEY` (a free-tier OpenRouter key). Leave `LLM_PROVIDER` empty to run on the rules alone.
+2. Wait for `https://<service>.onrender.com/health` to answer `{"status":"ok"}`. Opening `https://<service>.onrender.com/` shows the web copy. The database is rebuilt from PayPal's last 30 days on every fresh start (the free plan has no persistent disk).
 3. Build the extension for it: `API_URL=https://<service>.onrender.com ACCESS_TOKEN=<same value> sh scripts/build-release.sh`. The zip lands in `release/scam-copilot-extension.zip`; attach it to a GitHub Release.
 
-The token is inside the zip, so it keeps strangers and scanners off the API; it is not a user login. Rotate the Sandbox keys and the token when judging ends.
+The web copy gets the token from `/app/config.js`, and the extension carries it in the zip. So the token keeps scanners and scripts off the API, but anyone who opens the page can use the demo (Sandbox data only); it is not a user login. Rotate the Sandbox keys and the token when judging ends. `PAYPAL_MCP_PERSIST=0` returns the Toolkit to one process per call if memory gets tight (the container uses about 190 MB).
 
 ## License
 
