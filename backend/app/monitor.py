@@ -102,6 +102,9 @@ async def store_version(
     `list_hash` is the hash of the list item the polling pass saw; a webhook has none, and passes None to keep the
     stored one (a changed invoice then costs the next pass one extra detail request, which finds the same version).
     True when the version was not stored before.
+
+    The normalized invoice is built before the check and passed to `run_check`, so that `RULES_ENGINE=v2` runs
+    against the contract `Invoice` and `build_vendor_history`, not the legacy flat dict.
     """
     invoice = normalize_paypal(detail, account)
     known = db.get(MonitoredInvoice, (account, invoice_id))
@@ -113,7 +116,7 @@ async def store_version(
         return False
 
     # Checked before the version is stored: if the check fails the version stays unseen and the next pass retries.
-    result = await run_check(db, invoice_id, to_invoice(detail), pending)
+    result = await run_check(db, invoice_id, to_invoice(detail), pending, normalized=invoice)
     # One alert per invoice version at most; it is committed together with the version below.
     alerts.process_result(db, account, invoice_id, invoice.contentHash, result)
     reports.record_analysis(db, account, invoice_id, invoice.contentHash, result)

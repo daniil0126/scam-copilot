@@ -137,6 +137,86 @@ npx tsc -b
 - **Rule-based baseline.** The rules are hand-tuned on demo scenarios, not on real fraud data.
 - **No PDF upload.** Invoices are read from PayPal's API, the payer page and PayPal's invoice emails; a PDF file is not analysed.
 
+## How scoring works
+
+An invoice is scored by one of two engines, chosen by the `RULES_ENGINE` environment variable (see `.env.example`):
+
+- **`v1` (unset or `v1`, the default):** `app/scoring.py`, a flat rule list with fixed points (`PHONE=35`,
+  `SCAM_WORDS=20`, `payee change=60`, and so on). This is the engine the demo and the Devpost text describe.
+- **`v2`:** `app/rules/`, a rule engine that turns each sign into a typed `Signal` and combines signals by family
+  with decay. It needs vendor history from `build_vendor_history(db, account, invoice)` and runs through the same
+  `run_check` pipeline (`app/checks.py`, `app/monitor.py`, `app/inbound.py`).
+
+Both engines write the same shape of result to `checks.result`. A v2 result carries the legacy fields
+(`level`, `score`, `findings`, `recommendation`) **and** the contract fields (`riskLevel`, `riskScore`,
+`signals`, `confidence`), so alerts, reports, the AI explanation and the extension do not need to know which
+engine ran. Switching `RULES_ENGINE` does not change any API shape.
+
+### Signals and levels
+
+A v2 signal has a type (`PHONE_IN_TEXT`, `SENDER_MISMATCH`, `DUPLICATE_EXACT`, …), a severity
+(`LOW` / `MEDIUM` / `HIGH` / `CRITICAL`) and a status (`DETECTED` or `INSUFFICIENT_DATA`). Signals are grouped
+into six families — `amount`, `duplicates`, `vendor_identity`, `links`, `activity`, `textual` — and the score of
+a family is `max + decay × second + decay² × third + …`. The total is capped at 100 and mapped to a level:
+
+| score | level |
+|---|---|
+| 0–29 | LOW |
+| 30–59 | MEDIUM |
+| 60–79 | HIGH |
+| 80–100 | CRITICAL |
+
+The current calibration (`rules/config.py`, `rules/aggregator.py`) puts every family at weight 40 and
+`family_decay` at 0.5, so one HIGH signal in any family scores 40 (MEDIUM) and two HIGH signals in the same
+family score 60 (HIGH). `SEVERITY_POINTS["MEDIUM"]` is 30, so one MEDIUM signal reaches the MEDIUM band on its
+own; `NEW_SENDER` and `DUE_DATE_ISSUE` are LOW on purpose, because being new or having no due date is a fact,
+not a risk.
+
+`confidence` is about data completeness, not severity: it is LOW when the history is truncated, three or more
+fields are missing, or there is no history at all; HIGH when at most one field is missing and the history has
+at least `confidence_history_full_min` prior invoices. A rule that cannot run reports `INSUFFICIENT_DATA`
+instead of guessing; those signals are neither a pass nor a risk and the panel shows them apart.
+
+### Numbers and where they come from
+
+`scripts/compare_engines.py` runs both engines on `tests/dataset/cases.json` (59 labelled cases) and on the
+seven demo scenarios reconstructed from `scripts/scenarios.py`, and writes `docs/plans/engine-comparison.md`.
+Calibrated numbers on the dataset, with "flagged" at HIGH and above (the alert threshold):
+
+| engine | Precision | Recall | FPR |
+|---|---|---|---|
+| legacy (`scoring.score_invoice`) | 72.7% | 32.0% | 8.8% |
+| engine (`rules.engine.evaluate`, calibrated) | 100.0% | 32.0% | 0.0% |
+
+At MEDIUM and above (the dataset's own `expected.flagged`): legacy P=57.1% R=64.0% FPR=35.3%; engine P=59.3%
+R=64.0% FPR=32.4%.
+
+The full report, including every case where the two engines disagree and why, is in
+`docs/plans/engine-comparison.md`. In short:
+
+**Where the engine is better than legacy:** a changed sender email (`C01`) and a changed sender name on the same
+account (`C02`) are flagged by the engine and missed by legacy, because the engine compares the sender against
+the whole history. A link to the supplier's own domain (`N28`) is LOW on the engine and MEDIUM on legacy. A ×100
+amount (`U01`) is HIGH on the engine and MEDIUM on legacy.
+
+**What is not fixed yet, and why:** `rule_d` does not treat `http://` links or generic `*-pay.example` hosts as
+suspicious (`S-TF02`, `S-HF02`); `SCAM_WORDS` matches ordinary words such as "auto-renewal" and "subscription"
+(`N05`, `N10`, `N23`). Both are rule changes (`rule_*.py`), out of scope for the current sprint.
+
+### Why `v1` is still the default
+
+The freeze is about not changing the default behaviour, and the demo and the Devpost text describe the legacy
+scorer. `RULES_ENGINE=v2` is available for a reviewer and is tested end to end
+(`tests/test_checks_engine_v2.py`, and `test_monitor.py` / `test_inbound.py` also pass with `RULES_ENGINE=v2`).
+Switching is a one-line `.env` change and does not change any API shape.
+
+### Thresholds are initial values
+
+The numbers in `rules/config.py` are calibrated on `tests/dataset/cases.json` (see
+`docs/plans/engine-comparison.md` and `docs/plans/calibration-sweep.md` when it exists), not on production
+traffic. They are a starting point, not a final answer: a new labelled batch should be run through
+`scripts/compare_engines.py` before they are considered final.
+
 ## License
 
 [MIT](LICENSE)
