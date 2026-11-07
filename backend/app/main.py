@@ -9,6 +9,7 @@ from app.inbound import router as inbound_router
 from app import llm_openrouter  # noqa: F401  registers the free-only OpenRouter provider
 from app.monitor import lifespan, router as monitor_router
 from app.notifications.router import router as notifications_router
+from app.payments import router as payments_router
 from app.reports.router import router as reports_router
 from app.security import install_log_scrubber
 from app.web import install_web
@@ -37,6 +38,7 @@ app.include_router(inbound_router)
 app.include_router(webhooks_router)
 app.include_router(notifications_router)
 app.include_router(reports_router)
+app.include_router(payments_router)
 if STUBS_ENABLED:
     app.include_router(stubs_router)
 

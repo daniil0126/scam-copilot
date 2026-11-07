@@ -343,4 +343,5 @@ async def create_bulk_check(ai: bool = False, db: Session = Depends(get_db)):
 
 @router.get("")
 def history(db: Session = Depends(get_db)):
-    return [c.result for c in db.scalars(select(Check).order_by(desc(Check.checked_at)))]
+    # `invoiceId` is the PayPal id the check belongs to: the panel asks the payment gate about it (payments.py).
+    return [{**c.result, "invoiceId": c.paypal_invoice_id} for c in db.scalars(select(Check).order_by(desc(Check.checked_at)))]

@@ -19,7 +19,7 @@ from typing import Awaitable, Callable
 
 from sqlalchemy import select
 
-from app import ai_guard, llm, paypal_mcp
+from app import ai_guard, audit_log, llm, payments, paypal_mcp
 from app.db import SessionLocal
 from app.models import Check
 from app.normalize import normalize_paypal
@@ -86,7 +86,38 @@ DISPLAY_TOOL = {"type": "function", "function": {
         "limit": {"type": "integer", "description": f"At most this many rows, up to {MAX_TABLE_ROWS}"},
     }},
 }}
+
+# The model can only *propose* a payment, and only when the person's own last message is about paying. The tool fetches
+# nothing, pays nothing and returns no ids or links to the model: the server builds a proposal card from stored checks and
+# a person confirms it in the panel (payments.py re-checks everything then). There is deliberately no tool that confirms.
+PROPOSE_TOOL_NAME = "propose_payment"
+LOCAL_TOOLS = {DISPLAY_TOOL_NAME, PROPOSE_TOOL_NAME}
+PAY_INTENT = re.compile(r"\b(pay|paying|payment|payments|settle|checkout)\b|оплат|заплат|плат[иеёю]", re.IGNORECASE)
+PAID_CLAIM = re.compile(
+    r"\b(i|we)\s+(have\s+|'ve\s+)?(paid|sent the payment|completed the payment)\b|"
+    r"\b(has|have|was|were|been)\s+(been\s+)?(paid|processed|completed)\b|\bpayment\s+(was|has been|is)\s+(made|sent|complete|done)\b|"
+    r"\bsuccessfully paid\b", re.IGNORECASE)
+PROPOSE_TOOL = {"type": "function", "function": {
+    "name": PROPOSE_TOOL_NAME,
+    "description": "Prepares a payment proposal when the user asks to pay invoices. It pays nothing: the interface shows the "
+                   "user a card listing the invoices that have no warning signs, with a Review button, and the user "
+                   "confirms there. Only invoices already read with list_invoices can be proposed. Filters choose which "
+                   "ones; for 'pay all', pass no filters. Returns counts only.",
+    "parameters": {"type": "object", "properties": {
+        "query": {"type": "string", "description": "Only invoices whose seller name or number contains this text"},
+        "days": {"type": "integer", "description": "Only invoices created in the last N days"},
+        "min_amount": {"type": "number", "description": "Only invoices of at least this amount"},
+        "max_amount": {"type": "number", "description": "Only invoices of at most this amount"},
+        "currency": {"type": "string", "description": "Only this currency, for example USD. Set it together with an amount filter"},
+    }},
+}}
 TOOLS = [*PAYPAL_TOOLS, DISPLAY_TOOL]
+
+
+def tools_for(messages: list[dict]) -> list[dict]:
+    """`propose_payment` is offered only when the person's latest message is about paying."""
+    last = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "")
+    return [*TOOLS, PROPOSE_TOOL] if PAY_INTENT.search(last or "") else TOOLS
 
 SYSTEM_TOOLS = (
     "\n\nYou can read the connected PayPal Sandbox account with the tools list_invoices and get_invoice. A question about "
@@ -105,7 +136,11 @@ SYSTEM_TOOLS = (
     "yourself: answer in one or two sentences with the numbers the result gives. For one or two invoices, answer in "
     "text and write their ids exactly as given: the interface turns ids into links. "
     "Quote amounts, ids and dates exactly as the result gives them and say when the result does not contain what was "
-    "asked. Write short plain text, with no headings, tables or code blocks."
+    "asked. Write short plain text, with no headings, tables or code blocks. "
+    "You can never pay an invoice. When the user asks to pay, read the invoices with list_invoices, then call "
+    "propose_payment: the interface shows a card where the user reviews and confirms. Say how many invoices are ready "
+    "and that the user has to review them, never that anything was paid, and do not call an invoice safe: say it has "
+    "no warning signs."
 )
 
 
@@ -123,6 +158,7 @@ class Answer:
     tools: list[str] = field(default_factory=list)  # PayPal tools that returned data
     invoices: list[dict] = field(default_factory=list)  # invoices named in the reply, described for the interface
     table: dict | None = None  # {"rows": [...], "matched": n} when the model asked for a table
+    proposal: dict | None = None  # a payment proposal built by the server, never by the model (see propose_payment)
 
 
 class AgentUnavailable(Exception):
@@ -284,6 +320,59 @@ def _show_table(args: dict, catalog: dict[str, dict], now: datetime) -> tuple[st
     return text, f"{matched} invoice{'' if matched == 1 else 's'} in the table", [{**r, **known.get(r["id"], {})} for r in shown]
 
 
+def _propose_payment(args: dict, catalog: dict[str, dict], now: datetime) -> tuple[str, str | None, dict]:
+    """Builds the payment proposal from stored checks. The model learns counts and reasons only: no ids, links or names.
+
+    It holds every invoice that qualifies, not one basket's worth: the panel ticks them all and the person confirms them in
+    batches of `payments.MAX_BASKET`."""
+    if not catalog:
+        return _dump({"error": "No invoices have been read yet. Call list_invoices first."}), None, {}
+    scope = {k: args[k] for k in ("query", "days", "min_amount", "max_amount", "currency") if k in args}
+    rows, _ = _apply_filters(list(catalog.values()), scope, now)
+    rows = [r for r in rows if (r.get("status") or "").upper() in payments.PAYABLE_STATUSES]  # not paid, cancelled or draft
+    account = payments.current_account()
+    with SessionLocal() as db:
+        views = [payments.stored_view(db, account, r["id"]) for r in rows]
+        ready = [v for v in views if v["eligible"]]
+        left_out = [v for v in views if not v["eligible"]]
+        proposal = {
+            "items": [payments._public(v) for v in ready],
+            "excluded": [payments._public(v) for v in left_out],
+            "totals": payments.totals_of(ready),
+            "moreReady": 0,
+        }
+        audit_log.record(db, account, "pay.proposal_made", {
+            "ready": len(ready), "left_out": len(left_out), "invoices": [v["invoiceId"] for v in ready]}, actor="system")
+        db.commit()
+    reasons: dict[str, int] = {}
+    for v in left_out:
+        reasons[v["reasons"][0]["text"]] = reasons.get(v["reasons"][0]["text"], 0) + 1
+    text = _dump({
+        "ready": len(ready), "ready_total_by_currency": proposal["totals"], "left_out_by_reason": reasons,
+        "note": "Nothing was paid and you cannot pay. The interface shows the user a proposal card with a Review button; "
+                "the user confirms there. Say how many invoices are ready, mention the reasons others were left out, "
+                "and tell the user to review them. Do not list the invoices."
+        if ready or left_out else "No unpaid invoice matched, so there is nothing to propose.",
+    })
+    return text, f"{len(ready)} ready, {len(left_out)} left out", (proposal if ready or left_out else {})
+
+
+def _proposal_reply(proposal: dict) -> str:
+    """The words above a proposal card, written by code: every number in them is the server's, and no model can claim a payment."""
+    n, out = len(proposal["items"]), len(proposal["excluded"])
+    totals = " + ".join(f"{v} {c}" for c, v in proposal["totals"].items())
+    if n:
+        text = (f"{n} invoice{'' if n == 1 else 's'} ({totals}) {'has' if n == 1 else 'have'} no warning signs. "
+                f"I can't pay for you: review {'it' if n == 1 else 'them'} in History, then continue to PayPal.")
+    else:
+        text = "None of the unpaid invoices passed the checks, so there is nothing to pay from here."
+    if n > payments.MAX_BASKET:
+        text += f" One payment holds at most {payments.MAX_BASKET}, so you will confirm them in batches."
+    if out:
+        text += f" {out} {'was' if out == 1 else 'were'} left out because of warning signs or missing checks."
+    return text
+
+
 def _signs(ids: list[str]) -> dict[str, list[str]]:
     """The labels of the signs a stored check found for these invoices, so that "why is it risky" needs no second read."""
     if not ids:
@@ -368,6 +457,22 @@ def _register(items: list, catalog: dict[str, dict]) -> None:
             catalog[ref["id"]] = ref
 
 
+async def _read_all_pages(catalog: dict[str, dict]) -> int:
+    """Reads every page of the account's invoices into `catalog`, whatever the model read before. Returns how many pages were read.
+
+    A payment proposal must cover all invoices: "pay all the low risk ones" would otherwise cover only the few the model
+    happened to ask for."""
+    pages = 0
+    for page in range(1, MAX_PAGES + 1):
+        raw = await paypal_mcp.call_tool("list_invoices", {"page": page, "page_size": MAX_PAGE_SIZE})
+        pages += 1
+        items = [i for i in raw.get("items") or [] if isinstance(i, dict)]
+        _register(items, catalog)
+        if len(items) < MAX_PAGE_SIZE:
+            break
+    return pages
+
+
 async def _run_tool(name: str, args: dict, catalog: dict[str, dict], table: dict | None = None) -> tuple[str, str | None]:
     """The tool message content and a summary line (None when it failed). A failure is told to the model as data, so
     it can say so instead of guessing."""
@@ -395,13 +500,17 @@ async def _run_tool(name: str, args: dict, catalog: dict[str, dict], table: dict
         return _dump({"error": "PayPal could not be read right now"}), None
 
 
-async def _converse(provider, system: str, messages: list[dict], seen: list[str], used: list[str], catalog: dict[str, dict], table: dict, emit: Emit) -> tuple[str, bool]:
+async def _converse(provider, system: str, messages: list[dict], seen: list[str], used: list[str], catalog: dict[str, dict], table: dict, emit: Emit, proposal: dict | None = None) -> tuple[str, bool]:
+    proposal = {} if proposal is None else proposal
+    tools = tools_for(messages)
+    offered = {t["function"]["name"] for t in tools}
+    paying = PROPOSE_TOOL_NAME in offered  # the person asked to pay: the table is not forced, the model may propose
     calls_made = 0
     want_table = False  # set once invoices were listed: the model must then say which of them to show
     for turn in range(MAX_STEPS):
         await _emit(emit, {"type": "model", "id": f"m{turn}", "state": "running", "first": turn == 0})
         try:
-            out = await provider.step(system, messages, TOOLS, **({"force": DISPLAY_TOOL_NAME} if want_table and not table else {}))
+            out = await provider.step(system, messages, tools, **({"force": DISPLAY_TOOL_NAME} if want_table and not table and not paying else {}))
         except Exception:
             await _emit(emit, {"type": "model", "id": f"m{turn}", "state": "failed"})
             raise
@@ -416,13 +525,15 @@ async def _converse(provider, system: str, messages: list[dict], seen: list[str]
         ]})
         for call in out["tool_calls"]:
             shown = {"id": call["id"], "name": call["name"], "args": _shown_args(call["arguments"]),
-                     "local": call["name"] == DISPLAY_TOOL_NAME}
-            needs_read = call["name"] == DISPLAY_TOOL_NAME and not catalog and calls_made < MAX_TOOL_CALLS
+                     "local": call["name"] in LOCAL_TOOLS}
+            needs_read = call["name"] in LOCAL_TOOLS and not catalog and calls_made < MAX_TOOL_CALLS
             if not needs_read:  # otherwise the read below goes first, so the steps appear in the order they happen
                 await _emit(emit, {"type": "tool", "state": "running", **shown})
             if calls_made >= MAX_TOOL_CALLS:
                 text, summary = _dump({"error": "too many tool calls for one question"}), None
-            elif call["name"] == DISPLAY_TOOL_NAME:
+            elif call["name"] in LOCAL_TOOLS and call["name"] not in offered:
+                text, summary = _dump({"error": "unknown tool"}), None
+            elif call["name"] in LOCAL_TOOLS:
                 calls_made += 1
                 if not catalog:
                     # A follow-up ("show them as a table"): the model remembers the invoices from the conversation, but this
@@ -438,15 +549,27 @@ async def _converse(provider, system: str, messages: list[dict], seen: list[str]
                     if read_summary and "list_invoices" not in used:
                         used.append("list_invoices")
                     await _emit(emit, {"type": "tool", "state": "running", **shown})
-                text, summary, rows = _show_table(call["arguments"], catalog, datetime.now(timezone.utc))
-                if summary is not None:
-                    table["rows"], table["matched"] = rows, int(summary.split()[0])
+                if call["name"] == PROPOSE_TOOL_NAME:
+                    try:
+                        await _read_all_pages(catalog)  # whatever the model read, the proposal covers every invoice
+                    except paypal_mcp.McpUnavailable as e:
+                        log.warning("reading all invoices for a proposal failed: %s", type(e).__name__)
+                        text, summary, made = _dump({"error": "PayPal could not be read right now"}), None, {}
+                    else:
+                        text, summary, made = _propose_payment(call["arguments"], catalog, datetime.now(timezone.utc))
+                    if made:
+                        proposal.clear()
+                        proposal.update(made)
+                else:
+                    text, summary, rows = _show_table(call["arguments"], catalog, datetime.now(timezone.utc))
+                    if summary is not None:
+                        table["rows"], table["matched"] = rows, int(summary.split()[0])
             else:
                 calls_made += 1
                 text, summary = await _run_tool(call["name"], call["arguments"], catalog, table)
             if summary is not None and call["name"] == "list_invoices" and not any(k in call["arguments"] for k in FILTER_KEYS):
                 want_table = True  # an unfiltered read: the model must still say which invoices to show
-            if summary is not None and call["name"] not in used and call["name"] != DISPLAY_TOOL_NAME:
+            if summary is not None and call["name"] not in used and call["name"] not in LOCAL_TOOLS:
                 used.append(call["name"])
             await _emit(emit, {"type": "tool", "state": "done" if summary else "failed", "summary": summary,
                                "reason": None if summary else _reason(text), **shown})
@@ -486,12 +609,17 @@ async def answer(provider, messages: list[dict], check: dict | None = None, emit
     used: list[str] = []
     catalog: dict[str, dict] = {}
     table: dict = {}
+    proposal: dict = {}
     reply, truncated = await asyncio.wait_for(
-        _converse(provider, system, list(history), seen, used, catalog, table, emit), TIMEOUT)
+        _converse(provider, system, list(history), seen, used, catalog, table, emit, proposal), TIMEOUT)
     reply = reply.strip()
     if truncated:  # drop the half-written last line and say so, instead of showing a list that just stops
         reply = reply.rsplit("\n", 1)[0].rstrip() if "\n" in reply else reply
         reply += "\n\n(The answer was cut off because it was too long. Ask for fewer invoices, for example the 5 newest.)"
+    if proposal:
+        # The card is the answer. Its sentence is written by code, so it never claims a payment, calls anything safe or
+        # states a number the server did not give; the model's own words and the list it read are not shown next to it.
+        return Answer(_proposal_reply(proposal), used, [], None, proposal)
     if ai_guard.overclaims(reply):
         return Answer(llm.careful_answer(check), used)
     reply = ai_guard.redact_ungrounded(reply, "\n".join(seen))

@@ -46,7 +46,8 @@ async def chat(body: ChatRequest, db: Session = Depends(get_db)):
         try:
             out = await agent.answer(provider, messages, check.result if check else None)
             return {"reply": out.reply, **({"toolsUsed": out.tools} if out.tools else {}),
-                    **({"invoices": out.invoices} if out.invoices else {}), **({"table": out.table} if out.table else {})}
+                    **({"invoices": out.invoices} if out.invoices else {}), **({"table": out.table} if out.table else {}),
+                    **({"paymentProposal": out.proposal} if out.proposal else {})}
         except Exception as e:  # PayPal or the model failed: the chat still answers, without tools
             llm.log.warning("Chat agent failed, answering without tools: %s", type(e).__name__)
     try:
@@ -80,7 +81,7 @@ async def chat_stream(body: ChatRequest, db: Session = Depends(get_db)):
                 try:
                     out = await agent.answer(provider, messages, result, emit)
                     await emit({"type": "answer", "reply": out.reply, "toolsUsed": out.tools, "invoices": out.invoices,
-                                "table": out.table})
+                                "table": out.table, **({"paymentProposal": out.proposal} if out.proposal else {})})
                     return
                 except Exception as e:
                     llm.log.warning("Chat agent failed, answering without tools: %s", type(e).__name__)
