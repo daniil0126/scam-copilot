@@ -40,6 +40,7 @@ The extension reads the open page only when you press the button, so it also wor
 - **Monitor.** The backend watches the demo account in the background. *Overview* shows the live state, *Alerts* lists the risky invoices (open one and press **Open this check**), *Report* is the monthly report with a list "worth a manual look".
 - **History.** Every check, with filter, sort and CSV export (AG Grid tables).
 - **Chat.** Ask "Which invoices are waiting for payment?" or "Show the last 10 invoices". The chat reads live invoices through the **PayPal Agent Toolkit** (read-only, Sandbox only) and shows which tool it used.
+- **Pay, with checks first.** In **History**, an invoice with no warning signs has a **Pay** button and a checkbox; "Select all with no warning signs" ticks them all, and **Pay N invoices** pays the ticked ones (up to 10 at a time). You can also ask the chat to "pay all my invoices": it only prepares the list and sends you to History with those invoices ticked. Scam Copilot never moves money: PayPal's Invoicing API has no call that pays for the payer (the documented "Record payment" only records a payment in the issuer's books), so **Continue to PayPal** opens PayPal's own payment page for each chosen invoice, all together in new tabs, and PayPal asks for the payment there. Before that the server reads each invoice again and refuses one that changed after its check. An invoice counts as paid only when PayPal says so.
 
 ### Good to know
 

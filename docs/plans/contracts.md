@@ -1,6 +1,6 @@
 # Контракты данных и API
 
-**Версия:** 0.9 (`POST /checks/{id}/explain`: ИИ-пояснение отдельным вызовом; фильтры у `list_invoices`; находка `identity`). Ранее 0.8 (чат читает счета PayPal двумя инструментами: `toolsUsed` в ответе `/chat`, `tools` в `/ai/status`). Ранее 0.7 (описаны уже реализованные эндпоинты уведомлений и отчётов Руслана, таблицы `analyses`, `alert_settings`, `audit_log`). Ранее 0.6 (добавлен `POST /webhooks/paypal`). Ранее 0.5 (добавлены `source = "email"` и `POST /inbound/email`, см. раздел 8; на подтверждение командой в PR с пометкой `contract`). Далее без изменений, версия 0.4: (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
+**Версия:** 0.10 (переход к оплате: `/payments/*`, `paymentProposal` в чате; см. раздел 5, «Оплата»). Ранее 0.9 (`POST /checks/{id}/explain`: ИИ-пояснение отдельным вызовом; фильтры у `list_invoices`; находка `identity`). Ранее 0.8 (чат читает счета PayPal двумя инструментами: `toolsUsed` в ответе `/chat`, `tools` в `/ai/status`). Ранее 0.7 (описаны уже реализованные эндпоинты уведомлений и отчётов Руслана, таблицы `analyses`, `alert_settings`, `audit_log`). Ранее 0.6 (добавлен `POST /webhooks/paypal`). Ранее 0.5 (добавлены `source = "email"` и `POST /inbound/email`, см. раздел 8; на подтверждение командой в PR с пометкой `contract`). Далее без изменений, версия 0.4: (Q1–Q6 закрыты решением владельца продукта по предложениям из черновика; команде на подтверждение, возражения в PR с пометкой `contract`). Правила изменений: [team/WORKFLOW.md](team/WORKFLOW.md), раздел 2. Поля только добавляем, не удаляем и не переименовываем.
 
 Основано на текущем коде: `backend/app/paypal.py` (`to_invoice`), `scoring.py` (`score_invoice`), `checks.py` (`run_check`), `models.py` (`Check`), `src/api/types.ts`.
 
@@ -221,6 +221,23 @@ class Notification(BaseModel):
 
 Если агент недоступен (нет Node или ключей, модель не поддерживает инструменты, ошибка PayPal или модели), `/chat` отвечает как раньше, без инструментов. Результаты инструментов маскируются (почта, телефон), усекаются и передаются как данные; итоговый ответ проходит те же проверки, что и обычный.
 
+### Оплата безопасных счетов (0.10, план 16)
+Приложение **не проводит платежи**: Invoicing API не умеет «оплатить за плательщика» (`record_payment_for_invoice` это учёт выставителя). Оплата это переход на страницу PayPal `recipient_view_url`, и сервер решает, можно ли туда вести. Все вызовы кроме `preview` и `GET /payments/intents` требуют заголовок `X-Requested-By: scamcopilot-ui` (иначе 403).
+
+| Эндпоинт | Тело → ответ |
+|---|---|
+| `POST /payments/preview` | `{invoiceIds: string[≤50]}` → `{items: PayView[], totals: {USD: "360.00"}}`. По сохранённым данным монитора, без обращения к PayPal и без ссылок |
+| `POST /payments/intents` | `{invoiceIds: ≤10, source: "ui"\|"chat", expectedIds?, expectedTotals?}` → `200 {batchId, intents: [{intentId, invoiceId, url, expiresAt, supplier, number, amount, currency, status}], totals}` или `409 {error: {code: "changed"\|"over_limit", message}, items: PayView[], totals}`. Каждый счёт заново читается из PayPal; ссылку получает только счёт, чья **точная версия** (хеш содержимого) проанализирована как `LOW`, без дубликата, в статусе `SENT/UNPAID/PARTIALLY_PAID`, и если PayPal отдал собственную страницу плательщика (хост по `PAYPAL_MODE`, путь `/invoice/p/`, id совпадает). Если хоть один счёт не прошёл или состав не совпал с `expected*`, ссылок нет, 409 |
+| `POST /payments/intents/{id}/opened`, `/cancel` | → `{intentId, status}`; 404 чужой/неизвестный, 409 если уже не активен |
+| `GET /payments/intents?ids=a,b` | → `{items: [{intentId, invoiceId, status}]}`. Открытые перечитываются из PayPal: `PAID` ставится только по статусу PayPal |
+| `POST /payments/check` | `{invoiceId}` → `PayView`. Конвейер монитора (проверка, уведомление, анализ, версия) по счёту, как он есть в PayPal сейчас |
+
+`PayView`: `{invoiceId, eligible, reasons: [{code, text}], supplier, number, amount (остаток к оплате), currency, dueDate, status, level: "low"\|"medium"\|"high"\|null, checkedAt, limited}`. Коды причин: `not_checked, changed, paid, not_payable, risk_high, risk_medium, duplicate, no_page, unavailable, over_limit`. `limited: true` значит, что часть проверок не выполнена из-за отсутствия истории поставщика (это не признак риска). `PAY_MAX_TOTAL` (необязательно) ограничивает сумму одного подтверждения по каждой валюте.
+
+`GET /checks` (история): каждая запись += `invoiceId` (id счёта PayPal), по нему панель спрашивает гейт. Оплата делается в панели **History**; чат только ведёт туда (кнопка «Pay in History» под таблицей, «Review in History» у карточки предложения отмечает счета галочками).
+
+Чат: `POST /chat` и `/chat/stream` (событие `answer`) += `paymentProposal?: {items: PayView[], excluded: PayView[], totals, moreReady}`. `items` содержит **все** подходящие счета (не одну корзину; `moreReady` всегда 0): инструмент сам читает все страницы счетов, что бы ни прочитала модель, а панель отмечает их в History и подтверждает пачками по 10. Инструмент `propose_payment` предлагается модели **только если последнее сообщение пользователя про оплату**, возвращает ей лишь числа и причины (без id, имён и ссылок), ничего не платит; подтверждающего инструмента нет. Текст над карточкой пишет код, а таблица в таком ответе не отдаётся. Новые действия аудита: `pay.intent_created, pay.link_opened, pay.cancelled, pay.blocked, pay.proposal_made`. Таблица `pay_intents` (в `payments.py`).
+
 ## 6. Фикстуры для Дениса, Адиля, Руслана
 
 Даниил кладёт образцы JSON в `backend/tests/fixtures/contracts/` (в этом же PR, что и версия контракта 0.2):
@@ -241,6 +258,7 @@ class Notification(BaseModel):
 |---|---|---|---|
 | 0.1 | 2026-10-30 | Первый черновик на основе текущего кода | Даниил |
 | 0.2 | 2026-10-30 | Q1: режимы Connected/Standalone, `accountId` nullable, `source` += `pdf`. Q3: PayPal OAuth, раздел 9 | Даниил |
+| 0.10 | 2026-11-07 | План 16: `/payments/preview`, `/payments/intents` (+`opened`, `cancel`, `GET`), `/payments/check`; `paymentProposal?` в ответе чата; пять действий аудита; таблица `pay_intents`. Только добавление | Даниил (черновик: Claude); `chat.py` (3 строки) и `agent.py` — зона Руслана |
 | 0.9 | 2026-11-02 | `POST /checks` и `POST /checks/page` больше не ждут модель: ответ только по правилам, без `ai`. Новый `POST /checks/{id}/explain` (404 если проверки нет) добавляет `ai` к сохранённой проверке и возвращает её целиком; повторный вызов отдаёт сохранённое. Новая находка `identity` («Seller not identified», medium, 20 баллов) и пометка `amount_read` (skipped); `identity` не даёт уровню быть `low`. `list_invoices` += фильтры (см. выше) | Даниил (черновик: Claude); `scoring.py` — зона Адиля, `agent.py` — Руслана |
 | 0.8 | 2026-11-02 | `POST /chat` += `toolsUsed?`, `GET /ai/status` += `tools?`. Только добавление необязательных полей | Даниил (черновик: Claude) |
 | 0.7 | 2026-11-01 | Документированы уже реализованные `GET /notifications` (курсор), `/notifications/unread-count`, `GET/POST /reports/monthly`, `GET /monitoring/summary`; форма `MonthlyReport`; таблицы `analysis_signals`, `alert_settings`, `audit_log`. Только описание кода, поведение не менялось | Даниил (черновик: Claude), код: Руслан |
