@@ -47,11 +47,52 @@ export type InvoiceRef = {
 
 export type InvoiceTable = { rows: InvoiceRef[]; matched: number }
 
+// --- Paying (docs/plans/16-pay-safe-invoices.md). The server decides who may be paid; the panel only shows it. ---
+
+export type PayReasonCode =
+    | "not_checked" | "changed" | "paid" | "not_payable" | "risk_high" | "risk_medium"
+    | "duplicate" | "no_page" | "unavailable" | "over_limit"
+
+export type PayView = {
+    invoiceId: string
+    eligible: boolean
+    reasons: { code: PayReasonCode; text: string }[]
+    supplier: string | null
+    number: string | null
+    amount: string | null
+    currency: string | null
+    dueDate: string | null
+    status: string | null
+    level: RiskLevel | null
+    checkedAt: string | null
+    // Some checks need earlier invoices from this supplier and had none: not a warning sign, but worth saying.
+    limited: boolean
+}
+
+export type PayTotals = Record<string, string>
+
+// The proposal the assistant's tool built on the server. It carries no links: those come only after the person confirms.
+export type PayProposal = { items: PayView[]; excluded: PayView[]; totals: PayTotals; moreReady: number }
+
+export type PayIntent = {
+    intentId: string
+    invoiceId: string
+    url: string
+    expiresAt: string
+    supplier: string | null
+    number: string | null
+    amount: string | null
+    currency: string | null
+    status: string
+}
+
+export type PayIntentStatus = "ISSUED" | "OPENED" | "PAID" | "EXPIRED" | "CANCELLED"
+
 export type ChatEvent =
     | { type: "model"; id: string; state: TraceStep["state"]; first: boolean }
     | { type: "tool"; id: string; name: string; local?: boolean; args: Record<string, string | number | boolean>; state: TraceStep["state"]; summary?: string | null; reason?: string | null }
     | { type: "fallback" }
-    | { type: "answer"; reply: string; toolsUsed: string[]; invoices?: InvoiceRef[]; table?: InvoiceTable | null }
+    | { type: "answer"; reply: string; toolsUsed: string[]; invoices?: InvoiceRef[]; table?: InvoiceTable | null; paymentProposal?: PayProposal | null }
     | { type: "error"; message: string }
 
 export type Message = {
@@ -62,6 +103,7 @@ export type Message = {
     trace?: TraceStep[]  // the steps it took, shown folded under the reply
     invoices?: InvoiceRef[]  // invoices the reply names, so their ids can be shown as readable links
     table?: InvoiceTable  // the list the assistant was asked for, drawn from the server's data instead of written by the model
+    proposal?: PayProposal  // invoices the assistant prepared for payment; the person reviews and confirms them
 }
 
 export type TabId = "check" | "monitor" | "history" | "chat" | "settings"
@@ -117,6 +159,8 @@ export type Invoice = {
 
 export type VerificationResult = {
     id: string
+    // The PayPal invoice the check belongs to (the history list adds it); the panel asks the payment gate about it.
+    invoiceId?: string
     level: RiskLevel
     score: number
     invoice: Invoice

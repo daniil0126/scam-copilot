@@ -12,13 +12,13 @@ const capitalise = (word: string) => word.charAt(0).toUpperCase() + word.slice(1
 const ROW = "grid grid-cols-[minmax(0,1fr)_2.75rem]"
 const BUTTON = "grid grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-x-3 border-l-[3px] py-2 pl-3 pr-1 text-left"
 
-type Props = { table: Table; opening: string | null; onOpen: (invoice: InvoiceRef) => void }
+type Props = { table: Table; opening: string | null; onOpen: (invoice: InvoiceRef) => void; onPay?: () => void }
 
 // The list the user asked for, drawn from the server's data (the model only writes the sentence above it). It runs the
 // full width of the message, with no frame of its own. Risk is quiet by default: only medium and high get colour and a
 // word; a low risk is announced to screen readers but not repeated on every row. A row opens the invoice's check in
 // History, running the check first if there is none. Long lists show a page at a time.
-export default function InvoiceTable({ table, opening, onOpen }: Props) {
+export default function InvoiceTable({ table, opening, onOpen, onPay }: Props) {
     const [shown, setShown] = useState(PAGE)
     const rows = table.rows.slice(0, shown)
     if (table.rows.length === 0) {
@@ -91,6 +91,17 @@ export default function InvoiceTable({ table, opening, onOpen }: Props) {
                 >
                     Show {Math.min(PAGE, table.rows.length - shown)} more · {table.rows.length - shown} left
                 </button>
+            )}
+            {onPay && table.rows.some(r => r.status === "SENT") && (
+                <div className="-mx-3.5 flex items-center justify-between gap-3 px-3.5 pt-3">
+                    <span className="text-[13px] text-[var(--muted)]">Paying is done in History, where the checks are.</span>
+                    <button
+                        onClick={onPay}
+                        className="min-h-11 shrink-0 rounded-lg border border-[var(--primary)] px-3.5 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
+                    >
+                        Pay in History
+                    </button>
+                </div>
             )}
         </div>
     )

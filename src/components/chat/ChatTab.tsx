@@ -8,7 +8,7 @@ import ChatBox from "../ChatBox.js"
 import MessageList from "../MessageList.js"
 
 // `checkId`: the check currently shown on the Check tab, so questions can be about that invoice.
-export default function ChatTab({ checkId, onOpenInvoice, active }: { checkId: string | null, onOpenInvoice: (invoice: InvoiceRef) => Promise<void>, active: boolean }) {
+export default function ChatTab({ checkId, onOpenInvoice, onPay, active }: { checkId: string | null, onOpenInvoice: (invoice: InvoiceRef) => Promise<void>, onPay: (ids?: string[]) => void, active: boolean }) {
     const [messages, setMessages] = useState<Message[]>([])
     const [busy, setBusy] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -47,7 +47,7 @@ export default function ChatTab({ checkId, onOpenInvoice, active }: { checkId: s
                 if (event.type === "error") throw new Error(event.message)
                 if (event.type === "answer") {
                     answered = true
-                    setMessages(prev => [...prev, { id: Date.now(), role: "system", message: event.reply, tools: event.toolsUsed, trace: steps.some(s => s.kind !== "model") ? steps : undefined, invoices: event.invoices, table: event.table ?? undefined }])
+                    setMessages(prev => [...prev, { id: Date.now(), role: "system", message: event.reply, tools: event.toolsUsed, trace: steps.some(s => s.kind !== "model") ? steps : undefined, invoices: event.invoices, table: event.table ?? undefined, proposal: event.paymentProposal ?? undefined }])
                     return
                 }
                 steps = applyEvent(steps, event)
@@ -76,6 +76,7 @@ export default function ChatTab({ checkId, onOpenInvoice, active }: { checkId: s
                     active={active}
                     opening={opening}
                     onOpenInvoice={invoice => { void openInvoice(invoice) }}
+                    onPay={onPay}
                     pending={busy ? <LiveTrace steps={live} canReadPayPal={canReadPayPal} /> : null}
                 />
             )}

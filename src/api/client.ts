@@ -2,7 +2,8 @@ import { accessHeaders } from "./config.js"
 import { API_URL, ApiError, request } from "./httpClient.js"
 import type {
     AlertSettings, AppNotification, BulkCheckResponse, ChatEvent, ChatTurn, HistoryEntry, InboundEmailResponse, MonitoringState,
-    MonitoringStatus, MonitoringSummary, MonthlyReport, NotificationsPage, VerificationResult,
+    MonitoringStatus, MonitoringSummary, MonthlyReport, NotificationsPage, PayIntent, PayIntentStatus, PayTotals, PayView,
+    VerificationResult,
 } from "./types.js"
 
 export const checkPayPalInvoice = (invoiceId: string) =>
@@ -113,3 +114,51 @@ export const saveAlertSettings = (settings: { alertThreshold: AlertSettings["ale
 export const fetchMonthlyReport = (month: string) => request<MonthlyReport>(`/reports/monthly?month=${encodeURIComponent(month)}`)
 export const saveMonthlyReport = (month: string) =>
     request<MonthlyReport>("/reports/monthly", { method: "POST", body: JSON.stringify({ month }) })
+
+// --- Paying. These calls only ask the server; no money moves here (backend/app/payments.py). ---
+
+// A header a web page cannot add without a preflight: the server refuses state-changing payment calls without it.
+const UI = { "x-requested-by": "scamcopilot-ui" }
+
+export const previewPayments = (invoiceIds: string[]) =>
+    request<{ items: PayView[]; totals: PayTotals }>("/payments/preview", { method: "POST", body: JSON.stringify({ invoiceIds }) })
+
+export const checkInvoiceNow = (invoiceId: string) =>
+    request<PayView>("/payments/check", { method: "POST", headers: UI, body: JSON.stringify({ invoiceId }) })
+
+export type IntentsResult =
+    | { ok: true; intents: PayIntent[]; totals: PayTotals }
+    // The server found the basket no longer matches what the person reviewed: it sends the current state to review again.
+    | { ok: false; message: string; items: PayView[]; totals: PayTotals }
+
+export async function createPayIntents(
+    invoiceIds: string[], source: "ui" | "chat", expectedTotals: PayTotals,
+): Promise<IntentsResult> {
+    let res: Response
+    try {
+        res = await fetch(`${API_URL}/payments/intents`, {
+            method: "POST",
+            headers: { "content-type": "application/json", ...accessHeaders(), ...UI },
+            body: JSON.stringify({ invoiceIds, source, expectedIds: invoiceIds, expectedTotals }),
+        })
+    } catch {
+        throw new ApiError("Cannot reach the Scam Copilot server. Is the backend running?")
+    }
+    const body = (await res.json().catch(() => null)) as {
+        detail?: unknown; error?: { message?: string }; items?: PayView[]; intents?: PayIntent[]; totals?: PayTotals
+    } | null
+    if (res.status === 409 && Array.isArray(body?.items)) {
+        return { ok: false, message: body.error?.message ?? "Review the list again.", items: body.items, totals: body.totals ?? {} }
+    }
+    if (!res.ok || !body?.intents) throw new ApiError(typeof body?.detail === "string" ? body.detail : `Server error (${res.status}).`)
+    return { ok: true, intents: body.intents, totals: body.totals ?? {} }
+}
+
+export const markPayIntentOpened = (intentId: string) =>
+    request<{ status: PayIntentStatus }>(`/payments/intents/${encodeURIComponent(intentId)}/opened`, { method: "POST", headers: UI }, "This payment is no longer known.")
+
+export const cancelPayIntent = (intentId: string) =>
+    request<{ status: PayIntentStatus }>(`/payments/intents/${encodeURIComponent(intentId)}/cancel`, { method: "POST", headers: UI }, "This payment is no longer known.")
+
+export const fetchPayIntentStatus = (intentIds: string[]) =>
+    request<{ items: { intentId: string; invoiceId: string; status: PayIntentStatus }[] }>(`/payments/intents?ids=${encodeURIComponent(intentIds.join(","))}`)

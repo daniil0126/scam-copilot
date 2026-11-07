@@ -18,6 +18,11 @@ import { eventKey } from "../monitoring/monitoringMeta.js"
 import MonitorStatusChip from "../monitoring/MonitorStatusChip.js"
 import { useMonitoring } from "../monitoring/useMonitoring.js"
 import SettingsView from "../settings/SettingsView.js"
+import { PaymentsProvider } from "../../payments/PaymentsContext.js"
+import { usePayments } from "../../payments/context.js"
+import PaySheet from "../../payments/PaySheet.js"
+import PayQueue from "../../payments/PayQueue.js"
+import PayBar from "../../payments/PayBar.js"
 
 // Full class names only: Tailwind cannot detect names built from fragments.
 const SHOWN = "translate-x-0"
@@ -34,7 +39,12 @@ type ReturnPoint = { tab: TabId; label: string }
 
 const SECTION_LABEL: Record<MonitorSection, string> = { overview: "monitor", alerts: "alerts", report: "report" }
 
-export default function SidebarShell({ store, fill = false }: Props) {
+// The payments state lives above the shell, so the chat can hand invoices to History and History can pay them.
+export default function SidebarShell(props: Props) {
+    return <PaymentsProvider><SidebarShellBody {...props} /></PaymentsProvider>
+}
+
+function SidebarShellBody({ store, fill = false }: Props) {
     const open = useSyncExternalStore(store.subscribe, store.get)
     const { settings, update } = useSettings()
     const [tab, setTab] = useState<TabId>("check")
@@ -46,6 +56,7 @@ export default function SidebarShell({ store, fill = false }: Props) {
     // The panel scrolls as one; each tab's position is remembered so that Back returns to the place that was left.
     const mainRef = useRef<HTMLElement>(null)
     const scrollOf = useRef<Partial<Record<TabId, number>>>({})
+    const { setMany, clearSelection } = usePayments()
     const monitoring = useMonitoring()
     const alerts = useUnreadCount()
     // The badge counts what the monitor found after the panel opened or after the Monitor tab was last in view.
@@ -85,6 +96,11 @@ export default function SidebarShell({ store, fill = false }: Props) {
     const openInvoice = async (invoice: InvoiceRef) => {
         const id = invoice.checkId ?? (await checkPayPalInvoice(invoice.id)).id
         openCheck(id, { tab: "chat", label: "chat" })
+    }
+    // From the chat: payments are made in History. Invoices the assistant prepared arrive ticked.
+    const goPay = (ids?: string[]) => {
+        if (ids?.length) { clearSelection(); setMany(ids, true) }
+        changeTab("history")
     }
     const unseen = tab === "monitor" ? [] : (monitoring.status?.recentEvents ?? []).filter(e => e.detectedAt > seenAt)
     // The server's unread alerts when it can be asked, otherwise what the monitor found since the panel opened.
@@ -162,7 +178,7 @@ export default function SidebarShell({ store, fill = false }: Props) {
                     {/* Kept mounted so the analysis result survives tab switches. */}
                     <div hidden={tab !== "check"}><CheckTab onOpenHistory={() => changeTab("history")} onShownChange={setShownCheckId} /></div>
                     {/* Kept mounted so the conversation survives tab switches. */}
-                    <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab checkId={shownCheckId} onOpenInvoice={openInvoice} active={tab === "chat"} /></div>
+                    <div className={tab === "chat" ? "h-full" : "hidden"}><ChatTab checkId={shownCheckId} onOpenInvoice={openInvoice} onPay={goPay} active={tab === "chat"} /></div>
                     {tab === "monitor" && (
                         <MonitorTab
                             monitoring={monitoring} alerts={alerts} highlightSince={highlightSince}
@@ -173,6 +189,9 @@ export default function SidebarShell({ store, fill = false }: Props) {
                     {tab === "history" && <HistoryView settings={settings} reloadKey={eventKey(monitoring.status?.recentEvents[0])} openId={historyOpenId} onOpenChange={setHistoryOpenId} backLabel={returnTo?.label} onBack={returnTo ? goBack : undefined} />}
                     {tab === "settings" && <SettingsView settings={settings} onChange={update} />}
                 </main>
+                <PayQueue />
+                <PayBar show={tab === "history" && !historyOpenId} />
+                <PaySheet />
             </aside>
 
             {!fill && open && settings.collapsed && (

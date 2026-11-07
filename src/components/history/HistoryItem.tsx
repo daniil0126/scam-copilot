@@ -9,14 +9,22 @@ import {
     type ColDef,
     type ICellRendererParams,
 } from "ag-grid-community"
-import { ArrowDownUp, Check, ChevronRight, Filter, Search } from "lucide-react"
+import { ArrowDownUp, Check, CheckCircle2, Filter, Search } from "lucide-react"
 import type { HistoryEntry, RiskLevel, UserSettings } from "../../api/types.js"
 import { LEVEL_META, formatDateTime, formatMoney } from "../../lib/risk.js"
+import { usePayments } from "../../payments/context.js"
 
 // Only the row model module is registered: a lighter bundle.
 ModuleRegistry.registerModules([ClientSideRowModelModule])
 
 type SortMode = "date-desc" | "price-desc" | "price-asc"
+type PayFilter = "all" | "paid" | "unpaid"
+
+const PAY_FILTERS: { value: PayFilter; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "paid", label: "Paid" },
+    { value: "unpaid", label: "Not paid" },
+]
 
 const RISK_LEVELS: RiskLevel[] = ["high", "medium", "low"]
 
@@ -68,61 +76,101 @@ function computeStats(data: HistoryEntry[]) {
     }
 }
 
-function LevelCell({ data }: ICellRendererParams<HistoryEntry>) {
+// One row of the list. A row is two lines: who and how much, then how it was judged and what can be done (tick it, Pay it, or
+// get it checked). Opening the check is a click anywhere else on the row; the tick, Pay and Check now are marked `data-no-open`.
+const columnDefs: ColDef<HistoryEntry>[] = [{ flex: 1 }]  // required by the grid; the rows are drawn full width
+const canCheckNow = (entry: HistoryEntry, pay: ReturnType<typeof usePayments>) => {
+    const { view, started } = payState(entry, pay)
+    const code = view?.reasons[0]?.code
+    return !started && !!entry.invoiceId && (code === "not_checked" || code === "changed")
+}
+const ROW_HEIGHT = 84
+const SHORT_ROW_HEIGHT = 68
+
+function payState(entry: HistoryEntry, pay: ReturnType<typeof usePayments>) {
+    const view = entry.invoiceId ? pay.views[entry.invoiceId] : undefined
+    const started = !!entry.invoiceId && (pay.inProgress.has(entry.invoiceId) || pay.paid.has(entry.invoiceId))
+    return { view, started, payable: !!view?.eligible && !started }
+}
+
+function PayRow({ data }: ICellRendererParams<HistoryEntry>) {
+    const pay = usePayments()
     if (!data) return null
     const meta = LEVEL_META[data.level]
     const Icon = meta.icon
-    return (
-        <div className="flex h-full items-center justify-center">
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${meta.soft} ${meta.text}`}>
-                <Icon size={17} aria-hidden />
-                <span className="sr-only">{meta.label}</span>
-            </span>
-        </div>
-    )
-}
-
-// Two lines: the supplier (wrapping to a second line before it is cut off) and when it was checked.
-function SupplierCell({ data }: ICellRendererParams<HistoryEntry>) {
-    if (!data) return null
+    const { view, started, payable } = payState(data, pay)
+    const id = data.invoiceId
     const name = data.invoice.supplier.name.trim() || (data.invoice.number ? `Invoice #${data.invoice.number}` : "Unknown supplier")
+    const title = `${name}${data.invoice.number ? ` #${data.invoice.number}` : ""}`
+    const amount = formatMoney(data.invoice.amount, data.invoice.currency)
+    const ticked = !!id && pay.selection.has(id)
+    const code = view?.reasons[0]?.code
+    const canCheck = !!id && !started && (code === "not_checked" || code === "changed")
+    const why = started ? "Payment already started" : view ? (view.reasons[0]?.text ?? "Cannot be paid from here") : id ? "Checking whether it can be paid" : "No PayPal invoice to pay"
+    const loud = data.level === "high" || data.level === "medium"
+    // An invoice PayPal no longer lets anyone pay (paid, cancelled, ...) is said so instead of repeating its old risk label.
+    const closed = !started && (code === "paid" || code === "not_payable")
+    const closedText = code === "paid" ? "Paid" : view?.status ? view.status.charAt(0) + view.status.slice(1).toLowerCase().replaceAll("_", " ") : "Not open for payment"
     return (
-        <div className="flex h-full min-w-0 flex-col justify-center py-1 pr-2">
-            <span className="line-clamp-2 break-words text-sm font-semibold leading-[18px] text-[var(--text)] [overflow-wrap:anywhere]">
-                {name}
-            </span>
-            <span className="mt-0.5 block truncate text-[13px] leading-[18px] text-[var(--muted)]">
-                {formatDateTime(data.checkedAt)}
-            </span>
+        <div
+            style={{ borderLeftColor: loud ? meta.stroke : "transparent" }}
+            className={`flex h-full cursor-pointer items-stretch border-l-[3px] ${ticked ? "bg-[var(--primary-soft)]" : ""}`}
+        >
+            <label data-no-open className="grid w-11 shrink-0 cursor-pointer place-items-center self-start pt-1.5 has-[:disabled]:cursor-not-allowed" style={{ height: 44 }}>
+                <input
+                    type="checkbox"
+                    className="h-5 w-5 cursor-pointer accent-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-45"
+                    checked={ticked}
+                    disabled={!payable}
+                    onChange={e => { if (id) pay.toggle(id, e.target.checked) }}
+                    aria-describedby={payable ? undefined : `why-${data.id}`}
+                />
+                <span className="sr-only">Select {title}, {amount}</span>
+                {!payable && <span id={`why-${data.id}`} className="sr-only">{why}</span>}
+            </label>
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 py-2 pr-3">
+                <div className="flex items-baseline justify-between gap-3">
+                    <span className="line-clamp-1 break-words text-sm font-semibold leading-5 [overflow-wrap:anywhere]">{name}</span>
+                    <span className="whitespace-nowrap text-sm font-semibold tabular-nums leading-5">{amount}</span>
+                </div>
+                <div className="flex min-h-[1.25rem] items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-[13px] leading-5 text-[var(--muted)]">
+                        {formatDateTime(data.checkedAt)}
+                        {" · "}
+                        {started
+                            ? (pay.paid.has(id ?? "")
+                                ? <span className="font-medium text-[var(--success)]"><CheckCircle2 size={13} className="mb-0.5 mr-0.5 inline" aria-hidden />Paid</span>
+                                : <span className="text-[var(--primary)]">Payment started</span>)
+                            : closed
+                            ? <span className={code === "paid" ? "font-medium text-[var(--success)]" : ""}>{code === "paid" && <CheckCircle2 size={13} className="mb-0.5 mr-0.5 inline" aria-hidden />}{closedText}</span>
+                            : <span className={`font-medium ${payable ? "text-[var(--success)]" : meta.text}`}><Icon size={13} className="mb-0.5 mr-0.5 inline" aria-hidden />{payable ? "No warning signs" : meta.label}</span>}
+                    </span>
+                    {payable && id && (
+                        <button
+                            data-no-open
+                            onClick={e => pay.review([id], "ui", e.currentTarget)}
+                            aria-label={`Pay ${title}`}
+                            className="h-8 shrink-0 rounded-md border border-[var(--primary)]/60 px-3 text-[13px] font-medium text-[var(--primary)] hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
+                        >
+                            Pay
+                        </button>
+                    )}
+                    {canCheck && id && (
+                        <button
+                            data-no-open
+                            onClick={() => { void pay.checkNow(id) }}
+                            disabled={pay.checking.has(id)}
+                            aria-label={`Check ${title} now`}
+                            className="min-h-11 shrink-0 px-1.5 text-[13px] font-medium text-[var(--primary)] underline underline-offset-2 disabled:no-underline disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+                        >
+                            {pay.checking.has(id) ? "Checking…" : "Check now"}
+                        </button>
+                    )}
+                </div>
+            </div>
         </div>
     )
 }
-
-// The amount, the risk and the arrow that says the row opens: one cell, so nothing can overlap.
-function AmountCell({ data }: ICellRendererParams<HistoryEntry>) {
-    if (!data) return null
-    const meta = LEVEL_META[data.level]
-    return (
-        <div className="flex h-full items-center justify-end gap-3 pr-3">
-            <span className="min-w-0 text-right">
-                <span className="block whitespace-nowrap text-sm font-semibold tabular-nums leading-[18px] text-[var(--text)]">
-                    {formatMoney(data.invoice.amount, data.invoice.currency)}
-                </span>
-                <span className={`mt-0.5 block whitespace-nowrap text-[13px] font-medium leading-[18px] ${meta.text}`}>
-                    {meta.label}
-                </span>
-            </span>
-            <ChevronRight size={18} strokeWidth={2.25} className="shrink-0 text-[var(--muted)]" aria-hidden />
-        </div>
-    )
-}
-
-// Three plain columns, none pinned: the supplier takes what the fixed two leave.
-const columnDefs: ColDef<HistoryEntry>[] = [
-    { width: 52, minWidth: 52, maxWidth: 52, cellRenderer: LevelCell, suppressMovable: true },
-    { flex: 1, minWidth: 90, cellRenderer: SupplierCell, suppressMovable: true },
-    { width: 144, minWidth: 144, maxWidth: 144, cellRenderer: AmountCell, suppressMovable: true },
-]
 
 interface HistoryItemProps {
     data: HistoryEntry[]
@@ -138,6 +186,7 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
         low: true,
     })
     const [sortMode, setSortMode] = useState<SortMode>("date-desc")
+    const [payFilter, setPayFilter] = useState<PayFilter>("all")
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
 
@@ -162,17 +211,32 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
     }, [isMenuOpen])
 
     const stats = useMemo(() => computeStats(data), [data])
+    const pay = usePayments()
+    const { ensure } = pay
+    const gridRef = useRef<AgGridReact<HistoryEntry>>(null)
 
     const rows = useMemo(() => {
         const query = searchQuery.trim().toLowerCase()
+        // Paid is what PayPal says (the gate's verdict) or what a payment just made in this panel confirmed.
+        const isPaid = (entry: HistoryEntry) =>
+            !!entry.invoiceId && (pay.paid.has(entry.invoiceId) || !!pay.views[entry.invoiceId]?.reasons.some(r => r.code === "paid"))
         return data
             .filter(
                 entry =>
                     riskFilters[entry.level] &&
+                    (payFilter === "all" || isPaid(entry) === (payFilter === "paid")) &&
                     entry.invoice.supplier.name.toLowerCase().includes(query)
             )
             .sort(COMPARATORS[sortMode])
-    }, [data, searchQuery, riskFilters, sortMode])
+    }, [data, searchQuery, riskFilters, sortMode, payFilter, pay.paid, pay.views])
+
+    // Who may be paid is the server's verdict, asked for the invoices in the list.
+    const invoiceIds = rows.map(r => r.invoiceId).filter((id): id is string => !!id).join(",")
+    useEffect(() => { ensure(invoiceIds ? invoiceIds.split(",") : []) }, [invoiceIds, ensure])
+    const payableIds = rows.filter(r => payState(r, pay).payable).map(r => r.invoiceId as string)
+    const tickedCount = payableIds.filter(id => pay.selection.has(id)).length
+    // Rows that offer Pay or Check now are taller than the rest; a verdict arriving changes which those are.
+    useEffect(() => { gridRef.current?.api?.resetRowHeights() }, [pay.views, pay.inProgress, pay.paid])
 
     const toggleLevel = (level: RiskLevel) =>
         setRiskFilters(prev => ({ ...prev, [level]: !prev[level] }))
@@ -222,6 +286,7 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm hover:bg-[var(--primary-soft)] transition-colors"
                         >
                             <Filter size={16} aria-hidden /> Filters
+                            {payFilter !== "all" && <span className="h-2 w-2 rounded-full bg-[var(--primary)]" aria-label="A payment filter is on" />}
                         </button>
 
                         {isMenuOpen && (
@@ -240,6 +305,18 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                                                 className="accent-current"
                                             />
                                             {LEVEL_META[level].label}
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <hr className="border-[var(--border)]" />
+
+                                <div role="radiogroup" aria-label="Payment" className="flex flex-col gap-1">
+                                    <span className="text-xs font-semibold text-[var(--muted)] px-1">Payment</span>
+                                    {PAY_FILTERS.map(option => (
+                                        <label key={option.value} className={`flex cursor-pointer items-center gap-2 rounded px-1 py-1.5 text-xs hover:bg-[var(--primary-soft)] ${payFilter === option.value ? "font-bold text-[var(--primary)]" : "text-[var(--text)]"}`}>
+                                            <input type="radio" name="pay-filter" checked={payFilter === option.value} onChange={() => setPayFilter(option.value)} className="accent-[var(--primary)]" />
+                                            {option.label}
                                         </label>
                                     ))}
                                 </div>
@@ -271,22 +348,42 @@ export default function HistoryItem({ data, settings, onOpen }: HistoryItemProps
                 </div>
             </div>
 
+            {payableIds.length > 0 && (
+                <label className="-mt-2 flex min-h-11 cursor-pointer items-center text-[13px] text-[var(--muted)]">
+                    <span className="grid h-11 w-8 place-items-center">
+                        <input
+                            type="checkbox"
+                            className="h-5 w-5 cursor-pointer accent-[var(--primary)]"
+                            checked={tickedCount === payableIds.length}
+                            ref={el => { if (el) el.indeterminate = tickedCount > 0 && tickedCount < payableIds.length }}
+                            onChange={e => pay.setMany(payableIds, e.target.checked)}
+                        />
+                    </span>
+                    Select all with no warning signs ({payableIds.length})
+                </label>
+            )}
+
             {rows.length === 0 ? (
                 <div className="flex h-[365px] w-full items-center justify-center text-sm text-[var(--muted)]">
                     No invoices match your search or filters.
                 </div>
             ) : (
-                <div className="h-[365px] w-full overflow-hidden [&_.ag-row]:cursor-pointer">
+                <div className="h-[440px] w-full overflow-hidden [&_.ag-row]:cursor-pointer">
                     <AgGridReact<HistoryEntry>
+                        ref={gridRef}
                         theme={settings.theme === "dark" ? darkTheme : lightTheme}
                         rowData={rows}
                         columnDefs={columnDefs}
+                        isFullWidthRow={() => true}
+                        fullWidthCellRenderer={PayRow}
                         getRowId={params => params.data.id}
-                        rowHeight={68}
+                        getRowHeight={params => (params.data && (payState(params.data, pay).payable || canCheckNow(params.data, pay)) ? ROW_HEIGHT : SHORT_ROW_HEIGHT)}
                         headerHeight={0}
                         suppressHorizontalScroll
                         suppressCellFocus
                         onRowClicked={event => {
+                            const target = event.event?.target
+                            if (target instanceof Element && target.closest("[data-no-open]")) return  // the tick, Pay and Check now are not "open"
                             if (event.data) onOpen(event.data.id)
                         }}
                     />

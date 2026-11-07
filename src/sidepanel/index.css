@@ -89,6 +89,9 @@ body,
     100% { transform: scale(1); box-shadow: 0 0 0 10px transparent; }
 }
 .sc-badge-pop { animation: sc-badge-pop 900ms ease-out 2; }
+/* The payment confirmation sheet and the selection bar (src/payments). */
+@keyframes sc-fade { from { opacity: 0; } }
+@keyframes sc-up { from { opacity: 0; transform: translateY(16px); } }
 
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
