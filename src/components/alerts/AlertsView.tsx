@@ -87,10 +87,15 @@ export default function AlertsView({ reloadKey, onRead, onOpenCheck }: Props) {
                 setItems(page.items)
                 setNextCursor(page.nextCursor)
                 setError(null)
+                // The list is on screen, so what it shows is seen. The badge drops, which reloads the list with the rows as read.
+                const unseen = page.items.filter(n => !n.read)
+                if (unseen.length) {
+                    void Promise.all(unseen.map(n => markNotificationRead(n.id))).then(onRead).catch(() => { /* stays unread */ })
+                }
             })
             .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : "Could not load alerts.") })
         return () => { cancelled = true }
-    }, [unreadOnly, reloadKey])
+    }, [unreadOnly, reloadKey]) // eslint-disable-line react-hooks/exhaustive-deps, react-x/exhaustive-deps -- onRead only refreshes the badge
 
     const loadMore = async () => {
         if (!nextCursor) return

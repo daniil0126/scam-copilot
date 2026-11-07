@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react"
 import type { InvoiceRef, MonitorSection, TabId } from "../../api/types.js"
-import { checkPayPalInvoice } from "../../api/client.js"
+import { checkPayPalInvoice, markNotificationRead } from "../../api/client.js"
 import type { OpenStore } from "../../overlay/store.js"
 import { useSettings } from "../../overlay/useSettings.js"
 import SidebarHeader from "./SidebarHeader.js"
@@ -97,6 +97,10 @@ export default function SidebarShell({ store, fill = false }: Props) {
 
     const arrival = useAlertArrival(alerts.unread, alerts.error === null, settings.notifications)
     const openArrival = () => {
+        // Opening the banner is looking at the alert: it counts as read.
+        if (arrival.arrival && !arrival.arrival.read) {
+            void markNotificationRead(arrival.arrival.id).then(() => alerts.refresh()).catch(() => { /* stays unread */ })
+        }
         arrival.dismiss()
         setMonitorSection("alerts")
         changeTab("monitor")

@@ -27,23 +27,32 @@ function chime() {
     } catch { /* no audio available */ }
 }
 
-// Notices a new unread alert: the unread count goes up after the first reading. What arrived is fetched once, so that the
-// banner can say what it is about; the count alone would only say that something happened.
+const idOf = (n: AppNotification) => Number(n.id.replace(/^ntf_/, ""))
+
+// Notices a new alert: the newest alert is one this panel has not seen before and is still unread. Judging by the count
+// going up would also fire for an alert that was already known (a late poll answer from before it was read, a return after
+// a network error). The first reading only sets the baseline. The banner says what arrived.
 export function useAlertArrival(unread: number, known: boolean, enabled: boolean) {
     const [arrival, setArrival] = useState<AppNotification | null>(null)
     const [flashKey, setFlashKey] = useState(0)
-    const previous = useRef<number | null>(null)
+    const newest = useRef<number | null>(null)  // the highest alert id already accounted for
 
     useEffect(() => {
         if (!known) return
-        const before = previous.current
-        previous.current = unread
-        if (before === null || unread <= before || !enabled) return  // the first reading is not an arrival
         let cancelled = false
-        chime()
-        fetchNotifications({ unreadOnly: true, limit: 1 })
-            .then(page => { if (!cancelled) { setArrival(page.items[0] ?? null); setFlashKey(k => k + 1) } })
-            .catch(() => { if (!cancelled) setFlashKey(k => k + 1) })  // still flash: the count did rise
+        fetchNotifications({ limit: 1 })
+            .then(page => {
+                if (cancelled) return
+                const latest = page.items[0]
+                const id = latest ? idOf(latest) : 0
+                const before = newest.current
+                newest.current = Math.max(before ?? 0, id)
+                if (before === null || id <= before || latest.read || !enabled) return  // the first reading is not an arrival
+                chime()
+                setArrival(latest)
+                setFlashKey(k => k + 1)
+            })
+            .catch(() => { /* the next change of the count asks again */ })
         return () => { cancelled = true }
     }, [unread, known, enabled])
 

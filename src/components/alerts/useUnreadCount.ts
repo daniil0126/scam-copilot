@@ -9,6 +9,7 @@ export function useUnreadCount() {
     const [unread, setUnread] = useState(0)
     const [error, setError] = useState<string | null>(null)
     const load = useRef<() => Promise<void>>(() => Promise.resolve())
+    const issued = useRef(0)
 
     useEffect(() => {
         let cancelled = false
@@ -17,8 +18,10 @@ export function useUnreadCount() {
             let delay = POLL_MS
             if (!document.hidden) {
                 try {
+                    const ticket = ++issued.current
                     const next = await fetchUnreadCount()
-                    if (cancelled) return
+                    // A slower, older answer must not overwrite a newer one: it would show a count from before an alert was read.
+                    if (cancelled || ticket !== issued.current) return
                     setUnread(next.unread)
                     setError(null)
                 } catch (e) {
